@@ -11,7 +11,7 @@ server.register(cors);
 // Register routes dynamically
 for (const [apiVersion, routeGroup] of Object.entries(routes)) {
     for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-        const routeURL = `/api/${apiVersion}/${routeName}`;
+        const routeURL = `/${apiVersion}/${routeName}`;
 
         server.route({
             method: routeObj.type,
