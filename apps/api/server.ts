@@ -9,16 +9,14 @@ const server: FastifyInstance = fastify();
 server.register(cors);
 
 // Register routes dynamically
-const apiVersions = Object.keys(routes);
-
-for (const apiVersion of apiVersions) {
-    const routeGroup = routes[apiVersion];
-    for (const routeName of Object.keys(routeGroup)) {
+for (const [apiVersion, routeGroup] of Object.entries(routes)) {
+    for (const [routeName, routeObj] of Object.entries(routeGroup)) {
         const routeURL = `/api/${apiVersion}/${routeName}`;
-        const routeObj: APIRoute = routeGroup[routeName];
 
         server.route({
-            method: routeObj.type, url: routeURL, handler: routeObj.func,
+            method: routeObj.type,
+            url: routeURL,
+            handler: routeObj.func,
         });
 
         server.log.info(`Registered route: ${routeURL}`);
