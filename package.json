@@ -1,5 +1,5 @@
 {
-  "name": "Loqui",
+  "name": "loqui",
   "private": true,
   "scripts": {
     "build": "turbo build",

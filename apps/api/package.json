@@ -2,10 +2,10 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node server.ts"
+    "dev": "fastify start server.ts -w"
   },
   "keywords": [],
   "author": "",
