@@ -1,5 +1,5 @@
-import APIRoute from './route';
-import V1OAuthTestRoute from './v1/oauth/test';
+import APIRoute from "./route";
+import V1OAuthTestRoute from "./v1/oauth/test";
 
 interface RouteStorage {
   [apiVersion: string]: {
@@ -13,4 +13,4 @@ const routes: RouteStorage = {
   },
 };
 
-export default routes
+export default routes;

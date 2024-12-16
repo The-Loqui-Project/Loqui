@@ -1,2 +1,1 @@
-import db from '../';
-
+import db from "../";
