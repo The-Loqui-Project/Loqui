@@ -68,6 +68,7 @@ for (const [apiVersion, routeGroup] of Object.entries(routes)) {
       method: routeObj.type,
       url: routeURL,
       handler: routeObj.func,
+      schema: routeObj.schema
     });
 
     server.log.info(`Registered route: ${routeURL}`);
