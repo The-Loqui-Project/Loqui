@@ -1,13 +1,11 @@
 import cors from "@fastify/cors";
 import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
+import 'dotenv/config'
 import swagger from "@fastify/swagger";
-import APIRoute from "./routes/route";
 import { seed } from "./db/seed/seed";
 import "dotenv/config";
-import fastifySwaggerUi from "@fastify/swagger-ui";
 
-(async () => {
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
 
@@ -17,28 +15,32 @@ if (process.env.DATABASE_SEEDING === "true") {
   process.exit(0);
 }
 
-  const server: FastifyInstance = fastify({
-    logger: true,
-    disableRequestLogging: true,
-  });
+const server: FastifyInstance = fastify({
+  logger: true
+});
 
-  console.log(process.env.MODRINTH_CLIENT_SECRET!);
+console.log(process.env.MODRINTH_CLIENT_SECRET!)
 
-  // Register CORS
-  server.register(cors);
+// Register CORS
+server.register(cors);
 
-  if (process.env.DEV_MODE) {
-    server.register(swagger, {
-      mode: "dynamic",
-      swagger: {
-        info: {
-          title: "Loqui API",
-          description: "Documentation on Loqui API routes.",
-          version: "v1",
+if (!process.env.PRODUCTION) {
+  server.register(swagger, {
+    openapi: {
+      openapi: "3.0.0",
+      info: {
+        title: "Loqui API",
+        description: "Documentation on Loqui API routes.",
+        version: "v1",
+      },
+      servers: [
+        {
+          url: "http://localhost:8080",
+          description: "Development server",
         },
-        host: "localhost:8080",
-        schemes: ["http"],
-        securityDefinitions: {
+      ],
+      components: {
+        securitySchemes: {
           modrinthToken: {
             type: "apiKey",
             name: "modrinthToken",
@@ -46,36 +48,36 @@ if (process.env.DATABASE_SEEDING === "true") {
           },
         },
       },
-    });
+    },
+  });
 
-    server.register(fastifySwaggerUi, {
-      routePrefix: "/documentation",
-      uiConfig: {
-        docExpansion: "full",
-        deepLinking: false,
+  server.register(import("@fastify/swagger-ui"), {
+    routePrefix: "/documentation",
+    uiConfig: {
+      docExpansion: "full",
+      deepLinking: false,
+    },
+    uiHooks: {
+      onRequest: function (request, reply, next) {
+        next();
       },
-      uiHooks: {
-        onRequest: function (request, reply, next) {
-          next();
-        },
-        preHandler: function (request, reply, next) {
-          next();
-        },
+      preHandler: function (request, reply, next) {
+        next();
       },
-      staticCSP: true,
-      transformStaticCSP: (header) => header,
-      transformSpecification: (swaggerObject, request, reply) => {
-        return swaggerObject;
-      },
-      transformSpecificationClone: true,
-    });
-  }
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+    transformSpecification: (swaggerObject, request, reply) => {
+      return swaggerObject;
+    },
+    transformSpecificationClone: true,
+  });
+}
 
-  // Register routes dynamically
-  server.register((serverInstance, options, done) => {
-    for (const [apiVersion, routeGroup] of Object.entries(routes)) {
-      for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-        const routeURL = `/${apiVersion}${routeObj.route}`;
+// Register routes dynamically
+for (const [apiVersion, routeGroup] of Object.entries(routes)) {
+  for (const [routeName, routeObj] of Object.entries(routeGroup)) {
+    const routeURL = `/${apiVersion}/${routeName}`;
 
     server.route({
       method: routeObj.type,
@@ -84,15 +86,15 @@ if (process.env.DATABASE_SEEDING === "true") {
       schema: routeObj.schema,
     });
 
-        server.log.info(`Registered route: ${routeURL}`);
-      }
-    }
-    done();
-  });
+    server.log.info(`Registered route: ${routeURL}`);
+  }
+}
 
+(async () => {
   await server.ready();
 
-  if (process.env.DEV_MODE) {
+  if (!process.env.PRODUCTION) {
+    server.swagger();
     console.log("Swagger available at http://localhost:8080/documentation");
   }
 
