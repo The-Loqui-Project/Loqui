@@ -4,8 +4,8 @@ import {relations} from "drizzle-orm";
 
 ////--- Enums ---////
 
-const userRoleEnum = pgEnum("USER_ROLE", ["translator", "approved", "moderator", "admin"]);
-const proposalStatusEnum = pgEnum("PROPOSAL_STATUS", ["removed", "inaccurate", "pending", "accurate"]);
+export const userRoleEnum = pgEnum("USER_ROLE", ["translator", "approved", "moderator", "admin"]);
+export const proposalStatusEnum = pgEnum("PROPOSAL_STATUS", ["removed", "inaccurate", "pending", "accurate"]);
 
 
 ////--- Tables ---////
