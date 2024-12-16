@@ -1,5 +1,5 @@
 import APIRoute from "./route";
-import V1OAuthTestRoute from "./v1/oauth/test";
+import V1_OAuthFinalize from "./v1/oauth/finalize";
 
 interface RouteStorage {
   [apiVersion: string]: {
@@ -9,7 +9,7 @@ interface RouteStorage {
 
 const routes: RouteStorage = {
   v1: {
-    oauth_test: V1OAuthTestRoute,
+    oauth_test: V1_OAuthFinalize
   },
 };
 

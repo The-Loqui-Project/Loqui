@@ -1,10 +1,15 @@
 import cors from "@fastify/cors";
 import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
+import 'dotenv/config'
 import swagger from "@fastify/swagger";
 import APIRoute from "./routes/route";
 
-const server: FastifyInstance = fastify();
+const server: FastifyInstance = fastify({
+  logger: true
+});
+
+console.log(process.env.MODRINTH_CLIENT_SECRET!)
 
 // Register CORS
 server.register(cors);
