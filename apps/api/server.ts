@@ -1,7 +1,7 @@
 import cors from "@fastify/cors";
 import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
-import 'dotenv/config'
+import "dotenv/config";
 import swagger from "@fastify/swagger";
 import { seed } from "./db/seed/seed";
 import "dotenv/config";
@@ -16,10 +16,10 @@ if (process.env.DATABASE_SEEDING === "true") {
 }
 
 const server: FastifyInstance = fastify({
-  logger: true
+  logger: true,
 });
 
-console.log(process.env.MODRINTH_CLIENT_SECRET!)
+console.log(process.env.MODRINTH_CLIENT_SECRET!);
 
 // Register CORS
 server.register(cors);
