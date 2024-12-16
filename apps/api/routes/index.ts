@@ -9,7 +9,7 @@ interface RouteStorage {
 
 const routes: RouteStorage = {
   v1: {
-    oauth_test: V1_OAuthFinalize
+    oauth_test: V1_OAuthFinalize,
   },
 };
 

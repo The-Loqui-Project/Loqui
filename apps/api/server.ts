@@ -1,15 +1,15 @@
 import cors from "@fastify/cors";
 import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
-import 'dotenv/config'
+import "dotenv/config";
 import swagger from "@fastify/swagger";
 import APIRoute from "./routes/route";
 
 const server: FastifyInstance = fastify({
-  logger: true
+  logger: true,
 });
 
-console.log(process.env.MODRINTH_CLIENT_SECRET!)
+console.log(process.env.MODRINTH_CLIENT_SECRET!);
 
 // Register CORS
 server.register(cors);
@@ -73,7 +73,7 @@ for (const [apiVersion, routeGroup] of Object.entries(routes)) {
       method: routeObj.type,
       url: routeURL,
       handler: routeObj.func,
-      schema: routeObj.schema
+      schema: routeObj.schema,
     });
 
     server.log.info(`Registered route: ${routeURL}`);
