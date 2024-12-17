@@ -89,10 +89,6 @@ export default {
         )
       ).data;
 
-      console.log(
-        `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
-      );
-
       // Get user's modrinth ID from modrinthResponse access_token
       const userInformation: any = (
         await axios.get("https://api.modrinth.com/v2/user", {
@@ -121,6 +117,7 @@ export default {
       request.log.error(
         "Request failed, unable to communicate with Modrinth API.",
       );
+      console.error(e);
       response.status(400).send({
         message:
           "Failed to communicate with Modrinth API - " +
