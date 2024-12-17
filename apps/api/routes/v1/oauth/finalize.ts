@@ -6,6 +6,7 @@ import { user } from "../../../db/schema/schema";
 
 export default {
   type: "POST",
+  route: "/oauth/finalize",
   schema: {
     description:
       "Finalizes the OAuth2 process with Modrinth by creating user records in the Loqui database. Handles token generation as well through the Modrinth API.",
@@ -88,11 +89,15 @@ export default {
         )
       ).data;
 
+      console.log(
+        `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
+      );
+
       // Get user's modrinth ID from modrinthResponse access_token
       const userInformation: any = (
         await axios.get("https://api.modrinth.com/v2/user", {
           headers: {
-            Authorization: modrinthResponse.access_token,
+            Authorization: `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
           },
         })
       ).data;
@@ -115,7 +120,6 @@ export default {
     } catch (e) {
       request.log.error(
         "Request failed, unable to communicate with Modrinth API.",
-        e,
       );
       response.status(400).send({
         message:

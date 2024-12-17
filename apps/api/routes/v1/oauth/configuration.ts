@@ -22,10 +22,7 @@ export default {
       },
     },
   },
-  func: async (
-    request: any,
-    response: { send: (arg0: { scopes: string; client_id: string }) => void },
-  ) => {
+  func: async (request, response) => {
     // REMINDER: Update this when changing the scopes used by Loqui.
     const scopes = ["USER_READ", "PROJECT_READ", "VERSION_READ"];
 
