@@ -35,6 +35,10 @@ export default {
             type: "number",
             description: "Token expiration timestamp",
           },
+          modrinthResponse: {
+            type: "object",
+            description: "User information object retrieved from Modrinth"
+          }
         },
       },
       400: {
@@ -106,6 +110,7 @@ export default {
       response.status(201).send({
         token: modrinthResponse.access_token,
         expiration: modrinthResponse.expires_in,
+        modrinthResponse: userInformation
       });
     } catch (e) {
       request.log.error(
