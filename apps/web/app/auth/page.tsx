@@ -16,7 +16,7 @@ import {
 } from "cookies-next/client";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
@@ -57,19 +57,20 @@ export default function AuthPage() {
     }: { token: string; expiration: number; modrinthResponse: any } =
       await oauthFinalize.json();
 
-    console.log(modrinthResponse);
     setUsername(modrinthResponse.username);
 
     setCookie("token", token);
     setCookie("token_expiration", expiration.toString());
   }
 
-  if (!code) {
-    setupModrinthAuth();
-  } else {
-    // Finalize Oauth using code.
-    finalizeModrinthAuth();
-  }
+  useEffect(() => {
+    if (!code) {
+      setupModrinthAuth();
+    } else {
+      // Finalize Oauth using code.
+      finalizeModrinthAuth();
+    }
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
