@@ -39,6 +39,7 @@ export default {
           modrinthResponse: {
             type: "object",
             description: "User information object retrieved from Modrinth",
+            additionalProperties: true,
           },
         },
       },
@@ -97,6 +98,8 @@ export default {
           },
         })
       ).data;
+
+      console.log(userInformation);
 
       const userID = userInformation.id;
 
