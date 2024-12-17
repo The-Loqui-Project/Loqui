@@ -3,6 +3,7 @@ import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 import { seed } from "./db/seed/seed";
 import "dotenv/config";
 
@@ -14,14 +15,11 @@ if (process.env.DATABASE_SEEDING === "true") {
   await seed();
   process.exit(0);
 }
-import APIRoute from "./routes/route";
-import fastifySwaggerUi from "@fastify/swagger-ui";
 
 (async () => {
-
   const server: FastifyInstance = fastify({
     logger: true,
-    disableRequestLogging: true
+    disableRequestLogging: true,
   });
 
   console.log(process.env.MODRINTH_CLIENT_SECRET!);
@@ -47,7 +45,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
             in: "header",
           },
         },
-      }
+      },
     });
 
     server.register(fastifySwaggerUi, {
@@ -83,19 +81,18 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
           method: routeObj.type,
           url: routeURL,
           handler: routeObj.func,
-          schema: routeObj.schema
+          schema: routeObj.schema,
         });
 
         server.log.info(`Registered route: ${routeURL}`);
       }
     }
     done();
-  })
+  });
 
   await server.ready();
 
   if (process.env.DEV_MODE) {
-
     console.log("Swagger available at http://localhost:8080/documentation");
   }
 
