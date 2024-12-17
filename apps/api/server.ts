@@ -2,7 +2,6 @@ import cors from "@fastify/cors";
 import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
 import swagger from "@fastify/swagger";
-import APIRoute from "./routes/route";
 import { seed } from "./db/seed/seed";
 
 import dotenv from "dotenv";
@@ -12,6 +11,10 @@ dotenv.config();
 console.log("Starting server...");
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
+
+if (process.env.DATABASE_SEEDING === "true") {
+  seed().then((r) => process.exit(0));
+}
 
 const server: FastifyInstance = fastify();
 
