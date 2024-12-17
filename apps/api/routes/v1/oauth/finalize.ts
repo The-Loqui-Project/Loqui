@@ -89,13 +89,15 @@ export default {
         )
       ).data;
 
-      console.log(`${modrinthResponse.token_type} ${modrinthResponse.access_token}`)
+      console.log(
+        `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
+      );
 
       // Get user's modrinth ID from modrinthResponse access_token
       const userInformation: any = (
         await axios.get("https://api.modrinth.com/v2/user", {
           headers: {
-            "Authorization": `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
+            Authorization: `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
           },
         })
       ).data;
@@ -117,7 +119,7 @@ export default {
       });
     } catch (e) {
       request.log.error(
-        "Request failed, unable to communicate with Modrinth API."
+        "Request failed, unable to communicate with Modrinth API.",
       );
       // console.log(e);
       response.status(400).send({
