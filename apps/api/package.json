@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch server.ts --clear-screen=false",
-    "db:gen": "npx drizzle-kit generate",
-    "db:migrate": "npx drizzle-kit migrate --config=drizzle-dev.config.ts",
-    "db:studio": "npx drizzle-kit studio --config=drizzle-dev.config.ts",
+    "db:gen": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate --config=drizzle-dev.config.ts",
+    "db:studio": "drizzle-kit studio --config=drizzle-dev.config.ts",
     "dev:test-db": "docker run --name loqui_test_db -e POSTGRES_PASSWORD=loqui_test_db-password -d -p 5432:5432 postgres",
     "dev:test-db:setup": "docker pull postgres"
   },
