@@ -32,9 +32,7 @@ export default function AuthPage() {
     const data = await oauthConfiguration.json();
     const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${process.env.CURRENT_URL! + "auth"}&scope=${data.scopes}`;
 
-    console.log(data);
-
-    // router.push(MODRINTH_URL);
+    router.push(MODRINTH_URL);
   }
 
   async function finalizeModrinthAuth() {
