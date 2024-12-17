@@ -71,7 +71,7 @@ if (process.env.DEV_MODE) {
 server.register((serverInstance, options, done) => {
   for (const [apiVersion, routeGroup] of Object.entries(routes)) {
     for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-      const routeURL = `/${apiVersion}/${routeObj.route}`;
+      const routeURL = `/${apiVersion}${routeObj.route}`;
 
       serverInstance.route({
         method: routeObj.type,
