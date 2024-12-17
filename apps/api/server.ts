@@ -7,10 +7,9 @@ import APIRoute from "./routes/route";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 
 (async () => {
-
   const server: FastifyInstance = fastify({
     logger: true,
-    disableRequestLogging: true
+    disableRequestLogging: true,
   });
 
   console.log(process.env.MODRINTH_CLIENT_SECRET!);
@@ -36,7 +35,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
             in: "header",
           },
         },
-      }
+      },
     });
 
     server.register(fastifySwaggerUi, {
@@ -67,24 +66,23 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
     for (const [apiVersion, routeGroup] of Object.entries(routes)) {
       for (const [routeName, routeObj] of Object.entries(routeGroup)) {
         const routeURL = `/${apiVersion}/${routeName}`;
-  
+
         serverInstance.route({
           method: routeObj.type,
           url: routeURL,
           handler: routeObj.func,
-          schema: routeObj.schema
+          schema: routeObj.schema,
         });
-  
+
         server.log.info(`Registered route: ${routeURL}`);
       }
     }
     done();
-  })
+  });
 
   await server.ready();
 
   if (process.env.DEV_MODE) {
-    
     console.log("Swagger available at http://localhost:8080/documentation");
   }
 
