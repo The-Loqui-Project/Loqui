@@ -57,7 +57,7 @@ const slogans = [
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b flex flex-col justify-center items-center p-4">
+    <div className="bg-gradient-to-b flex flex-col justify-center items-center p-4">
       <h1 className="text-7xl font-bold mb-8 text-center">Loqui</h1>
       <div className="w-full max-w-7xl space-y-12">
         <ScrollingRow slogans={slogans.slice(0, 4)} direction="left" />

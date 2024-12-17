@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       ? "https://loqui.imb11.dev/"
       : "http://localhost:3000/",
   },
+  images: {
+    domains: ["cdn.modrinth.com"],
+  },
 };
 
 export default nextConfig;

@@ -60,7 +60,11 @@ export default function AuthPage() {
     setUsername(modrinthResponse.username);
 
     setCookie("token", token);
-    setCookie("token_expiration", expiration.toString());
+    setCookie("cached_user_information", JSON.stringify(modrinthResponse));
+    setCookie(
+      "token_expiration",
+      new Date(Date.now() + expiration * 1000).toUTCString(),
+    );
   }
 
   useEffect(() => {
