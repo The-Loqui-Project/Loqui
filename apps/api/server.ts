@@ -4,87 +4,87 @@ import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
 import APIRoute from "./routes/route";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 
-const server: FastifyInstance = fastify({
-  logger: true,
-});
+(async () => {
 
-console.log(process.env.MODRINTH_CLIENT_SECRET!);
+  const server: FastifyInstance = fastify({
+    logger: true,
+    disableRequestLogging: true
+  });
 
-// Register CORS
-server.register(cors);
+  console.log(process.env.MODRINTH_CLIENT_SECRET!);
 
-if (!process.env.PRODUCTION) {
-  server.register(swagger, {
-    openapi: {
-      openapi: "3.0.0",
-      info: {
-        title: "Loqui API",
-        description: "Documentation on Loqui API routes.",
-        version: "v1",
-      },
-      servers: [
-        {
-          url: "http://localhost:8080",
-          description: "Development server",
+  // Register CORS
+  server.register(cors);
+
+  if (process.env.DEV_MODE) {
+    server.register(swagger, {
+      mode: "dynamic",
+      swagger: {
+        info: {
+          title: "Loqui API",
+          description: "Documentation on Loqui API routes.",
+          version: "v1",
         },
-      ],
-      components: {
-        securitySchemes: {
+        host: "localhost:8080",
+        schemes: ["http"],
+        securityDefinitions: {
           modrinthToken: {
             type: "apiKey",
             name: "modrinthToken",
             in: "header",
           },
         },
-      },
-    },
-  });
-
-  server.register(import("@fastify/swagger-ui"), {
-    routePrefix: "/documentation",
-    uiConfig: {
-      docExpansion: "full",
-      deepLinking: false,
-    },
-    uiHooks: {
-      onRequest: function (request, reply, next) {
-        next();
-      },
-      preHandler: function (request, reply, next) {
-        next();
-      },
-    },
-    staticCSP: true,
-    transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject;
-    },
-    transformSpecificationClone: true,
-  });
-}
-
-// Register routes dynamically
-for (const [apiVersion, routeGroup] of Object.entries(routes)) {
-  for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-    const routeURL = `/${apiVersion}/${routeName}`;
-
-    server.route({
-      method: routeObj.type,
-      url: routeURL,
-      handler: routeObj.func,
-      schema: routeObj.schema,
+      }
     });
 
-    server.log.info(`Registered route: ${routeURL}`);
+    server.register(fastifySwaggerUi, {
+      routePrefix: "/documentation",
+      uiConfig: {
+        docExpansion: "full",
+        deepLinking: false,
+      },
+      uiHooks: {
+        onRequest: function (request, reply, next) {
+          next();
+        },
+        preHandler: function (request, reply, next) {
+          next();
+        },
+      },
+      staticCSP: true,
+      transformStaticCSP: (header) => header,
+      transformSpecification: (swaggerObject, request, reply) => {
+        return swaggerObject;
+      },
+      transformSpecificationClone: true,
+    });
   }
-}
 
-(async () => {
+  // Register routes dynamically
+  server.register((serverInstance, options, done) => {
+    for (const [apiVersion, routeGroup] of Object.entries(routes)) {
+      for (const [routeName, routeObj] of Object.entries(routeGroup)) {
+        const routeURL = `/${apiVersion}/${routeName}`;
+  
+        serverInstance.route({
+          method: routeObj.type,
+          url: routeURL,
+          handler: routeObj.func,
+          schema: routeObj.schema
+        });
+  
+        server.log.info(`Registered route: ${routeURL}`);
+      }
+    }
+    done();
+  })
+
   await server.ready();
 
-  if (!process.env.PRODUCTION) {
-    server.swagger();
+  if (process.env.DEV_MODE) {
+    
     console.log("Swagger available at http://localhost:8080/documentation");
   }
 
