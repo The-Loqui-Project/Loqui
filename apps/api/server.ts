@@ -20,8 +20,6 @@ const server: FastifyInstance = fastify({
   disableRequestLogging: true,
 });
 
-console.log(process.env.MODRINTH_CLIENT_SECRET!);
-
 // Register CORS
 server.register(cors);
 
@@ -73,7 +71,7 @@ if (process.env.DEV_MODE) {
 server.register((serverInstance, options, done) => {
   for (const [apiVersion, routeGroup] of Object.entries(routes)) {
     for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-      const routeURL = `/${apiVersion}/${routeName}`;
+      const routeURL = `/${apiVersion}/${routeObj.route}`;
 
       serverInstance.route({
         method: routeObj.type,
