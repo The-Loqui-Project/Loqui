@@ -65,7 +65,7 @@ import fastifySwaggerUi from "@fastify/swagger-ui";
   server.register((serverInstance, options, done) => {
     for (const [apiVersion, routeGroup] of Object.entries(routes)) {
       for (const [routeName, routeObj] of Object.entries(routeGroup)) {
-        const routeURL = `/${apiVersion}/${routeName}`;
+        const routeURL = `/${apiVersion}${routeObj.route}`;
 
         serverInstance.route({
           method: routeObj.type,

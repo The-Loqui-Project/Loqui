@@ -2,6 +2,7 @@ import APIRoute from "../../route";
 
 export default {
   type: "GET",
+  route: "/oauth/configuration",
   schema: {
     description: "Get's the current Modrinth OAuth2 configuration.",
     response: {
