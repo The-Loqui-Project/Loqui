@@ -22,13 +22,16 @@ export default {
       },
     },
   },
-  func: async (request: any, response: { send: (arg0: { scopes: string; }) => void; }) => {
+  func: async (
+    request: any,
+    response: { send: (arg0: { scopes: string; client_id: string }) => void },
+  ) => {
     // REMINDER: Update this when changing the scopes used by Loqui.
     const scopes = ["USER_READ", "PROJECT_READ", "VERSION_READ"];
 
-        response.send({
-            scopes: scopes.join("+"),
-            client_id: "x4bdXz3R"
-        });
-    }
-} as APIRoute
+    response.send({
+      scopes: scopes.join("+"),
+      client_id: "x4bdXz3R",
+    });
+  },
+} as APIRoute;
