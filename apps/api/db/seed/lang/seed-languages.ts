@@ -16,10 +16,13 @@ export async function seedLanguages() {
 
     // Insert each language from the JSON data into the database
     for (const lang of languages) {
+      console.log(
+        `Seeding language: ${lang.name}, ${lang.native_name}, ${lang.code}`,
+      );
       await db.insert(language).values({
         code: lang.code,
         name: lang.name,
-        nativeName: lang.nativeName,
+        nativeName: lang.native_name,
       });
     }
 
