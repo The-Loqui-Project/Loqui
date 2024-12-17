@@ -3,10 +3,7 @@ import fastify, { FastifyInstance } from "fastify";
 import routes from "./routes";
 import swagger from "@fastify/swagger";
 import { seed } from "./db/seed/seed";
-
-import dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);

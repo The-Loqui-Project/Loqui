@@ -11,11 +11,13 @@ export async function seedLanguages() {
   try {
     // Read data from the data.json file
     const dataPath = path.resolve(__dirname, "data/data.json");
+    console.log(dataPath);
     const rawData = fs.readFileSync(dataPath, "utf-8");
     const languages = JSON.parse(rawData);
 
     // Insert each language from the JSON data into the database
     for (const lang of languages) {
+      console.log(lang);
       await db.insert(language).values({
         code: lang.code,
         name: lang.name,
