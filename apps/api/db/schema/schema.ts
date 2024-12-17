@@ -150,8 +150,26 @@ export const proposalRelations = relations(proposal, ({ one }) => ({
     }),
 }));
 
-
 /*
 Examples from:
 - https://github.com/DaFuqs/Spectrum/blob/1.20.1-aria-for-painters/src/main/resources/assets/spectrum/lang
  */
+
+export const schema = {
+    user,
+    project,
+    version,
+    versionToItem,
+    item,
+    language,
+    translation,
+    proposal,
+    userRelations,
+    projectRelations,
+    versionRelations,
+    versionToItemRelations,
+    itemRelations,
+    languageRelations,
+    translationRelations,
+    proposalRelations,
+}
