@@ -18,7 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function AuthPage() {
+export default async function AuthPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -65,6 +65,8 @@ export default function AuthPage() {
       "token_expiration",
       new Date(Date.now() + expiration * 1000).toUTCString(),
     );
+
+    router.push("/");
   }
 
   useEffect(() => {
