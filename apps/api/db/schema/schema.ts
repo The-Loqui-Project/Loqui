@@ -44,6 +44,12 @@ export const item = pgTable("item", {
     value: text("value").notNull(),                                         // Value of the translation item in en_us (e.g. "Citrine Ore")
 });
 
+// user <-> language many-to-many relationship (approved user languages)
+export const approvedUserLanguages = pgTable('approved_user_languages', {
+    userId: varchar("user_id", {length: 255}).notNull(),                    // -> User id
+    languageCode: varchar("language_code", {length: 10}).notNull(),         // -> Language code
+}, (t) => [primaryKey({columns: [t.userId, t.languageCode]})]);
+
 // A language that translations can be in
 export const language = pgTable("language", {
     code: varchar("code", {length: 10}).notNull().unique(),                 // Language code (e.g. "de_de")
@@ -82,6 +88,7 @@ export const proposal = pgTable("proposal", {
 export const userRelations = relations(user, ({ many }) => ({
     translations: many(translation),
     proposals: many(proposal),
+    approvedUserLanguages: many(approvedUserLanguages)
 }));
 
 // Project relations
@@ -110,6 +117,18 @@ export const versionToItemRelations = relations(versionToItem, ({ one }) => ({
     }),
 }));
 
+// approvedUserLanguages relations (junction table)
+export const approvedUserLanguagesRelations = relations(approvedUserLanguages, ({ one }) => ({
+    user: one(user, {
+        fields: [approvedUserLanguages.userId],
+        references: [user.id],
+    }),
+    language: one(language, {
+        fields: [approvedUserLanguages.languageCode],
+        references: [language.code],
+    }),
+}));
+
 // Item relations
 export const itemRelations = relations(item, ({ many }) => ({
     translations: many(translation),
@@ -119,6 +138,7 @@ export const itemRelations = relations(item, ({ many }) => ({
 // Language relations
 export const languageRelations = relations(language, ({ many }) => ({
     translations: many(translation),
+    approvedUserLanguages: many(approvedUserLanguages),
 }));
 
 // Translation relations
@@ -162,6 +182,7 @@ export const schema = {
     versionToItem,
     item,
     language,
+    approvedUserLanguages,
     translation,
     proposal,
     userRelations,
@@ -172,4 +193,5 @@ export const schema = {
     languageRelations,
     translationRelations,
     proposalRelations,
+    approvedUserLanguagesRelations,
 }
