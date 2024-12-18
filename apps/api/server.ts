@@ -33,11 +33,11 @@ if (process.env.DEV_MODE) {
         version: "v1",
       },
       host: "localhost:8080",
-      schemes: ["http"],
+      schemes: ["http", "https"],
       securityDefinitions: {
         modrinthToken: {
           type: "apiKey",
-          name: "modrinthToken",
+          name: "Authorization",
           in: "header",
         },
       },
