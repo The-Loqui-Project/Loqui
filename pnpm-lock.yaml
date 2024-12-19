@@ -32,6 +32,9 @@ importers:
       '@fastify/swagger-ui':
         specifier: ^5.2.0
         version: 5.2.0
+      adm-zip:
+        specifier: ^0.5.16
+        version: 0.5.16
       axios:
         specifier: ^1.7.9
         version: 1.7.9
@@ -54,6 +57,9 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
     devDependencies:
+      '@types/adm-zip':
+        specifier: ^0.5.7
+        version: 0.5.7
       '@types/node':
         specifier: ^22.10.2
         version: 22.10.2
@@ -1017,6 +1023,9 @@ packages:
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
 
+  '@types/adm-zip@0.5.7':
+    resolution: {integrity: sha512-DNEs/QvmyRLurdQPChqq0Md4zGvPwHerAJYWk9l2jCbD1VPpnzRJorOdiq4zsw09NFbYnhfsoEhWtxIzXpn2yw==}
+
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
@@ -1115,6 +1124,10 @@ packages:
     resolution: {integrity: sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  adm-zip@0.5.16:
+    resolution: {integrity: sha512-TGw5yVi4saajsSEgz25grObGHEUaDrniwvA2qwSC060KfqGPdglhvPMA2lPIoxs3PQIItj2iag35fONcQqgUaQ==}
+    engines: {node: '>=12.0'}
 
   ajv-formats@3.0.1:
     resolution: {integrity: sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==}
@@ -3433,6 +3446,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@types/adm-zip@0.5.7':
+    dependencies:
+      '@types/node': 22.10.2
+
   '@types/estree@1.0.6': {}
 
   '@types/json-schema@7.0.15': {}
@@ -3551,6 +3568,8 @@ snapshots:
       acorn: 8.14.0
 
   acorn@8.14.0: {}
+
+  adm-zip@0.5.16: {}
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:

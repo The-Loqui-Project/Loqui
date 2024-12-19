@@ -103,7 +103,12 @@ export default {
 
       const existingIDs = new Set(existingProjects.map((p) => p.id));
       const newProjects = projectsInfos
-        .filter((p) => !existingIDs.has(p.id))
+        .filter(
+          (p) =>
+            !existingIDs.has(p.id) &&
+            // TODO: In future, add support for resource packs and datapacks.
+            p.project_type === "mod",
+        )
         .map((p) => ({
           id: p.id,
           optIn: new Date(),
