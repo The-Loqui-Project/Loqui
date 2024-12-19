@@ -4,7 +4,9 @@ import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { seed } from "./db/seed/seed";
+import { gracefulShutdown } from "./util/jobs";
 
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
@@ -18,10 +20,23 @@ if (process.env.DATABASE_SEEDING === "true") {
 const server: FastifyInstance = fastify({
   logger: true,
   disableRequestLogging: true,
+  keepAliveTimeout: 30000,
 });
 
 // Register CORS
 server.register(cors);
+
+// Register graceful shutdown.
+process.on("SIGTERM", (signal) => gracefulShutdown(signal, server));
+process.on("SIGINT", (signal) => gracefulShutdown(signal, server));
+process.on("uncaughtException", (err) => {
+  server.log.error(err, "Uncaught Exception");
+  gracefulShutdown("uncaughtException", server);
+});
+process.on("unhandledRejection", (reason, promise) => {
+  server.log.error({ reason, promise }, "Unhandled Rejection");
+  gracefulShutdown("unhandledRejection", server);
+});
 
 if (process.env.DEV_MODE) {
   server.register(swagger, {
