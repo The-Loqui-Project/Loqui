@@ -4,9 +4,8 @@ import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import fastifyGracefulShutdown from "fastify-graceful-shutdown";
 import { seed } from "./db/seed/seed";
-import { gracefulShutdown } from "./util/jobs";
+import { gracefulShutdown, setupJobs } from "./util/jobs";
 
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
@@ -37,6 +36,9 @@ process.on("unhandledRejection", (reason, promise) => {
   server.log.error({ reason, promise }, "Unhandled Rejection");
   gracefulShutdown("unhandledRejection", server);
 });
+
+// Setup cron jobs.
+await setupJobs();
 
 if (process.env.DEV_MODE) {
   server.register(swagger, {

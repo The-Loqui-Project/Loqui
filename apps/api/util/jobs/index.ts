@@ -1,4 +1,16 @@
-export async function setupJobs() {}
+import { CronJob } from "cron";
+import { checkProjectsForNewVersions, checkProjectsValid } from "./projects";
+
+export async function setupJobs() {
+  const jobs: CronJob[] = [
+    // Every day at 3am eastern time (7am UTC)
+    new CronJob("0 7 * * *", checkProjectsValid),
+    // Every 2 days at 2am eastern time (6:00am UTC)
+    new CronJob("0 6 * * *", checkProjectsForNewVersions),
+  ];
+
+  jobs.map((job) => job.start());
+}
 
 let isShuttingDown: boolean = false;
 export async function gracefulShutdown(signal: string, server: any) {

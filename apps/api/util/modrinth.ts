@@ -1,9 +1,30 @@
 import axios from "axios";
-import { ProjectVersion } from "typerinth";
+import { Project, ProjectVersion } from "typerinth";
 import db from "../db";
-import { eq, lt, gte, ne, inArray, and } from "drizzle-orm";
-import { item, project, version, versionToItem } from "../db/schema/schema";
+import { eq, inArray, and } from "drizzle-orm";
+import { item, version, versionToItem } from "../db/schema/schema";
 import downloadJarAndExtractStrings, { TranslationStrings } from "./files";
+
+export async function isProjectValid(
+  projectID: string,
+): Promise<Project | false> {
+  try {
+    // First check if the project is opt-in.
+    const projectRecord = await db.query.project.findFirst({
+      where: (project, { eq }) => eq(project.id, projectID),
+    });
+
+    if (projectRecord?.optIn == null) return false;
+
+    const projectVersions: Project = (
+      await axios(`https://api.modrinth.com/v2/project/${projectID}`)
+    ).data;
+
+    return projectVersions;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Check for any new versions not present in Loqui's database, and extract strings/update existing ones where needed.
@@ -12,6 +33,12 @@ import downloadJarAndExtractStrings, { TranslationStrings } from "./files";
 export default async function checkForNewVersions(
   projectID: string,
 ): Promise<void> {
+  const project = await isProjectValid(projectID);
+
+  if (project === false) {
+    return;
+  }
+
   // https://docs.modrinth.com/api/operations/getprojectversions/
   const projectVersions: ProjectVersion[] = (
     await axios(`https://api.modrinth.com/v2/project/${projectID}/version`)
