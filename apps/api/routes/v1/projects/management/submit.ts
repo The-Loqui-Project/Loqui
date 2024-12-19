@@ -3,6 +3,7 @@ import validateModrinthToken from "../../../../util/auth";
 import axios from "axios";
 import db from "../../../../db";
 import { project } from "../../../../db/schema/schema";
+import { Project } from "typerinth";
 
 export default {
   type: "POST",
@@ -82,15 +83,13 @@ export default {
       const idsString = '["' + projects.join('","') + '"]';
 
       // https://docs.modrinth.com/api/operations/getprojects/
-      const projectInformationResponse = await axios(
-        "https://api.modrinth.com/v2/projects",
-        {
+      const projectsInfos: Project[] = (
+        await axios("https://api.modrinth.com/v2/projects", {
           params: {
             ids: idsString,
           },
-        },
-      );
-      const projectsInfos: any[] = projectInformationResponse.data;
+        })
+      ).data;
 
       const fetchedProjectIDs: string[] = [];
       const projectIds = projectsInfos.map((p) => p.id);
