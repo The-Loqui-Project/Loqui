@@ -4,6 +4,7 @@ import axios from "axios";
 import db from "../../../../db";
 import { project } from "../../../../db/schema/schema";
 import { Project } from "typerinth";
+import checkForNewVersions from "../../../../util/modrinth";
 
 export default {
   type: "POST",
@@ -126,17 +127,18 @@ export default {
       if (invalidIDs.length > 0) {
         response.status(206).send({
           message:
-            "We are processing some submitted projects. Come back later for a status update.",
+            "We are processing some submitted projects. Some project IDs were invalid.",
           failedProjects: invalidIDs,
         });
       } else {
         response.status(201).send({
-          message:
-            "We are processing the submitted projects. Come back later for a status update.",
+          message: "We are processing the submitted projects.",
         });
       }
 
-      // TODO: Trigger scraping of project versions for en_us.json files.
+      for (const project of newProjects) {
+        await checkForNewVersions(project.id);
+      }
     } catch (e) {
       request.log.error(
         "Request failed, unable to communicate with Modrinth API.",
