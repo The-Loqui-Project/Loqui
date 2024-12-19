@@ -1,5 +1,8 @@
 import APIRoute from "../../../route";
 import validateModrinthToken from "../../../../util/auth";
+import axios from "axios";
+import db from "../../../../db";
+import { project } from "../../../../db/schema/schema";
 
 export default {
   type: "POST",
@@ -63,7 +66,6 @@ export default {
   },
   func: async (request, response) => {
     const authorization = request.headers.authorization;
-    console.log(authorization);
     const tokenValid = await validateModrinthToken(
       authorization ?? "undefined_token",
     );
@@ -77,9 +79,45 @@ export default {
 
     try {
       const projects = request.body as string[];
+      const idsString = '["' + projects.join('","') + '"]';
 
-      console.log("Found projects");
-      console.log(projects);
+      // https://docs.modrinth.com/api/operations/getprojects/
+      const projectInformationResponse = await axios(
+        "https://api.modrinth.com/v2/projects",
+        {
+          params: {
+            ids: idsString,
+          },
+        },
+      );
+      const projectsInfos: any[] = projectInformationResponse.data;
+
+      const fetchedProjectIDs: string[] = [];
+      for (const projectInfo of projectsInfos) {
+        await db.insert(project).values({
+          id: projectInfo.id,
+          optIn: new Date(),
+        });
+        fetchedProjectIDs.push(projectInfo.id);
+      }
+
+      const invalidIDs = projects.filter(
+        (id) => !fetchedProjectIDs.includes(id),
+      );
+      if (invalidIDs.length > 0) {
+        response.status(206).send({
+          message:
+            "We are processing some submitted projects. Come back later for a status update.",
+          failedProjects: invalidIDs,
+        });
+      } else {
+        response.status(201).send({
+          message:
+            "We are processing the submitted projects. Come back later for a status update.",
+        });
+      }
+
+      // TODO: Trigger scraping of project versions for en_us.json files.
     } catch (e) {
       request.log.error(
         "Request failed, unable to communicate with Modrinth API.",
