@@ -93,17 +93,32 @@ export default {
       const projectsInfos: any[] = projectInformationResponse.data;
 
       const fetchedProjectIDs: string[] = [];
-      for (const projectInfo of projectsInfos) {
-        await db.insert(project).values({
-          id: projectInfo.id,
+      const projectIds = projectsInfos.map((p) => p.id);
+      const existingProjects = await db.query.project.findMany({
+        where: (project, { inArray }) => inArray(project.id, projectIds),
+        columns: {
+          id: true,
+          optIn: false,
+        },
+      });
+
+      const existingIDs = new Set(existingProjects.map((p) => p.id));
+      const newProjects = projectsInfos
+        .filter((p) => !existingIDs.has(p.id))
+        .map((p) => ({
+          id: p.id,
           optIn: new Date(),
-        });
-        fetchedProjectIDs.push(projectInfo.id);
+        }));
+
+      if (newProjects.length > 0) {
+        await db.insert(project).values(newProjects);
+        fetchedProjectIDs.push(...newProjects.map((p) => p.id));
       }
 
       const invalidIDs = projects.filter(
         (id) => !fetchedProjectIDs.includes(id),
       );
+
       if (invalidIDs.length > 0) {
         response.status(206).send({
           message:
