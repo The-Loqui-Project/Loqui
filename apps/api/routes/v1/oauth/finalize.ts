@@ -3,6 +3,7 @@ import axios from "axios";
 import db from "../../../db";
 import { URLSearchParams } from "url";
 import { user } from "../../../db/schema/schema";
+import { User } from "typerinth/dist/interfaces/users";
 
 export default {
   type: "POST",
@@ -91,7 +92,7 @@ export default {
       ).data;
 
       // Get user's modrinth ID from modrinthResponse access_token
-      const userInformation: any = (
+      const userInformation: User = (
         await axios.get("https://api.modrinth.com/v2/user", {
           headers: {
             Authorization: `${modrinthResponse.token_type} ${modrinthResponse.access_token}`,
@@ -99,10 +100,7 @@ export default {
         })
       ).data;
 
-      console.log(userInformation);
-
       const userID = userInformation.id;
-
       const userResult = await db.query.user.findFirst({
         where: (users, { eq }) => eq(users.id, userID),
       });
