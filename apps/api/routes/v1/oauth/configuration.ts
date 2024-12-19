@@ -20,6 +20,13 @@ export default {
           },
         },
       },
+      400: {
+        description: "Request failed.",
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
     },
   },
   func: async (request, response) => {
