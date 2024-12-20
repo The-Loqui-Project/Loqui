@@ -5,10 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
-export default function OptInBenefitsPage() {
-  var params = useSearchParams();
-  var PROJECT_NAME = params.get("project");
+export default function Page() {
+  return (
+    <Suspense>
+      <OptInBenefitsPage />
+    </Suspense>
+  );
+}
+
+function OptInBenefitsPage() {
+  const [checked, setChecked] = useState(false);
+  const params = useSearchParams();
+  const PROJECT_NAME = params.get("project");
   return (
     <div className="w-svw h-svh flex">
       <Card className="m-auto p-8">
@@ -18,15 +28,20 @@ export default function OptInBenefitsPage() {
           <p>
             By checking this box, you grant permission for Loqui to download and
             extract the necessary files from the versions of your Modrinth
-            project ('{PROJECT_NAME}'). You also authorize Loqui to scrape,
-            store, and process all en_us.json translation files included in your
-            project ('{PROJECT_NAME}'), regardless of their license. You affirm
-            that you have the necessary rights to grant this permission for all
-            files included in your project ('{PROJECT_NAME}').
+            project (&lsquo;{PROJECT_NAME}&rsquo;). You also authorize Loqui to
+            scrape, store, and process all en_us.json translation files included
+            in your project (&lsquo;{PROJECT_NAME}&rsquo;), regardless of their
+            license. You affirm that you have the necessary rights to grant this
+            permission for all files included in your project (&lsquo;
+            {PROJECT_NAME}&rsquo;).
           </p>
 
           <div className="items-top flex space-x-2">
-            <Checkbox id="terms" />
+            <Checkbox
+              id="terms"
+              checked={checked}
+              onClick={() => setChecked(!checked)}
+            />
             <div className="grid gap-1.5 leading-none">
               <label
                 htmlFor="terms"
@@ -38,7 +53,7 @@ export default function OptInBenefitsPage() {
           </div>
 
           <Link href="/optin/confirm" className="mx-auto">
-            <Button>Continue</Button>
+            <Button disabled={!checked}>Continue</Button>
           </Link>
         </div>
       </Card>
