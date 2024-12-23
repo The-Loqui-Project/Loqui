@@ -1,8 +1,7 @@
-import { request } from "http";
 import APIRoute from "../../../route";
 import db from "../../../../db";
-import { item, project, project } from "../../../../db/schema/schema";
-import { eq, inArray } from "drizzle-orm";
+import { item } from "../../../../db/schema/schema";
+import { inArray } from "drizzle-orm";
 
 export default {
   type: "GET",
