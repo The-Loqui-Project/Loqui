@@ -1,12 +1,13 @@
 import APIRoute from "./route";
 
-/// API v1
+// API v1
 // OAuth
 import V1_OAuthFinalize from "./v1/oauth/finalize";
 import V1_OAuthConfiguration from "./v1/oauth/configuration";
 
 // Projects
-import V1_ProjectManagementSubmit from "./v1/projects/management/submit";
+import V1_ProjectManagementOptIn from "./v1/projects/management/opt-in";
+import V1_ProjectManagementOptOut from "./v1/projects/management/opt-out";
 import V1_ProjectGetStrings from "./v1/projects/[id]/strings";
 import V1_ProjectGetString from "./v1/projects/[id]/string/[id]";
 import V1_ProjectReport from "./v1/projects/[id]/report";
@@ -24,7 +25,8 @@ const routes: RouteStorage = {
     oauth_configuration: V1_OAuthConfiguration,
 
     // Projects
-    project_management_submit: V1_ProjectManagementSubmit,
+    project_management_opt_in: V1_ProjectManagementOptIn,
+    project_management_opt_out: V1_ProjectManagementOptOut,
     project_get_strings: V1_ProjectGetStrings,
     project_get_string: V1_ProjectGetString,
     project_report: V1_ProjectReport,
