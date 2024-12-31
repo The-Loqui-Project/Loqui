@@ -11,6 +11,7 @@ import V1_ProjectManagementOptOut from "./v1/projects/management/opt-out";
 import V1_ProjectGetStrings from "./v1/projects/[id]/strings";
 import V1_ProjectGetString from "./v1/projects/[id]/string/[id]";
 import V1_ProjectReport from "./v1/projects/[id]/report";
+import V1_ProjectStatistics from "./v1/projects/[id]/statistics";
 
 interface RouteStorage {
   [apiVersion: string]: {
@@ -30,6 +31,7 @@ const routes: RouteStorage = {
     project_get_strings: V1_ProjectGetStrings,
     project_get_string: V1_ProjectGetString,
     project_report: V1_ProjectReport,
+    project_statistics: V1_ProjectStatistics,
   },
 };
 
