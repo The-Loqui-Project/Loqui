@@ -49,6 +49,19 @@ if (process.env.DEV_MODE) {
         description: "Documentation on Loqui API routes.",
         version: "v1",
       },
+      tags: [
+        { name: "auth", description: "Routes related to user authentication." },
+        {
+          name: "projects",
+          description: "Routes related to project management.",
+        },
+        { name: "strings", description: "Routes related to project strings." },
+        {
+          name: "proposals",
+          description: "Routes related to string proposals.",
+        },
+        { name: "moderation", description: "Routes related to moderation." },
+      ],
       host: "localhost:8080",
       schemes: ["http", "https"],
       securityDefinitions: {

@@ -9,6 +9,7 @@ export default {
   type: "POST",
   route: "/oauth/finalize",
   schema: {
+    tags: ["auth"],
     description:
       "Finalizes the OAuth2 process with Modrinth by creating user records in the Loqui database. Handles token generation as well through the Modrinth API.",
     body: {

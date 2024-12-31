@@ -7,7 +7,9 @@ export default {
   type: "GET",
   route: "/project/:id/string/:string_id",
   schema: {
-    description: "Get details on a single string in a project.",
+    description:
+      "Get details on a single string in a project including it's current proposals.",
+    tags: ["strings"],
     response: {
       200: {
         type: "object",
@@ -28,6 +30,7 @@ export default {
                 value: { type: "string" },
                 note: { type: "string" },
                 status: { type: "string" },
+                locale: { type: "string" },
                 user: {
                   type: "object",
                   properties: {
@@ -125,6 +128,19 @@ export default {
       where: (t, { eq }) => eq(t.itemId, stringId),
     });
 
+    // Map of foundTranslation by its id.
+    const translationMap = foundTranslations.reduce(
+      (map, t) => map.set(t.id, t),
+      new Map<
+        number,
+        {
+          id: number;
+          languageCode: string;
+          userId?: string | null;
+        }
+      >(),
+    );
+
     // Fetch all proposals linked to translations of this item
     const translationIds = foundTranslations.map((t) => t.id);
     const foundProposals = await db.query.proposal.findMany({
@@ -140,6 +156,7 @@ export default {
       value: p.value,
       note: p.note,
       status: p.status,
+      locale: translationMap.get(p.translationId)?.languageCode ?? "unknown",
       user: {
         id: p.user?.id,
         role: p.user?.role,

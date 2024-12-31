@@ -5,6 +5,7 @@ export default {
   route: "/oauth/configuration",
   schema: {
     description: "Get's the current Modrinth OAuth2 configuration.",
+    tags: ["auth"],
     response: {
       200: {
         type: "object",
