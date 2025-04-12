@@ -6,6 +6,7 @@ import swagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import { seed } from "./db/seed/seed";
 import { gracefulShutdown, setupJobs } from "./util/jobs";
+import axios from "axios";
 
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
@@ -115,6 +116,9 @@ server.register((serverInstance, options, done) => {
   }
   done();
 });
+
+axios.defaults.headers.common["User-Agent"] =
+  "The-Loqui-Project/Loqui/backend (Axios) (hendersoncal117@gmail.com)";
 
 await server.ready();
 
