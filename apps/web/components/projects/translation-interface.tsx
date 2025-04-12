@@ -9,6 +9,7 @@ import {
   getStringProposals,
   createProposal,
   voteOnProposal,
+  createTranslation,
 } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -149,12 +150,24 @@ export default function TranslationInterface({
 
       // Get string details to find translation ID
       const details = await getStringDetails(projectId, stringId);
-      const translation = details.translations?.find(
+      let translation = details.translations?.find(
         (t: any) => t.languageCode === selectedLanguage,
       );
 
+      // If no translation record exists for this language, create one
       if (!translation) {
-        throw new Error("No translation found for selected language");
+        console.log(
+          `No translation found for ${selectedLanguage}, creating one...`,
+        );
+        const newTranslation = await createTranslation(
+          stringId,
+          selectedLanguage,
+          token.toString(),
+        );
+        translation = {
+          id: newTranslation.id,
+          languageCode: selectedLanguage,
+        };
       }
 
       // Create proposal

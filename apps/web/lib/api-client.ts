@@ -443,6 +443,39 @@ export async function deleteProposal(
 }
 
 /**
+ * Create a new translation record
+ * @param itemId ID of the string
+ * @param languageCode Language code
+ * @param token Modrinth authentication token
+ */
+export async function createTranslation(
+  itemId: string,
+  languageCode: string,
+  token: string,
+): Promise<{ id: number }> {
+  const response = await fetch(`${API_BASE_URL}v1/translations/create`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      itemId,
+      languageCode,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to create translation: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
  * Get project details from Modrinth API
  * @param projectId ID or slug of the project
  */
