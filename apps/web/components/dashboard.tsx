@@ -259,7 +259,7 @@ export function Dashboard() {
                       },
                     ]}
                     buttonText="Start Translating"
-                    buttonHref={`/translate/${project.slug}`}
+                    buttonHref={`/project/${project.id}`}
                     imageUrl={project.icon_url}
                   />
                 ))}

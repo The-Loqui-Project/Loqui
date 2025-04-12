@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   getProjectProgress,
   getProjectStrings,
   getLanguages,
-  Language,
-  StringItem,
-  TranslationProgress,
+  getProjectDetails,
+  type Language,
+  type StringItem,
+  type TranslationProgress,
 } from "@/lib/api-client";
 import { Loader2 } from "lucide-react";
 import {
@@ -19,10 +20,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import LanguageProgressCard from "@/components/projects/language-progress-card";
 import ProjectStringsList from "@/components/projects/project-strings-list";
+import ProjectInfoSidebar from "@/components/projects/project-info-sidebar";
+import LanguageSearch from "@/components/projects/language-search";
 
-export default function ProjectPage({ params }: { params: { id: string } }) {
+export default function ProjectPage() {
+  const params = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<TranslationProgress>({});
@@ -30,9 +33,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [strings, setStrings] = useState<StringItem[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [view, setView] = useState<"languages" | "strings">("languages");
+  const [projectInfo, setProjectInfo] = useState<any>(null);
   const router = useRouter();
 
-  const projectId = params.id;
+  const projectId = params.id as string;
 
   useEffect(() => {
     async function fetchData() {
@@ -40,18 +44,20 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         setLoading(true);
         setError(null);
 
-        const [progressData, languagesData] = await Promise.all([
+        const [progressData, languagesData, projectData] = await Promise.all([
           getProjectProgress(projectId),
           getLanguages(),
+          getProjectDetails(projectId),
         ]);
 
         setProgress(progressData);
         setLanguages(languagesData);
+        setProjectInfo(projectData);
 
         // Default to English (en_us) if available, otherwise first language
         const defaultLanguage =
           languagesData.find((lang) => lang.code === "en_us")?.code ||
-          (languagesData.length > 0 ? languagesData[0].code : null);
+          (languagesData.length > 0 ? languagesData[0]!.code : null);
         setSelectedLanguage(defaultLanguage);
       } catch (err) {
         console.error("Error fetching project data:", err);
@@ -66,9 +72,10 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     fetchData();
   }, [projectId]);
 
-  const loadStrings = async () => {
+  const loadStrings = async (languageCode: string) => {
     try {
       setLoading(true);
+      setSelectedLanguage(languageCode);
       const stringsData = await getProjectStrings(projectId);
       setStrings(stringsData);
       setView("strings");
@@ -113,53 +120,40 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container py-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">{projectId}</h1>
-        <p className="text-muted-foreground">Translation Project</p>
-      </div>
-
-      {view === "languages" ? (
-        <>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {languages
-              .filter((lang) => lang.code !== "en_us") // Exclude English source
-              .map((language) => (
-                <LanguageProgressCard
-                  key={language.code}
-                  language={language}
-                  progress={progress[language.code]}
-                  onClick={() => {
-                    setSelectedLanguage(language.code);
-                    loadStrings();
-                  }}
-                />
-              ))}
-          </div>
-        </>
-      ) : (
-        <div>
-          <div className="mb-4 flex items-center justify-between">
-            <Button variant="outline" onClick={backToLanguages}>
-              Back to Languages
-            </Button>
-            {selectedLanguage && (
-              <div>
-                Selected Language:{" "}
-                <span className="font-medium">
-                  {languages.find((l) => l.code === selectedLanguage)?.name ||
-                    selectedLanguage}
-                </span>
-              </div>
-            )}
-          </div>
-          <ProjectStringsList
-            projectId={projectId}
-            strings={strings}
-            selectedLanguage={selectedLanguage}
-          />
+    <div className="container py-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <ProjectInfoSidebar projectInfo={projectInfo} />
         </div>
-      )}
+
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          {view === "languages" ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Languages</CardTitle>
+                <CardDescription>
+                  Select a language to view and edit translations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LanguageSearch
+                  languages={languages}
+                  progress={progress}
+                  onSelectLanguage={loadStrings}
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <ProjectStringsList
+              projectId={projectId}
+              strings={strings}
+              selectedLanguage={selectedLanguage}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

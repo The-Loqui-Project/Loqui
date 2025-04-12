@@ -42,7 +42,7 @@ export interface ProposalItem {
 }
 
 export interface StringItem {
-  id: number;
+  id: string;
   key: string;
   value: string;
   appears_in: string[];
@@ -268,7 +268,7 @@ export async function getProjectStrings(
  */
 export async function getStringDetails(
   projectId: string,
-  stringId: number,
+  stringId: string,
 ): Promise<any> {
   const response = await fetch(
     `${API_BASE_URL}v1/project/${projectId}/string/${stringId}`,
@@ -287,10 +287,10 @@ export async function getStringDetails(
  * @param languageCode Optional language code to filter proposals by
  */
 export async function getStringProposals(
-  stringId: number,
+  stringId: string,
   languageCode?: string,
 ): Promise<{
-  original: { id: number; key: string; value: string };
+  original: { id: string; key: string; value: string };
   proposals: ProposalItem[];
 }> {
   const url = languageCode
@@ -390,7 +390,7 @@ export async function editProposal(
  * @param token Modrinth authentication token
  */
 export async function voteOnProposal(
-  proposalId: number,
+  proposalId: string,
   voteType: "up" | "down" | "none",
   token: string,
 ): Promise<{ message: string; newScore: number }> {
@@ -437,6 +437,22 @@ export async function deleteProposal(
     throw new Error(
       error.message || `Failed to delete proposal: ${response.status}`,
     );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get project details from Modrinth API
+ * @param projectId ID or slug of the project
+ */
+export async function getProjectDetails(projectId: string): Promise<unknown> {
+  const response = await fetch(
+    `https://api.modrinth.com/v2/project/${projectId}`,
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch project details: ${response.status}`);
   }
 
   return await response.json();

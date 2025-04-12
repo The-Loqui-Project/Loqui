@@ -26,15 +26,7 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar isAuthenticated={isAuthenticated} />
-
-      {isAuthenticated ? <Dashboard /> : <UnauthenticatedView />}
-
-      <Footer />
-    </div>
-  );
+  return isAuthenticated ? <Dashboard /> : <UnauthenticatedView />;
 }
 
 function UnauthenticatedView() {
