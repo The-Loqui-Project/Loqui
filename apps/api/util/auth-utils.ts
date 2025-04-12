@@ -1,9 +1,8 @@
 // filepath: /workspaces/Loqui/apps/api/util/auth-utils.ts
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import validateModrinthToken from "./auth";
 import db from "../db";
 import { user } from "../db/schema/schema";
-import { eq } from "drizzle-orm";
 import { User } from "typerinth/dist/interfaces/users";
 
 // User roles in hierarchy (low to high)

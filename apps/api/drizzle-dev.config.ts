@@ -6,6 +6,6 @@ export default defineConfig({
   schema: "./db/schema/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: "postgres://postgres:loqui_test_db-password@localhost:5432/postgres",
+    url: "postgres://postgres:loqui_test_db-password@localhost:3984/postgres",
   },
 });

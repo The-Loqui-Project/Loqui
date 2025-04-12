@@ -103,8 +103,8 @@ export const proposalReport = pgTable('proposal_report', {
     reporterId: varchar("reporter_id", { length: 255 }).notNull()          // -> User id of reporter
         .references(() => user.id, { onDelete: 'cascade' }),
     reason: text("reason").notNull(),                                      // Reason for report
-    priority: reportPriorityEnum("priority").notNull().default("medium"),   // Priority of the report
-    status: reportStatusEnum("status").notNull().default("open"),           // Status of the report
+    priority: reportPriorityEnum("priority").notNull().default("medium"),  // Priority of the report
+    status: reportStatusEnum("status").notNull().default("open"),          // Status of the report
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     resolvedById: varchar("resolved_by_id", { length: 255 })               // -> User id of moderator who resolved
         .references(() => user.id, { onDelete: 'set null' }),
@@ -120,9 +120,9 @@ export const userRelations = relations(user, ({ many }) => ({
     translations: many(translation),
     proposals: many(proposal),
     proposalVotes: many(proposalVote),
-    proposalReports: many(proposalReport),
+    proposalReports: many(proposalReport, { relationName: 'reporter' }),
     resolvedReports: many(proposalReport, { relationName: 'resolvedBy' }),
-    approvedUserLanguages: many(approvedUserLanguages)
+    approvedUserLanguages: many(approvedUserLanguages),
 }));
 
 // Project relations
@@ -225,10 +225,12 @@ export const proposalReportRelations = relations(proposalReport, ({ one }) => ({
         references: [proposal.id],
     }),
     reporter: one(user, {
+        relationName: 'reporter',
         fields: [proposalReport.reporterId],
         references: [user.id],
     }),
     resolvedBy: one(user, {
+        relationName: 'resolvedBy',
         fields: [proposalReport.resolvedById],
         references: [user.id],
     }),

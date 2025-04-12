@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch server.ts --clear-screen=false",
     "db:gen": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
+    "db:push": "drizzle-kit push --config=drizzle-dev.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle-dev.config.ts",
     "db:studio": "drizzle-kit studio --config=drizzle-dev.config.ts",
     "dev:test-db": "docker run --name loqui_test_db -e POSTGRES_PASSWORD=loqui_test_db-password -d -p 3984:5432 postgres",
