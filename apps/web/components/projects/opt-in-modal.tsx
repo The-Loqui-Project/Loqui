@@ -74,7 +74,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
       const result = await optInProjects(projectIds, token.toString());
 
       if (result.status === "partial") {
-        setFailedProjects(result.failedProjects);
+        setFailedProjects(result.failedProjects ?? []);
         setSuccessMessage(result.message);
       } else {
         setSuccessMessage(result.message);

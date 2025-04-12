@@ -5,6 +5,9 @@ import APIRoute from "./route";
 import V1_OAuthFinalize from "./v1/oauth/finalize";
 import V1_OAuthConfiguration from "./v1/oauth/configuration";
 
+// Languages
+import V1_LanguagesAll from "./v1/languages/all";
+
 // Projects
 import V1_ProjectManagementOptIn from "./v1/projects/management/opt-in";
 import V1_ProjectManagementOptOut from "./v1/projects/management/opt-out";
@@ -41,6 +44,9 @@ const routes: RouteStorage = {
     // Authentication
     oauth_finalize: V1_OAuthFinalize,
     oauth_configuration: V1_OAuthConfiguration,
+
+    // Languages
+    languages_all: V1_LanguagesAll,
 
     // Projects
     project_management_opt_in: V1_ProjectManagementOptIn,
