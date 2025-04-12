@@ -45,3 +45,5 @@ yarn-error.log*
 
 # Ignore seeding generation input data files
 seeding-data-input.txt
+
+copilot-context.txt
