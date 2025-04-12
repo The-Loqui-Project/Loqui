@@ -3,7 +3,7 @@ import { User } from "typerinth/dist/interfaces/users";
 
 export default async function validateModrinthToken(
   token: string,
-): Promise<boolean> {
+): Promise<User | undefined> {
   // https://docs.modrinth.com/api/operations/getuserfromauth/
   try {
     const userData: User = (
@@ -15,8 +15,12 @@ export default async function validateModrinthToken(
       })
     ).data;
 
-    return userData.id != undefined;
+    if (userData.id) {
+      return userData;
+    }
+
+    return undefined;
   } catch (e) {
-    return false;
+    return undefined;
   }
 }

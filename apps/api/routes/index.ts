@@ -15,6 +15,21 @@ import V1_ProjectReport from "./v1/projects/[id]/report";
 import V1_ProjectsAll from "./v1/projects/all";
 import V1_ProjectsUser from "./v1/projects/user";
 
+// Proposals
+import V1_ProposalCreate from "./v1/proposals/create";
+import V1_ProposalVote from "./v1/proposals/vote";
+import V1_ProposalApprove from "./v1/proposals/approve";
+import V1_ProposalDispute from "./v1/proposals/dispute";
+import V1_ProposalDelete from "./v1/proposals/delete";
+import V1_ProposalReport from "./v1/proposals/report";
+import V1_StringReport from "./v1/proposals/report-string";
+import V1_ProposalsList from "./v1/proposals/list";
+import V1_ProposalEdit from "./v1/proposals/edit";
+
+// Reports Management
+import V1_ReportsList from "./v1/proposals/reports/list";
+import V1_ReportsResolve from "./v1/proposals/reports/resolve";
+
 interface RouteStorage {
   [apiVersion: string]: {
     [routeName: string]: APIRoute;
@@ -36,6 +51,21 @@ const routes: RouteStorage = {
     project_report: V1_ProjectReport,
     projects_all: V1_ProjectsAll,
     projects_user: V1_ProjectsUser,
+
+    // Proposals
+    proposal_create: V1_ProposalCreate,
+    proposal_vote: V1_ProposalVote,
+    proposal_approve: V1_ProposalApprove,
+    proposal_dispute: V1_ProposalDispute,
+    proposal_delete: V1_ProposalDelete,
+    proposal_report: V1_ProposalReport,
+    proposal_edit: V1_ProposalEdit,
+    string_report: V1_StringReport,
+    proposals_list: V1_ProposalsList,
+
+    // Reports Management
+    reports_list: V1_ReportsList,
+    reports_resolve: V1_ReportsResolve,
   },
 };
 

@@ -6,6 +6,8 @@ import {relations} from "drizzle-orm";
 
 export const userRoleEnum = pgEnum("USER_ROLE", ["translator", "approved", "moderator", "admin"]);
 export const proposalStatusEnum = pgEnum("PROPOSAL_STATUS", ["removed", "inaccurate", "pending", "accurate"]);
+export const reportPriorityEnum = pgEnum("REPORT_PRIORITY", ["low", "medium", "high", "critical"]);
+export const reportStatusEnum = pgEnum("REPORT_STATUS", ["open", "investigating", "resolved", "invalid"]);
 
 
 ////--- Tables ---////
@@ -79,6 +81,35 @@ export const proposal = pgTable("proposal", {
     status: proposalStatusEnum("status").notNull(),                         // Status of the proposal
     translationId: integer("translation_id").notNull()                      // -> Translation id
         .references(() => translation.id, { onDelete: 'cascade' }),
+    score: integer("score").notNull().default(0),                           // Score from upvotes/downvotes
+    approvals: integer("approvals").notNull().default(0),                   // Number of approvals from approved+ roles
+});
+
+// A vote on a proposal 
+export const proposalVote = pgTable('proposal_vote', {
+    proposalId: integer("proposal_id").notNull()                           // -> Proposal id
+        .references(() => proposal.id, { onDelete: 'cascade' }),
+    userId: varchar("user_id", { length: 255 }).notNull()                  // -> User id
+        .references(() => user.id, { onDelete: 'cascade' }),
+    isUpvote: integer("is_upvote").notNull(),                              // 1 for upvote, -1 for downvote
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [primaryKey({columns: [t.proposalId, t.userId]})]);              // One vote per user per proposal
+
+// Report for a proposal
+export const proposalReport = pgTable('proposal_report', {
+    id: serial("id").notNull().primaryKey(),                               // Generic serial id
+    proposalId: integer("proposal_id").notNull()                           // -> Proposal id
+        .references(() => proposal.id, { onDelete: 'cascade' }),
+    reporterId: varchar("reporter_id", { length: 255 }).notNull()          // -> User id of reporter
+        .references(() => user.id, { onDelete: 'cascade' }),
+    reason: text("reason").notNull(),                                      // Reason for report
+    priority: reportPriorityEnum("priority").notNull().default("medium"),   // Priority of the report
+    status: reportStatusEnum("status").notNull().default("open"),           // Status of the report
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedById: varchar("resolved_by_id", { length: 255 })               // -> User id of moderator who resolved
+        .references(() => user.id, { onDelete: 'set null' }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),          // When the report was resolved
+    resolutionNote: text("resolution_note"),                               // Note about how the report was resolved
 });
 
 
@@ -88,6 +119,9 @@ export const proposal = pgTable("proposal", {
 export const userRelations = relations(user, ({ many }) => ({
     translations: many(translation),
     proposals: many(proposal),
+    proposalVotes: many(proposalVote),
+    proposalReports: many(proposalReport),
+    resolvedReports: many(proposalReport, { relationName: 'resolvedBy' }),
     approvedUserLanguages: many(approvedUserLanguages)
 }));
 
@@ -159,7 +193,7 @@ export const translationRelations = relations(translation, ({ one, many }) => ({
 }));
 
 // Proposal relations
-export const proposalRelations = relations(proposal, ({ one }) => ({
+export const proposalRelations = relations(proposal, ({ one, many }) => ({
     user: one(user, {
         fields: [proposal.userId],
         references: [user.id],
@@ -167,6 +201,36 @@ export const proposalRelations = relations(proposal, ({ one }) => ({
     translation: one(translation, {
         fields: [proposal.translationId],
         references: [translation.id],
+    }),
+    votes: many(proposalVote),
+    reports: many(proposalReport),
+}));
+
+// ProposalVote relations
+export const proposalVoteRelations = relations(proposalVote, ({ one }) => ({
+    proposal: one(proposal, {
+        fields: [proposalVote.proposalId],
+        references: [proposal.id],
+    }),
+    user: one(user, {
+        fields: [proposalVote.userId],
+        references: [user.id],
+    }),
+}));
+
+// ProposalReport relations
+export const proposalReportRelations = relations(proposalReport, ({ one }) => ({
+    proposal: one(proposal, {
+        fields: [proposalReport.proposalId],
+        references: [proposal.id],
+    }),
+    reporter: one(user, {
+        fields: [proposalReport.reporterId],
+        references: [user.id],
+    }),
+    resolvedBy: one(user, {
+        fields: [proposalReport.resolvedById],
+        references: [user.id],
     }),
 }));
 
@@ -185,6 +249,8 @@ export const schema = {
     approvedUserLanguages,
     translation,
     proposal,
+    proposalVote,
+    proposalReport,
     userRelations,
     projectRelations,
     versionRelations,
@@ -193,5 +259,7 @@ export const schema = {
     languageRelations,
     translationRelations,
     proposalRelations,
+    proposalVoteRelations,
+    proposalReportRelations,
     approvedUserLanguagesRelations,
 }
