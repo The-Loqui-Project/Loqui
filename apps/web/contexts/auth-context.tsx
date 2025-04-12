@@ -16,7 +16,7 @@ import {
 
 interface AuthUser {
   username: string;
-  // Add other user properties as needed
+  modrinthUserData?: any; // Add Modrinth user data property
 }
 
 interface AuthContextType {
@@ -64,9 +64,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // If we have a valid token, try to get user data
       const username = getCookie("username");
+      const modrinthUserDataCookie = getCookie("modrinth_user_data");
 
       if (username) {
-        setUser({ username: username.toString() });
+        // Try to parse the Modrinth user data from the cookie
+        let modrinthUserData;
+        try {
+          if (modrinthUserDataCookie) {
+            modrinthUserData = JSON.parse(modrinthUserDataCookie.toString());
+          }
+        } catch (e) {
+          console.error("Failed to parse modrinth_user_data cookie:", e);
+        }
+
+        setUser({
+          username: username.toString(),
+          modrinthUserData: modrinthUserData,
+        });
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
@@ -102,10 +116,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     setCookie("username", userData.username, cookieOptions);
 
-    // You can store additional user data in cookies if needed
-    // setCookie("user_id", userData.id, cookieOptions);
+    // Store the complete Modrinth user data in a cookie
+    setCookie("modrinth_user_data", JSON.stringify(userData), cookieOptions);
 
-    setUser({ username: userData.username });
+    // Update the user object with username and Modrinth user data
+    setUser({
+      username: userData.username,
+      modrinthUserData: userData,
+    });
     setIsAuthenticated(true);
   };
 
@@ -121,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     deleteCookie("token", cookieOptions);
     deleteCookie("token_expiration", cookieOptions);
     deleteCookie("username", cookieOptions);
+    deleteCookie("modrinth_user_data", cookieOptions); // Also delete Modrinth user data cookie
 
     // Delete any other user-related cookies
     setUser(null);
@@ -155,9 +174,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // If we have a valid token, refresh user data if needed
       const username = getCookie("username");
+      const modrinthUserDataCookie = getCookie("modrinth_user_data");
 
       if (username) {
-        setUser({ username: username.toString() });
+        // Try to parse the Modrinth user data from the cookie
+        let modrinthUserData;
+        try {
+          if (modrinthUserDataCookie) {
+            modrinthUserData = JSON.parse(modrinthUserDataCookie.toString());
+          }
+        } catch (e) {
+          console.error("Failed to parse modrinth_user_data cookie:", e);
+        }
+
+        setUser({
+          username: username.toString(),
+          modrinthUserData: modrinthUserData,
+        });
         setIsAuthenticated(true);
         setIsLoading(false);
         return true;

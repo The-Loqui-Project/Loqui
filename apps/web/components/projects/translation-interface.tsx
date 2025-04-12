@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import {
   type StringItem,
@@ -23,19 +22,23 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageSquare,
-  Save,
   Loader2,
-  X,
-  Check,
   AlertCircle,
 } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+
+// Define proper types for the proposals
+interface Proposal {
+  id: string;
+  value: string;
+  note?: string;
+  score: number;
+  status?: "accurate" | "inaccurate";
+  user?: {
+    id: string;
+  };
+}
 
 interface TranslationInterfaceProps {
   projectId: string;
@@ -50,20 +53,17 @@ export default function TranslationInterface({
   selectedLanguage,
   onBack,
 }: TranslationInterfaceProps) {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredStrings, setFilteredStrings] = useState<StringItem[]>(strings);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
-  const [proposals, setProposals] = useState<Record<string, any[]>>({});
+  const [proposals, setProposals] = useState<Record<string, Proposal[]>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
-  const [showProposals, setShowProposals] = useState<Record<string, boolean>>(
-    {},
-  );
 
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
@@ -94,7 +94,7 @@ export default function TranslationInterface({
       setLoading((prev) => ({ ...prev, [stringId]: true }));
 
       const result = await getStringProposals(stringId, selectedLanguage);
-      setProposals((prev) => ({
+      setProposals((prev: any) => ({
         ...prev,
         [stringId]: result.proposals || [],
       }));
@@ -237,7 +237,6 @@ export default function TranslationInterface({
   const handleUseProposal = (stringId: string, proposal: any) => {
     setTranslations((prev) => ({ ...prev, [stringId]: proposal.value }));
     setNotes((prev) => ({ ...prev, [stringId]: proposal.note || "" }));
-    setShowProposals((prev) => ({ ...prev, [stringId]: false }));
   };
 
   const handleNext = () => {
@@ -336,7 +335,113 @@ export default function TranslationInterface({
         </div>
       </div>
 
+      {/* Add this after the progress bar */}
+      <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
+        <p className="font-medium mb-1">Translation Process:</p>
+        <ol className="list-decimal pl-5 space-y-1">
+          <li>Review existing proposals or create a new one</li>
+          <li>Vote on proposals you agree with</li>
+          <li>
+            The proposal with the most votes will become the official
+            translation
+          </li>
+        </ol>
+      </div>
+
       {/* Main translation interface */}
+      <div className="mb-4 border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium">Community Proposals</h3>
+          <Badge variant="outline" className="ml-2">
+            {proposals[currentString!.id]?.length || 0} Proposals
+          </Badge>
+        </div>
+
+        {loading[currentString!.id] ? (
+          <div className="flex justify-center p-4">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : proposals[currentString!.id] &&
+          proposals[currentString!.id]!.length > 0 ? (
+          <div className="space-y-3">
+            {proposals[currentString!.id]!.map((proposal) => (
+              <div
+                key={proposal.id}
+                className={cn(
+                  "border rounded-md p-3",
+                  proposal.status === "accurate" &&
+                    "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
+                  proposal.status === "inaccurate" &&
+                    "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {proposal.status === "accurate" && (
+                      <Badge className="bg-green-500">Accurate</Badge>
+                    )}
+                    {proposal.status === "inaccurate" && (
+                      <Badge className="bg-red-500">Inaccurate</Badge>
+                    )}
+                    <span className="text-sm text-muted-foreground">
+                      by {proposal.user?.id || "Unknown"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {proposal.user?.id === user?.modrinthUserData.id ? (
+                      <Badge className="bg-blue-500">Yours</Badge>
+                    ) : (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() =>
+                            handleVote(currentString!.id, proposal.id, "up")
+                          }
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <span className="mx-1 text-sm font-medium">
+                          {proposal.score}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() =>
+                            handleVote(currentString!.id, proposal.id, "down")
+                          }
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <p className="mb-1">{proposal.value}</p>
+                {proposal.note && (
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium">Note:</span> {proposal.note}
+                  </p>
+                )}
+                <div className="mt-2 flex justify-end">
+                  <span className="text-xs text-muted-foreground">
+                    {proposal.score > 0
+                      ? "Leading proposal"
+                      : "Vote to support this proposal"}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-4">
+            No proposals for this string yet. Be the first to contribute!
+          </p>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-lg border p-4">
         {/* Source string (left side) */}
         <div className="flex flex-col">
@@ -353,33 +458,8 @@ export default function TranslationInterface({
         <div className="flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <div className="text-sm font-medium">
-              Translation ({selectedLanguage})
+              Submit New Proposal ({selectedLanguage})
             </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2"
-                    onClick={() =>
-                      setShowProposals((prev) => ({
-                        ...prev,
-                        [currentString!.id]: !prev[currentString!.id],
-                      }))
-                    }
-                  >
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    <span>
-                      {proposals[currentString!.id]?.length || 0} Proposals
-                    </span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  View existing translation proposals
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
           </div>
 
           <div className="relative">
@@ -405,9 +485,9 @@ export default function TranslationInterface({
                 {saving[currentString!.id] ? (
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 ) : (
-                  <Save className="h-4 w-4 mr-1" />
+                  <MessageSquare className="h-4 w-4 mr-1" />
                 )}
-                Save
+                Submit Proposal
               </Button>
             </div>
           </div>
@@ -427,109 +507,6 @@ export default function TranslationInterface({
           </div>
         </div>
       </div>
-
-      {/* Proposals panel (conditionally shown) */}
-      {showProposals[currentString!.id] && (
-        <div className="mt-4 border rounded-lg p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">Translation Proposals</h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setShowProposals((prev) => ({
-                  ...prev,
-                  [currentString!.id]: false,
-                }))
-              }
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {loading[currentString!.id] ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : proposals[currentString!.id]!.length > 0 ? (
-            <div className="space-y-3">
-              {proposals[currentString!.id]!.map((proposal) => (
-                <div
-                  key={proposal.id}
-                  className={cn(
-                    "border rounded-md p-3",
-                    proposal.status === "accurate" &&
-                      "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
-                    proposal.status === "inaccurate" &&
-                      "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {proposal.status === "accurate" && (
-                        <Badge className="bg-green-500">Accurate</Badge>
-                      )}
-                      {proposal.status === "inaccurate" && (
-                        <Badge className="bg-red-500">Inaccurate</Badge>
-                      )}
-                      <span className="text-sm text-muted-foreground">
-                        by {proposal.user?.id || "Unknown"}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() =>
-                          handleVote(currentString!.id, proposal.id, "up")
-                        }
-                      >
-                        <ThumbsUp className="h-4 w-4" />
-                      </Button>
-                      <span className="mx-1 text-sm font-medium">
-                        {proposal.score}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() =>
-                          handleVote(currentString!.id, proposal.id, "down")
-                        }
-                      >
-                        <ThumbsDown className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="mb-1">{proposal.value}</p>
-                  {proposal.note && (
-                    <p className="text-sm text-muted-foreground">
-                      <span className="font-medium">Note:</span> {proposal.note}
-                    </p>
-                  )}
-                  <div className="mt-2 flex justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7"
-                      onClick={() =>
-                        handleUseProposal(currentString!.id, proposal)
-                      }
-                    >
-                      <Check className="h-4 w-4 mr-1" /> Use This
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-4">
-              No proposals for this string yet. Be the first to contribute!
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

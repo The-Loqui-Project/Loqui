@@ -12,9 +12,9 @@ interface NavbarProps {
   isAuthenticated?: boolean;
 }
 
-export function Navbar({ isAuthenticated = false }: NavbarProps) {
+export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { logout, user } = useAuth();
+  const { logout, user, isAuthenticated } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
