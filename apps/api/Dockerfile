@@ -3,7 +3,7 @@ FROM node:21-slim AS builder
 ENV PNPM_HOME="/pnpm"
 RUN corepack enable
 
-WORKDIR /build/apps/api
+WORKDIR /build
 COPY . .
 
 RUN --mount=type=cache,target=${PNPM_HOME} echo "PNPM cache before install: $(ls -la ${PNPM_HOME})"
@@ -20,9 +20,9 @@ RUN cp .env.example .env && \
 
 FROM node:alpine AS runner
 
-WORKDIR /build/apps/api
+WORKDIR /build
 
-COPY --from=builder /build/apps/api/node_modules /build/apps/api/node_modules
-COPY --from=builder /build/apps/api .
+COPY --from=builder /build/node_modules /build/node_modules
+COPY --from=builder /build .
 
 CMD ["pnpm", "run", "db:push"]

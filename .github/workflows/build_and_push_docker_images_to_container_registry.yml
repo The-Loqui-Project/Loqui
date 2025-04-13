@@ -21,8 +21,8 @@ jobs:
                   paths_ignore: '["**/README.md", "**/docs/**", "**/.gitignore", "**/LICENSE"]'
                   concurrent_skipping: same_content_newer
 
-    build_and_push_api_app_docker_image_to_container_registry:
-        name: Build and push Docker image to container registry
+    build_and_push_docker_images_to_container_registry:
+        name: Build and push Docker images to container registry
         runs-on: ubuntu-latest
         needs: skip_duplicate_jobs
         if: needs.skip_duplicate_jobs.outputs.should_skip != 'true'
@@ -38,12 +38,12 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Generate Docker metadata
-              id: meta
+            - name: Generate API Docker metadata
+              id: api_meta
               uses: docker/metadata-action@v5
               with:
                   images: |
-                      ghcr.io/${{ github.repository }}
+                      ghcr.io/${{ github.repository }}/api
                   labels: |
                       org.opencontainers.image.title=Loqui API
                       org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/api).
@@ -58,59 +58,12 @@ jobs:
                       type=sha
                       type=raw,value=latest,enable={{is_default_branch}}
 
-            - name: Checkout
-              uses: actions/checkout@v4
-
-            - name: Cache
-              uses: actions/cache@v3
-              id: cache
-              with:
-                  path: |
-                    pnpm
-                  key: ${{ runner.os }}-api-node-${{ hashFiles('apps/api/package-lock.json') }}
-                  restore-keys: |
-                    ${{ runner.os }}-api-node-
-
-            - name: Inject cache into Docker
-              uses: reproducible-containers/buildkit-cache-dance@v3.1.0
-              with:
-                  cache-map: |
-                      {
-                      "pnpm": "/pnpm"
-                      }
-                  skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-
-            - name: Build and push Docker image
-              uses: docker/build-push-action@v6
-              with:
-                  context: ./apps/api/
-                  push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
-
-    build_and_push_web_app_docker_image_to_container_registry:
-        name: Build and push Docker image to container registry
-        runs-on: ubuntu-latest
-        needs: skip_duplicate_jobs
-        if: needs.skip_duplicate_jobs.outputs.should_skip != 'true'
-
-        steps:
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v3
-
-            - name: Log in to GitHub Container Registry
-              uses: docker/login-action@v3
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-
-            - name: Generate Docker metadata
-              id: meta
+            - name: Generate web application Docker metadata
+              id: web_meta
               uses: docker/metadata-action@v5
               with:
                   images: |
-                      ghcr.io/${{ github.repository }}
+                      ghcr.io/${{ github.repository }}/web
                   labels: |
                       org.opencontainers.image.title=Loqui web application
                       org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/web).
@@ -134,9 +87,9 @@ jobs:
               with:
                   path: |
                     pnpm
-                  key: ${{ runner.os }}-web-node-${{ hashFiles('apps/web/package-lock.json') }}
+                  key: ${{ runner.os }}-pnpm-cache-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
-                    ${{ runner.os }}-web-node-
+                    ${{ runner.os }}-pnpm-cache-
 
             - name: Inject cache into Docker
               uses: reproducible-containers/buildkit-cache-dance@v3.1.0
@@ -147,10 +100,20 @@ jobs:
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
-            - name: Build and push Docker image
+            - name: Build and push API Docker image
               uses: docker/build-push-action@v6
               with:
-                  context: ./apps/web/
+                  context: .
+                  file: apps/api/Dockerfile
                   push: true
-                  tags: ${{ steps.meta.outputs.tags }}
-                  labels: ${{ steps.meta.outputs.labels }}
+                  tags: ${{ steps.api_meta.outputs.tags }}
+                  labels: ${{ steps.api_meta.outputs.labels }}
+
+            - name: Build and push web application Docker image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/web/Dockerfile
+                  push: true
+                  tags: ${{ steps.web_meta.outputs.tags }}
+                  labels: ${{ steps.web_meta.outputs.labels }}
