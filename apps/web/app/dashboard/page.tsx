@@ -1,23 +1,22 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Code, Languages, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { ProjectCard } from "@/components/homepage/project-card";
 import { AddProjectCard } from "@/components/homepage/add-project-card";
-import { ActivityItem } from "@/components/homepage/activity-item";
 import { OptInModal } from "@/components/projects/opt-in-modal";
 import { useAuth } from "@/contexts/auth-context";
 import {
-  getAllProjects,
-  getUserProjects,
-  getProjectProgress,
   calculateOverallProgress,
   countActiveLanguages,
+  getAllProjects,
+  getProjectProgress,
   getTotalStrings,
   getUntranslatedStrings,
+  getUserProjects,
 } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
 

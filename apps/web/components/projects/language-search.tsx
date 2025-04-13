@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Loader, Loader2, Search } from "lucide-react";
 import type { Language, TranslationProgress } from "@/lib/api-client-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function LanguageSearch({
   languages,
@@ -20,13 +21,26 @@ export default function LanguageSearch({
   // Filter out English source language
   const filteredLanguages = languages.filter((lang) => lang.code !== "en_us");
 
-  // Filter languages based on search
-  const searchedLanguages = filteredLanguages.filter(
-    (lang) =>
-      searchQuery === "" ||
-      lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lang.code.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Check if any language is being processed (has NaN progress)
+  const isProcessing = filteredLanguages.some((lang) => {
+    const langProgress = progress[lang.code];
+    return langProgress && isNaN(langProgress.translated / langProgress.total);
+  });
+
+  // Filter languages based on search and hide those with NaN progress
+  const searchedLanguages = filteredLanguages.filter((lang) => {
+    const langProgress = progress[lang.code];
+    const isNaNProgress =
+      langProgress && isNaN(langProgress.translated / langProgress.total);
+
+    // Only include languages that match search AND don't have NaN progress
+    return (
+      !isNaNProgress &&
+      (searchQuery === "" ||
+        lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        lang.code.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  });
 
   const renderLanguageCard = (language: Language) => {
     const langProgress = progress[language.code];
@@ -63,6 +77,18 @@ export default function LanguageSearch({
 
   return (
     <div className="space-y-4">
+      {isProcessing && (
+        <Alert className="bg-muted/50">
+          <AlertDescription className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            <span>
+              This project is being processed. This may take some time depending
+              on its size...
+            </span>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -91,7 +117,9 @@ export default function LanguageSearch({
             .map(renderLanguageCard)
         ) : (
           <p className="col-span-full text-center text-sm text-muted-foreground">
-            No languages found
+            {isProcessing
+              ? "Project is being processed. Check back soon."
+              : "No languages found"}
           </p>
         )}
       </div>
