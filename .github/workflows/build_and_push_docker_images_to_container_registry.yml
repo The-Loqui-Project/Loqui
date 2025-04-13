@@ -20,6 +20,7 @@ jobs:
               with:
                   paths_ignore: '["**/README.md", "**/docs/**", "**/.gitignore", "**/LICENSE"]'
                   concurrent_skipping: never
+                  skip_after_successful_duplicate: false
 
     build_and_push_docker_images_to_container_registry:
         name: Build and push Docker images to container registry
