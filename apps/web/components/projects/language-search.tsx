@@ -6,6 +6,7 @@ import { Loader, Loader2, Search } from "lucide-react";
 import type { Language, TranslationProgress } from "@/lib/api-client-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getCountryFlag } from "@/lib/utils";
 
 export default function LanguageSearch({
   languages,
@@ -56,7 +57,9 @@ export default function LanguageSearch({
       >
         <CardContent className="p-3">
           <div className="flex flex-col">
-            <span className="font-medium">{language.name}</span>
+            <span className="font-medium">
+              {getCountryFlag(language.code)} {language.name}
+            </span>
             <span className="text-xs text-muted-foreground">
               {language.code}
             </span>

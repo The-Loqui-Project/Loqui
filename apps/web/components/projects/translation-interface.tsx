@@ -6,6 +6,7 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
+import { getCountryFlag } from "@/lib/utils";
 import {
   type StringItem,
   getStringDetails,
@@ -17,6 +18,8 @@ import {
   editProposal,
   getProjectProgress,
   TranslationProgress,
+  getLanguages,
+  Language,
 } from "@/lib/api-client-wrapper";
 
 import NavigationHeader from "./proposals/navigation-header";
@@ -51,6 +54,21 @@ export default function TranslationInterface({
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState<TranslationProgress>({});
+  const [languages, setLanguages] = useState<Language[]>([]);
+
+  // Fetch languages when component loads
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const languagesData = await getLanguages();
+        setLanguages(languagesData);
+      } catch (error) {
+        console.error("Error fetching languages:", error);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
 
   // Filter strings when search term changes
   useEffect(() => {
@@ -409,6 +427,23 @@ export default function TranslationInterface({
     return Math.round(langProgress.progress * 100);
   };
 
+  const getLanguageDisplay = () => {
+    if (!selectedLanguage) return null;
+
+    const language = languages.find((lang) => lang.code === selectedLanguage);
+    if (!language) return null;
+
+    const flag = getCountryFlag(selectedLanguage);
+
+    return (
+      <div className="flex items-center gap-2 mb-4 px-2 py-1.5 bg-muted/50 rounded-md text-sm font-medium">
+        <span className="text-lg">{flag}</span>
+        <span>{language.name}</span>
+        <span className="text-muted-foreground">({language.nativeName})</span>
+      </div>
+    );
+  };
+
   // Empty state when no strings match search
   if (filteredStrings.length === 0) {
     return (
@@ -428,6 +463,8 @@ export default function TranslationInterface({
 
   return (
     <div className="flex flex-col h-full">
+      {getLanguageDisplay()}
+
       <NavigationHeader
         onBack={onBack}
         searchTerm={searchTerm}

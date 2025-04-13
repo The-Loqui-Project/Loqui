@@ -6,8 +6,16 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/contexts/auth-context";
 import { Navbar } from "@/components/homepage/navbar";
 import { Footer } from "@/components/homepage/footer";
+import { CountryFlagPolyfill } from "@/components/country-flag-polyfill";
 
-const inter = Inter({ subsets: ["latin"] });
+// Load Inter font but don't apply it directly to body
+// This allows us to include it in our font stack while preserving the Twemoji Country Flags font
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  fallback: ["Twemoji Country Flags", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Loqui - Translate Minecraft Mods Together",
@@ -30,6 +38,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
+            <CountryFlagPolyfill />
             <div className="flex min-h-screen flex-col">
               <Navbar />
               {children}
