@@ -1,7 +1,7 @@
-FROM node:23-slim AS builder
+FROM node:21-slim AS builder
 
 ENV PNPM_HOME="/pnpm"
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable
 
 WORKDIR /build
 COPY . .
@@ -12,14 +12,13 @@ RUN --mount=type=cache,target=${PNPM_HOME} \
   pnpm install --frozen-lockfile --prefer-offline
 RUN --mount=type=cache,target=${PNPM_HOME} echo "PNPM cache after install: $(ls -la ${PNPM_HOME})"
 
-FROM node:23-slim AS runner
+RUN pnpm run build
 
-ENV PNPM_HOME="/pnpm"
-RUN corepack enable && corepack prepare pnpm@latest --activate
+FROM node:alpine AS runner
 
 WORKDIR /build
 
 COPY --from=builder /build/node_modules /build/node_modules
-COPY --from=builder /build/apps/web .
+COPY --from=builder /build .
 
 CMD ["pnpm", "run", "start"]
