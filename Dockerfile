@@ -40,8 +40,8 @@ COPY --from=builder /build/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /build/apps/api/dist ./apps/api/dist
 
 # apps/web
-COPY --from=build /build/apps/web/package.json ./apps/web/package.json
-COPY --from=build /build/apps/web/.next ./apps/web/.next
+COPY --from=builder /build/apps/web/package.json ./apps/web/package.json
+COPY --from=builder /build/apps/web/.next ./apps/web/.next
 
 # Disable NextJS' telemetry
 RUN ./node_modules/.bin/next telemetry disable
