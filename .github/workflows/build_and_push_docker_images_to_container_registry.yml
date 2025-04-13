@@ -65,7 +65,8 @@ jobs:
               uses: actions/cache@v3
               id: cache
               with:
-                  path: pnpm
+                  path: |
+                    pnpm
                   key: ${{ runner.os }}-api-node-${{ hashFiles('apps/api/package-lock.json') }}
                   restore-keys: |
                     ${{ runner.os }}-api-node-
@@ -75,14 +76,14 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "pnpm": "~/.pnpm",
+                      "pnpm": "/pnpm",
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
             - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
-                  context: .
+                  context: ./apps/api/
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
@@ -131,7 +132,8 @@ jobs:
               uses: actions/cache@v3
               id: cache
               with:
-                  path: pnpm
+                  path: |
+                    pnpm
                   key: ${{ runner.os }}-web-node-${{ hashFiles('apps/web/package-lock.json') }}
                   restore-keys: |
                     ${{ runner.os }}-web-node-
@@ -141,14 +143,14 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "pnpm": "~/.pnpm",
+                      "pnpm": "/pnpm",
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
             - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
-                  context: .
+                  context: ./apps/web/
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
