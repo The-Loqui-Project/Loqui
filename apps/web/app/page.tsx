@@ -2,16 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code, Languages, Download } from "lucide-react";
+import { Code, Download, Languages } from "lucide-react";
 
 // Custom Components
-import { Navbar } from "@/components/homepage/navbar";
-import { Footer } from "@/components/homepage/footer";
 import { HeroSection } from "@/components/homepage/hero-section";
 import { FeatureCard } from "@/components/homepage/feature-card";
 import { SectionHeading } from "@/components/homepage/section-heading";
 import { ProcessStep } from "@/components/homepage/process-step";
-import { Dashboard } from "@/components/dashboard";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function Home() {
@@ -26,18 +23,16 @@ export default function Home() {
     );
   }
 
-  return isAuthenticated ? <Dashboard /> : <UnauthenticatedView />;
-}
-
-function UnauthenticatedView() {
   return (
     <main className="flex-1">
       {/* Hero Section */}
       <HeroSection
         title="Translate Minecraft Mods Together"
         description="Loqui is a free and open-source platform that makes translating Minecraft mods easy through crowdsourcing."
-        primaryButtonText="Login with Modrinth"
-        primaryButtonHref="/auth"
+        primaryButtonText={
+          isAuthenticated ? "Open Dashboard" : "Login with Modrinth"
+        }
+        primaryButtonHref={isAuthenticated ? "/dashboard" : "/auth"}
         secondaryButtonText="Learn More"
         secondaryButtonHref="#features"
       />
