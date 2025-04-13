@@ -76,7 +76,7 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "pnpm": "/pnpm",
+                      "pnpm": "/pnpm"
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
@@ -143,7 +143,7 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "pnpm": "/pnpm",
+                      "pnpm": "/pnpm"
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
