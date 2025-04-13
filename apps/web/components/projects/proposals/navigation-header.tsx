@@ -1,6 +1,7 @@
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SearchBar } from "../search/search-bar";
+import { StringItem } from "./types";
 
 interface NavigationHeaderProps {
   onBack: () => void;
@@ -10,6 +11,8 @@ interface NavigationHeaderProps {
   totalStrings: number;
   onPrevious: () => void;
   onNext: () => void;
+  items?: StringItem[];
+  onSelectString: (selectedItem: StringItem) => void;
 }
 
 export default function NavigationHeader({
@@ -20,6 +23,8 @@ export default function NavigationHeader({
   totalStrings,
   onPrevious,
   onNext,
+  items = [],
+  onSelectString,
 }: NavigationHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-4 gap-4">
@@ -27,13 +32,11 @@ export default function NavigationHeader({
         <ChevronLeft className="mr-2 h-4 w-4" /> Back to Languages
       </Button>
 
-      <div className="flex-1 max-w-md relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
+      <div className="flex-1 max-w-md">
+        <SearchBar
+          items={items}
           placeholder="Search strings..."
-          className="pl-8"
-          value={searchTerm}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onSelect={onSelectString}
         />
       </div>
 

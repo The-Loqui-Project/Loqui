@@ -4,16 +4,16 @@ import ProposalCard from "./proposal-card";
 import { Proposal } from "./types";
 
 interface ProposalListProps {
-  stringId: string;
+  stringId: number;
   proposals: Proposal[] | undefined;
   loading: boolean;
   onVote: (
-    stringId: string,
-    proposalId: string,
+    stringId: number,
+    proposalId: number,
     voteType: "up" | "down" | "none",
   ) => Promise<void>;
-  onDelete: (proposalId: string) => Promise<void>;
-  onEdit: (proposalId: string, value: string, note: string) => Promise<void>;
+  onDelete: (proposalId: number) => Promise<void>;
+  onEdit: (proposalId: number, value: string, note: string) => Promise<void>;
   deleting: Record<string, boolean>;
   editing: Record<string, boolean>;
 }

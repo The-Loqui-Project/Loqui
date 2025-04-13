@@ -6,6 +6,7 @@ import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
+import { getCountryFlag } from "@/lib/utils";
 import {
   type StringItem,
   getStringDetails,
@@ -17,9 +18,10 @@ import {
   editProposal,
   getProjectProgress,
   TranslationProgress,
+  getLanguages,
+  Language,
 } from "@/lib/api-client-wrapper";
 
-// Import our new components
 import NavigationHeader from "./proposals/navigation-header";
 import ProgressPanel from "./proposals/progress-panel";
 import TranslationForm from "./proposals/translation-form";
@@ -27,7 +29,7 @@ import ProposalList from "./proposals/proposal-list";
 import { Proposal } from "./proposals/types";
 
 interface TranslationInterfaceProps {
-  projectId: string;
+  projectId: number;
   strings: StringItem[];
   selectedLanguage: string | null;
   onBack: () => void;
@@ -39,7 +41,6 @@ export default function TranslationInterface({
   selectedLanguage,
   onBack,
 }: TranslationInterfaceProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +54,21 @@ export default function TranslationInterface({
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState<TranslationProgress>({});
+  const [languages, setLanguages] = useState<Language[]>([]);
+
+  // Fetch languages when component loads
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const languagesData = await getLanguages();
+        setLanguages(languagesData);
+      } catch (error) {
+        console.error("Error fetching languages:", error);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
 
   // Filter strings when search term changes
   useEffect(() => {
@@ -84,7 +100,7 @@ export default function TranslationInterface({
     }
   }, [projectId, selectedLanguage]);
 
-  const loadProposalsForString = async (stringId: string) => {
+  const loadProposalsForString = async (stringId: number) => {
     if (!selectedLanguage || loading[stringId]) return;
 
     try {
@@ -133,7 +149,7 @@ export default function TranslationInterface({
   };
 
   const handleSaveTranslation = async (
-    stringId: string,
+    stringId: number,
     translationText: string,
     note?: string,
   ) => {
@@ -235,8 +251,8 @@ export default function TranslationInterface({
   };
 
   const handleVote = async (
-    stringId: string,
-    proposalId: string,
+    stringId: number,
+    proposalId: number,
     voteType: "up" | "down" | "none",
   ) => {
     const token = getCookie("token");
@@ -270,7 +286,7 @@ export default function TranslationInterface({
     }
   };
 
-  const handleDeleteProposal = async (proposalId: string) => {
+  const handleDeleteProposal = async (proposalId: number) => {
     const token = getCookie("token");
     if (!token) {
       toast({
@@ -310,7 +326,7 @@ export default function TranslationInterface({
   };
 
   const handleEditProposal = async (
-    proposalId: string,
+    proposalId: number,
     value: string,
     note: string,
   ) => {
@@ -393,12 +409,39 @@ export default function TranslationInterface({
     }
   };
 
+  const handleSelectString = (selectedItem: StringItem) => {
+    // Find the index of the selected string in the filtered strings
+    const index = filteredStrings.findIndex(
+      (item) => item.id === selectedItem.id,
+    );
+    if (index !== -1) {
+      setCurrentIndex(index);
+    }
+  };
+
   const getCompletionPercentage = () => {
     if (!selectedLanguage || !progress[selectedLanguage]) return 0;
 
     // Use the progress data from the API for the selected language
     const langProgress = progress[selectedLanguage];
     return Math.round(langProgress.progress * 100);
+  };
+
+  const getLanguageDisplay = () => {
+    if (!selectedLanguage) return null;
+
+    const language = languages.find((lang) => lang.code === selectedLanguage);
+    if (!language) return null;
+
+    const flag = getCountryFlag(selectedLanguage);
+
+    return (
+      <div className="flex items-center gap-2 mb-4 px-2 py-1.5 bg-muted/50 rounded-md text-sm font-medium">
+        <span className="text-lg">{flag}</span>
+        <span>{language.name}</span>
+        <span className="text-muted-foreground">({language.nativeName})</span>
+      </div>
+    );
   };
 
   // Empty state when no strings match search
@@ -420,7 +463,8 @@ export default function TranslationInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Use our new NavigationHeader component */}
+      {getLanguageDisplay()}
+
       <NavigationHeader
         onBack={onBack}
         searchTerm={searchTerm}
@@ -429,12 +473,12 @@ export default function TranslationInterface({
         totalStrings={filteredStrings.length}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        items={strings}
+        onSelectString={handleSelectString}
       />
 
-      {/* Use our new ProgressPanel component */}
       <ProgressPanel completionPercentage={getCompletionPercentage()} />
 
-      {/* Use our new TranslationForm component */}
       <TranslationForm
         stringId={currentString.id}
         stringValue={currentString.value}
@@ -445,7 +489,6 @@ export default function TranslationInterface({
         saving={saving[currentString.id] || false}
       />
 
-      {/* Use our new ProposalList component */}
       <ProposalList
         stringId={currentString.id}
         proposals={proposals[currentString.id]}

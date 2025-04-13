@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 interface TranslationFormProps {
-  stringId: string;
+  stringId: number;
   stringValue: string;
   stringKey: string;
   initialTranslation?: string;
   initialNote?: string;
   onSubmit: (
-    stringId: string,
+    stringId: number,
     translation: string,
     note?: string,
   ) => Promise<void>;
