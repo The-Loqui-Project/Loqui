@@ -19,7 +19,7 @@ jobs:
               uses: fkirc/skip-duplicate-actions@v5
               with:
                   paths_ignore: '["**/README.md", "**/docs/**", "**/.gitignore", "**/LICENSE"]'
-                  concurrent_skipping: same_content_newer
+                  concurrent_skipping: never
 
     build_and_push_docker_images_to_container_registry:
         name: Build and push Docker images to container registry
