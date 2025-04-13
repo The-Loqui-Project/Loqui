@@ -6,7 +6,7 @@ import { updateProposalStatuses } from "../../../util/proposal-utils";
 
 export default {
   type: "POST",
-  route: "/translations/:id/proposals",
+  route: "/proposals/create",
   schema: {
     description: "Create a new translation proposal",
     tags: ["proposals"],
