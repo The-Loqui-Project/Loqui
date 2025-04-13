@@ -20,6 +20,6 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /build
 
 COPY --from=builder /build/node_modules /build/node_modules
-COPY --from=builder /build .
+COPY --from=builder /build/apps/api .
 
 CMD ["pnpm", "run", "db:push"]
