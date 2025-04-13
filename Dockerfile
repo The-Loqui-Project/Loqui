@@ -55,9 +55,6 @@ COPY --from=builder /build/apps/api/dist ./apps/api/dist
 COPY --from=builder /build/apps/web/package.json ./apps/web/package.json
 COPY --from=builder /build/apps/web/.next ./apps/web/.next
 
-# Disable NextJS' telemetry
-RUN ./node_modules/.bin/next telemetry disable
-
 ENV NODE_ENV production
 
 CMD ["pnpm", "run", "start"]
