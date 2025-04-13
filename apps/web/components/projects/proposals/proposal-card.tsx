@@ -9,14 +9,14 @@ import { Proposal } from "./types";
 
 interface ProposalCardProps {
   proposal: Proposal;
-  stringId: string;
+  stringId: number;
   onVote: (
-    stringId: string,
-    proposalId: string,
+    stringId: number,
+    proposalId: number,
     voteType: "up" | "down" | "none",
   ) => Promise<void>;
-  onDelete: (proposalId: string) => Promise<void>;
-  onEdit: (proposalId: string, value: string, note: string) => Promise<void>;
+  onDelete: (proposalId: number) => Promise<void>;
+  onEdit: (proposalId: number, value: string, note: string) => Promise<void>;
   deleting: Record<string, boolean>;
   editing: Record<string, boolean>;
 }

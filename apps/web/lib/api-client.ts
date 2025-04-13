@@ -1,7 +1,7 @@
 // API client functions for interacting with the Loqui API
 
 export interface Project {
-  id: string;
+  Id: number;
   optIn: string; // date-time
 }
 
@@ -36,13 +36,13 @@ export interface ProposalItem {
   rank: number;
   language: string;
   user: {
-    id: string;
+    Id: number;
     role: string;
   };
 }
 
 export interface StringItem {
-  id: string;
+  id: number;
   key: string;
   value: string;
   appears_in: string[];
@@ -59,7 +59,7 @@ export async function getAllProjects(): Promise<
     description: any;
     slug: any;
     icon_url: any;
-    id: string;
+    Id: number;
     modrinth_data: any;
   }[]
 > {
@@ -136,7 +136,7 @@ export async function optInProjects(
  * @param projectId The ID of the project
  */
 export async function getProjectProgress(
-  projectId: string,
+  projectId: number,
 ): Promise<TranslationProgress> {
   const response = await fetch(
     `${API_BASE_URL}v1/project/${projectId}/progress`,
@@ -248,7 +248,7 @@ export async function getLanguages(): Promise<Language[]> {
  * @param projectId ID of the project
  */
 export async function getProjectStrings(
-  projectId: string,
+  projectId: number,
 ): Promise<StringItem[]> {
   const response = await fetch(
     `${API_BASE_URL}v1/project/${projectId}/strings`,
@@ -267,8 +267,8 @@ export async function getProjectStrings(
  * @param stringId ID of the string
  */
 export async function getStringDetails(
-  projectId: string,
-  stringId: string,
+  projectId: number,
+  stringId: number,
 ): Promise<any> {
   const response = await fetch(
     `${API_BASE_URL}v1/project/${projectId}/string/${stringId}`,
@@ -287,10 +287,10 @@ export async function getStringDetails(
  * @param languageCode Optional language code to filter proposals by
  */
 export async function getStringProposals(
-  stringId: string,
+  stringId: number,
   languageCode?: string,
 ): Promise<{
-  original: { id: string; key: string; value: string };
+  original: { Id: number; key: string; value: string };
   proposals: ProposalItem[];
 }> {
   const url = languageCode
@@ -390,7 +390,7 @@ export async function editProposal(
  * @param token Modrinth authentication token
  */
 export async function voteOnProposal(
-  proposalId: string,
+  proposalId: number,
   voteType: "up" | "down" | "none",
   token: string,
 ): Promise<{ message: string; newScore: number }> {
@@ -449,7 +449,7 @@ export async function deleteProposal(
  * @param token Modrinth authentication token
  */
 export async function createTranslation(
-  itemId: string,
+  itemId: number,
   languageCode: string,
   token: string,
 ): Promise<{ id: number }> {
@@ -479,7 +479,7 @@ export async function createTranslation(
  * Get project details from Modrinth API
  * @param projectId ID or slug of the project
  */
-export async function getProjectDetails(projectId: string): Promise<unknown> {
+export async function getProjectDetails(projectId: number): Promise<unknown> {
   const response = await fetch(
     `https://api.modrinth.com/v2/project/${projectId}`,
   );

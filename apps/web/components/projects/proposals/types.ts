@@ -1,11 +1,7 @@
-export interface StringItem {
-  id: string;
-  key: string;
-  value: string;
-}
+export type { StringItem } from "@/lib/api-client";
 
 export interface Proposal {
-  id: string;
+  id: number;
   value: string;
   note?: string;
   score: number;

@@ -19,7 +19,6 @@ import {
   TranslationProgress,
 } from "@/lib/api-client-wrapper";
 
-// Import our new components
 import NavigationHeader from "./proposals/navigation-header";
 import ProgressPanel from "./proposals/progress-panel";
 import TranslationForm from "./proposals/translation-form";
@@ -27,7 +26,7 @@ import ProposalList from "./proposals/proposal-list";
 import { Proposal } from "./proposals/types";
 
 interface TranslationInterfaceProps {
-  projectId: string;
+  projectId: number;
   strings: StringItem[];
   selectedLanguage: string | null;
   onBack: () => void;
@@ -39,7 +38,6 @@ export default function TranslationInterface({
   selectedLanguage,
   onBack,
 }: TranslationInterfaceProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -84,7 +82,7 @@ export default function TranslationInterface({
     }
   }, [projectId, selectedLanguage]);
 
-  const loadProposalsForString = async (stringId: string) => {
+  const loadProposalsForString = async (stringId: number) => {
     if (!selectedLanguage || loading[stringId]) return;
 
     try {
@@ -133,7 +131,7 @@ export default function TranslationInterface({
   };
 
   const handleSaveTranslation = async (
-    stringId: string,
+    stringId: number,
     translationText: string,
     note?: string,
   ) => {
@@ -235,8 +233,8 @@ export default function TranslationInterface({
   };
 
   const handleVote = async (
-    stringId: string,
-    proposalId: string,
+    stringId: number,
+    proposalId: number,
     voteType: "up" | "down" | "none",
   ) => {
     const token = getCookie("token");
@@ -270,7 +268,7 @@ export default function TranslationInterface({
     }
   };
 
-  const handleDeleteProposal = async (proposalId: string) => {
+  const handleDeleteProposal = async (proposalId: number) => {
     const token = getCookie("token");
     if (!token) {
       toast({
@@ -310,7 +308,7 @@ export default function TranslationInterface({
   };
 
   const handleEditProposal = async (
-    proposalId: string,
+    proposalId: number,
     value: string,
     note: string,
   ) => {
@@ -393,6 +391,16 @@ export default function TranslationInterface({
     }
   };
 
+  const handleSelectString = (selectedItem: StringItem) => {
+    // Find the index of the selected string in the filtered strings
+    const index = filteredStrings.findIndex(
+      (item) => item.id === selectedItem.id,
+    );
+    if (index !== -1) {
+      setCurrentIndex(index);
+    }
+  };
+
   const getCompletionPercentage = () => {
     if (!selectedLanguage || !progress[selectedLanguage]) return 0;
 
@@ -420,7 +428,6 @@ export default function TranslationInterface({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Use our new NavigationHeader component */}
       <NavigationHeader
         onBack={onBack}
         searchTerm={searchTerm}
@@ -429,12 +436,12 @@ export default function TranslationInterface({
         totalStrings={filteredStrings.length}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        items={strings}
+        onSelectString={handleSelectString}
       />
 
-      {/* Use our new ProgressPanel component */}
       <ProgressPanel completionPercentage={getCompletionPercentage()} />
 
-      {/* Use our new TranslationForm component */}
       <TranslationForm
         stringId={currentString.id}
         stringValue={currentString.value}
@@ -445,7 +452,6 @@ export default function TranslationInterface({
         saving={saving[currentString.id] || false}
       />
 
-      {/* Use our new ProposalList component */}
       <ProposalList
         stringId={currentString.id}
         proposals={proposals[currentString.id]}
