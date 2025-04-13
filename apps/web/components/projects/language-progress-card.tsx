@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Language, TranslationProgress } from "@/lib/api-client";
+import { Language, TranslationProgress } from "@/lib/api-client-wrapper";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Globe, ChevronRight } from "lucide-react";

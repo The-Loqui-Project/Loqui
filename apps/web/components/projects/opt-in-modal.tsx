@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { optInProjects } from "@/lib/api-client";
+import { optInProjects } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
 
 interface OptInModalProps {

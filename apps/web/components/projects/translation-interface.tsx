@@ -9,7 +9,9 @@ import {
   createProposal,
   voteOnProposal,
   createTranslation,
-} from "@/lib/api-client";
+  deleteProposal,
+  editProposal,
+} from "@/lib/api-client-wrapper";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +26,8 @@ import {
   MessageSquare,
   Loader2,
   AlertCircle,
+  Trash2,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -62,6 +66,11 @@ export default function TranslationInterface({
   const [proposals, setProposals] = useState<Record<string, Proposal[]>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [editingProposal, setEditingProposal] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [editNote, setEditNote] = useState("");
+  const [deleting, setDeleting] = useState<Record<string, boolean>>({});
+  const [editing, setEditing] = useState<Record<string, boolean>>({});
 
   const { toast } = useToast();
 
@@ -145,6 +154,21 @@ export default function TranslationInterface({
       return;
     }
 
+    // Check if this is a duplicate of an existing proposal
+    const existingProposals = proposals[stringId] || [];
+    const isDuplicate = existingProposals.some(
+      (p) => p.value.trim() === translationText.trim(),
+    );
+
+    if (isDuplicate) {
+      toast({
+        title: "Error",
+        description: "This translation already exists as a proposal",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSaving((prev) => ({ ...prev, [stringId]: true }));
 
@@ -182,6 +206,16 @@ export default function TranslationInterface({
         title: "Success",
         description: "Translation saved successfully",
       });
+
+      // Reset the form
+      setTranslations((prev) => ({
+        ...prev,
+        [stringId]: "",
+      }));
+      setNotes((prev) => ({
+        ...prev,
+        [stringId]: "",
+      }));
 
       // Reload proposals
       await loadProposalsForString(stringId);
@@ -260,6 +294,124 @@ export default function TranslationInterface({
     ).length;
 
     return Math.round((translatedCount / filteredStrings.length) * 100);
+  };
+
+  const handleDeleteProposal = async (proposalId: string) => {
+    const token = getCookie("token");
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to delete proposals",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setDeleting((prev) => ({ ...prev, [proposalId]: true }));
+
+      await deleteProposal(Number(proposalId), token.toString());
+
+      toast({
+        title: "Success",
+        description: "Proposal deleted successfully",
+      });
+
+      // Reload proposals for the current string
+      await loadProposalsForString(currentString!.id);
+    } catch (error) {
+      console.error("Error deleting proposal:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete proposal",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting((prev) => ({ ...prev, [proposalId]: false }));
+    }
+  };
+
+  const startEditing = (proposal: Proposal) => {
+    setEditingProposal(proposal.id);
+    setEditValue(proposal.value);
+    setEditNote(proposal.note || "");
+  };
+
+  const cancelEditing = () => {
+    setEditingProposal(null);
+    setEditValue("");
+    setEditNote("");
+  };
+
+  const handleEditProposal = async (proposalId: string) => {
+    const token = getCookie("token");
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to edit proposals",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editValue.trim()) {
+      toast({
+        title: "Error",
+        description: "Translation cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if this edit would create a duplicate
+    const existingProposals = proposals[currentString!.id] || [];
+    const isDuplicate = existingProposals.some(
+      (p) => p.id !== proposalId && p.value.trim() === editValue.trim(),
+    );
+
+    if (isDuplicate) {
+      toast({
+        title: "Error",
+        description: "This translation already exists as another proposal",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setEditing((prev) => ({ ...prev, [proposalId]: true }));
+
+      await editProposal(
+        Number(proposalId),
+        editValue,
+        editNote || undefined,
+        token.toString(),
+      );
+
+      toast({
+        title: "Success",
+        description: "Proposal updated successfully",
+      });
+
+      // Reset editing state
+      setEditingProposal(null);
+      setEditValue("");
+      setEditNote("");
+
+      // Reload proposals for the current string
+      await loadProposalsForString(currentString!.id);
+    } catch (error) {
+      console.error("Error editing proposal:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to edit proposal",
+        variant: "destructive",
+      });
+    } finally {
+      setEditing((prev) => ({ ...prev, [proposalId]: false }));
+    }
   };
 
   if (filteredStrings.length === 0) {
@@ -348,100 +500,6 @@ export default function TranslationInterface({
         </ol>
       </div>
 
-      {/* Main translation interface */}
-      <div className="mb-4 border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium">Community Proposals</h3>
-          <Badge variant="outline" className="ml-2">
-            {proposals[currentString!.id]?.length || 0} Proposals
-          </Badge>
-        </div>
-
-        {loading[currentString!.id] ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : proposals[currentString!.id] &&
-          proposals[currentString!.id]!.length > 0 ? (
-          <div className="space-y-3">
-            {proposals[currentString!.id]!.map((proposal) => (
-              <div
-                key={proposal.id}
-                className={cn(
-                  "border rounded-md p-3",
-                  proposal.status === "accurate" &&
-                    "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
-                  proposal.status === "inaccurate" &&
-                    "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    {proposal.status === "accurate" && (
-                      <Badge className="bg-green-500">Accurate</Badge>
-                    )}
-                    {proposal.status === "inaccurate" && (
-                      <Badge className="bg-red-500">Inaccurate</Badge>
-                    )}
-                    <span className="text-sm text-muted-foreground">
-                      by {proposal.user?.id || "Unknown"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {proposal.user?.id === user?.modrinthUserData.id ? (
-                      <Badge className="bg-blue-500">Yours</Badge>
-                    ) : (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() =>
-                            handleVote(currentString!.id, proposal.id, "up")
-                          }
-                        >
-                          <ThumbsUp className="h-4 w-4" />
-                        </Button>
-                        <span className="mx-1 text-sm font-medium">
-                          {proposal.score}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7"
-                          onClick={() =>
-                            handleVote(currentString!.id, proposal.id, "down")
-                          }
-                        >
-                          <ThumbsDown className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-                <p className="mb-1">{proposal.value}</p>
-                {proposal.note && (
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-medium">Note:</span> {proposal.note}
-                  </p>
-                )}
-                <div className="mt-2 flex justify-end">
-                  <span className="text-xs text-muted-foreground">
-                    {proposal.score > 0
-                      ? "Leading proposal"
-                      : "Vote to support this proposal"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground py-4">
-            No proposals for this string yet. Be the first to contribute!
-          </p>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-lg border p-4">
         {/* Source string (left side) */}
         <div className="flex flex-col">
@@ -454,7 +512,6 @@ export default function TranslationInterface({
           </div>
         </div>
 
-        {/* Translation (right side) */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <div className="text-sm font-medium">
@@ -506,6 +563,181 @@ export default function TranslationInterface({
             />
           </div>
         </div>
+      </div>
+
+      {/* Main translation interface */}
+      <div className="mt-4 border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium">Community Proposals</h3>
+          <Badge variant="outline" className="ml-2">
+            {proposals[currentString!.id]?.length || 0} Proposals
+          </Badge>
+        </div>
+
+        {loading[currentString!.id] ? (
+          <div className="flex justify-center p-4">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : proposals[currentString!.id] &&
+          proposals[currentString!.id]!.length > 0 ? (
+          <div className="space-y-3">
+            {proposals[currentString!.id]!.map((proposal) => (
+              <div
+                key={proposal.id}
+                className={cn(
+                  "border rounded-md p-3",
+                  proposal.status === "accurate" &&
+                    "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
+                  proposal.status === "inaccurate" &&
+                    "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
+                  editingProposal === proposal.id &&
+                    "border-blue-500/30 bg-blue-50/30 dark:bg-blue-950/10",
+                )}
+              >
+                {editingProposal === proposal.id ? (
+                  // Editing interface
+                  <div className="space-y-3">
+                    <Textarea
+                      className="min-h-24 resize-none"
+                      value={editValue}
+                      placeholder="Enter translation..."
+                      onChange={(e) => setEditValue(e.target.value)}
+                    />
+                    <Textarea
+                      className="resize-none h-16 text-sm"
+                      value={editNote}
+                      placeholder="Add notes or context (optional)..."
+                      onChange={(e) => setEditNote(e.target.value)}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={cancelEditing}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleEditProposal(proposal.id)}
+                        disabled={editing[proposal.id]}
+                      >
+                        {editing[proposal.id] ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          "Save Changes"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // Normal display interface
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {proposal.status === "accurate" && (
+                          <Badge className="bg-green-500">Accurate</Badge>
+                        )}
+                        {proposal.status === "inaccurate" && (
+                          <Badge className="bg-red-500">Inaccurate</Badge>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          by {proposal.user?.id || "Unknown"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {proposal.user?.id === user?.modrinthUserData?.id ||
+                        "" ? (
+                          <div className="flex items-center">
+                            <Badge className="bg-blue-500 mr-2">Yours</Badge>
+                            {/* Only show edit/delete options if score is 0 */}
+                            {proposal.score === 0 && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-blue-500 hover:text-blue-600"
+                                  onClick={() => startEditing(proposal)}
+                                  title="Edit proposal"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-7 w-7 text-red-500 hover:text-red-600"
+                                  onClick={() =>
+                                    handleDeleteProposal(proposal.id)
+                                  }
+                                  disabled={deleting[proposal.id]}
+                                  title="Delete proposal"
+                                >
+                                  {deleting[proposal.id] ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Trash2 className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                handleVote(currentString!.id, proposal.id, "up")
+                              }
+                            >
+                              <ThumbsUp className="h-4 w-4" />
+                            </Button>
+                            <span className="mx-1 text-sm font-medium">
+                              {proposal.score}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                handleVote(
+                                  currentString!.id,
+                                  proposal.id,
+                                  "down",
+                                )
+                              }
+                            >
+                              <ThumbsDown className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <p className="mb-1">{proposal.value}</p>
+                    {proposal.note && (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium">Note:</span>{" "}
+                        {proposal.note}
+                      </p>
+                    )}
+                    <div className="mt-2 flex justify-end">
+                      <span className="text-xs text-muted-foreground">
+                        {proposal.score > 0
+                          ? "Leading proposal"
+                          : "Vote to support this proposal"}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-4">
+            No proposals for this string yet. Be the first to contribute!
+          </p>
+        )}
       </div>
     </div>
   );

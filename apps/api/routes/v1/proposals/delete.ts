@@ -1,14 +1,15 @@
 import APIRoute from "../../route";
 import db from "../../../db";
-import { proposal } from "../../../db/schema/schema";
+import { proposal, proposalVote } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
-import { eq } from "drizzle-orm";
+import { and, eq, count } from "drizzle-orm";
 
 export default {
   type: "DELETE",
   route: "/proposals/:id",
   schema: {
-    description: "Delete a proposal (moderator+ only)",
+    description:
+      "Delete a proposal (moderator+ or proposal owner with zero votes)",
     tags: ["proposals"],
     security: [{ modrinthToken: [] }],
     params: {
@@ -60,11 +61,6 @@ export default {
     // If auth failed, the function would have already sent a response
     if (!authUser) return;
 
-    // Check if user has appropriate permissions (moderator+ role required)
-    if (!(await AuthUtils.checkPermission(authUser, response, "moderator"))) {
-      return;
-    }
-
     // Parse the proposal ID parameter
     const proposalId = AuthUtils.parseIdParam(request, response);
     if (proposalId === undefined) return;
@@ -80,6 +76,36 @@ export default {
           message: "Proposal not found",
         });
         return;
+      }
+
+      const isModerator = ["moderator", "admin"].includes(authUser.role);
+      const isOwner = proposalData.userId === authUser.id;
+
+      // If user is not a moderator and not the owner, reject the request
+      if (!isModerator && !isOwner) {
+        response.status(403).send({
+          message: "You do not have permission to delete this proposal",
+        });
+        return;
+      }
+
+      // If user is the owner but not a moderator, check if proposal has votes
+      if (isOwner && !isModerator) {
+        // Count votes for this proposal
+        const voteResult = await db
+          .select({ voteCount: count() })
+          .from(proposalVote)
+          .where(eq(proposalVote.proposalId, proposalId));
+
+        const voteCount = voteResult[0]?.voteCount || 0;
+
+        if (voteCount > 0) {
+          response.status(403).send({
+            message:
+              "Cannot delete proposal that has votes. Contact a moderator for assistance.",
+          });
+          return;
+        }
       }
 
       // Delete the proposal

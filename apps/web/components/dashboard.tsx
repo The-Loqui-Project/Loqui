@@ -18,7 +18,7 @@ import {
   countActiveLanguages,
   getTotalStrings,
   getUntranslatedStrings,
-} from "@/lib/api-client";
+} from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
 
 export function Dashboard() {

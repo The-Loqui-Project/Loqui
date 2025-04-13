@@ -1,5 +1,5 @@
 "use client";
-import type { StringItem } from "@/lib/api-client";
+import type { StringItem } from "@/lib/api-client-wrapper";
 import TranslationInterface from "@/components/projects/translation-interface";
 
 interface ProjectStringsListProps {

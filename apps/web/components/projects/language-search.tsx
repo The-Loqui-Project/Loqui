@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import type { Language, TranslationProgress } from "@/lib/api-client";
+import type { Language, TranslationProgress } from "@/lib/api-client-wrapper";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function LanguageSearch({

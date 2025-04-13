@@ -10,7 +10,7 @@ import {
   type Language,
   type StringItem,
   type TranslationProgress,
-} from "@/lib/api-client";
+} from "@/lib/api-client-wrapper";
 import { Loader2 } from "lucide-react";
 import {
   Card,

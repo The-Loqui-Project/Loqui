@@ -1,15 +1,15 @@
 import APIRoute from "../../route";
 import db from "../../../db";
-import { proposal } from "../../../db/schema/schema";
+import { proposal, proposalVote } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 
 export default {
   type: "PUT",
   route: "/proposals/:id/edit",
   schema: {
     description:
-      "Edit an existing translation proposal (own proposals or moderator+ only)",
+      "Edit an existing translation proposal (moderator+ or proposal owner with zero votes)",
     tags: ["proposals"],
     security: [{ modrinthToken: [] }],
     params: {
@@ -107,11 +107,31 @@ export default {
       const isModerator = ["moderator", "admin"].includes(authUser.role);
       const isOwner = proposalData.userId === authUser.id;
 
+      // If user is not a moderator and not the owner, reject the request
       if (!isOwner && !isModerator) {
         response.status(403).send({
           message: "You do not have permission to edit this proposal",
         });
         return;
+      }
+
+      // If user is the owner but not a moderator, check if proposal has votes
+      if (isOwner && !isModerator) {
+        // Count votes for this proposal
+        const voteResult = await db
+          .select({ voteCount: count() })
+          .from(proposalVote)
+          .where(eq(proposalVote.proposalId, proposalId));
+
+        const voteCount = voteResult[0]?.voteCount || 0;
+
+        if (voteCount > 0) {
+          response.status(403).send({
+            message:
+              "Cannot edit proposal that has votes. Create a new proposal instead or contact a moderator.",
+          });
+          return;
+        }
       }
 
       // Update the proposal
