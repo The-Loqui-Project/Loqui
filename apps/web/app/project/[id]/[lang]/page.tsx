@@ -14,7 +14,7 @@ export default function ProjectLanguagePage() {
   const [error, setError] = useState<string | null>(null);
   const [strings, setStrings] = useState<StringItem[]>([]);
 
-  const projectId = params.id as string;
+  const projectId = params.id as unknown as number;
   const languageCode = params.lang as string;
 
   useEffect(() => {

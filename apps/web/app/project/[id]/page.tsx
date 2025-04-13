@@ -26,7 +26,7 @@ export default function ProjectPage() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const router = useRouter();
 
-  const projectId = params.id as string;
+  const projectId = params.id as unknown as number;
 
   useEffect(() => {
     async function fetchData() {
