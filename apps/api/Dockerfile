@@ -14,6 +14,9 @@ RUN --mount=type=cache,target=${PNPM_HOME} echo "PNPM cache after install: $(ls 
 
 FROM node:23-slim AS runner
 
+ENV PNPM_HOME="/pnpm"
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /build
 
 COPY --from=builder /build/node_modules /build/node_modules
