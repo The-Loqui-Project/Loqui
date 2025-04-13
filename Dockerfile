@@ -16,6 +16,9 @@ RUN pnpm run build
 
 FROM node:alpine AS runner
 
+ENV PNPM_HOME="/pnpm"
+RUN corepack enable
+
 WORKDIR /build
 
 COPY --from=builder /build/node_modules /build/node_modules
