@@ -4,7 +4,7 @@ import type { StringItem } from "@/lib/api-client-wrapper";
 import TranslationInterface from "@/components/projects/translation-interface";
 
 interface ProjectStringsListProps {
-  projectId: string;
+  projectId: number;
   strings: StringItem[];
   selectedLanguage: string | null;
 }

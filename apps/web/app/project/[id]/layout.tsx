@@ -18,7 +18,7 @@ export default function ProjectLayout({
   const [error, setError] = useState<string | null>(null);
   const [projectInfo, setProjectInfo] = useState<any>(null);
 
-  const projectId = params.id as string;
+  const projectId = params.id as unknown as number;
 
   useEffect(() => {
     async function fetchProjectData() {

@@ -19,7 +19,8 @@ jobs:
               uses: fkirc/skip-duplicate-actions@v5
               with:
                   paths_ignore: '["**/README.md", "**/docs/**", "**/.gitignore", "**/LICENSE"]'
-                  concurrent_skipping: same_content_newer
+                  concurrent_skipping: never
+                  skip_after_successful_duplicate: false
 
     build_and_push_docker_images_to_container_registry:
         name: Build and push Docker images to container registry
@@ -28,8 +29,13 @@ jobs:
         if: needs.skip_duplicate_jobs.outputs.should_skip != 'true'
 
         steps:
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+            
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
+              with:
+                buildkitd-flags: --debug
 
             - name: Log in to GitHub Container Registry
               uses: docker/login-action@v3
@@ -38,35 +44,15 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Generate API Docker metadata
-              id: api_meta
+            - name: Generate Docker metadata
+              id: meta
               uses: docker/metadata-action@v5
               with:
                   images: |
-                      ghcr.io/${{ github.repository }}/api
+                      ghcr.io/${{ github.repository }}
                   labels: |
-                      org.opencontainers.image.title=Loqui API
-                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/api).
-                      org.opencontainers.image.vendor=The Loqui Project
-                  tags: |
-                      type=schedule
-                      type=ref,event=branch
-                      type=ref,event=pr
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=semver,pattern={{major}}
-                      type=sha
-                      type=raw,value=latest,enable={{is_default_branch}}
-
-            - name: Generate web application Docker metadata
-              id: web_meta
-              uses: docker/metadata-action@v5
-              with:
-                  images: |
-                      ghcr.io/${{ github.repository }}/web
-                  labels: |
-                      org.opencontainers.image.title=Loqui web application
-                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/web).
+                      org.opencontainers.image.title=Loqui
+                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui).
                       org.opencontainers.image.vendor=The Loqui Project
                   tags: |
                       type=schedule
@@ -81,39 +67,27 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Cache
+            - name: Set up cache for pnpm
               uses: actions/cache@v3
-              id: cache
+              id: pnpm-cache
               with:
                   path: |
-                    pnpm
-                  key: ${{ runner.os }}-pnpm-cache-${{ hashFiles('pnpm-lock.yaml') }}
+                    /pnpm
+                    ~/.pnpm-store
+                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
                   restore-keys: |
-                    ${{ runner.os }}-pnpm-cache-
+                    ${{ runner.os }}-pnpm-
 
-            - name: Inject cache into Docker
-              uses: reproducible-containers/buildkit-cache-dance@v3.1.0
-              with:
-                  cache-map: |
-                      {
-                      "pnpm": "/pnpm"
-                      }
-                  skip-extraction: ${{ steps.cache.outputs.cache-hit }}
-
-            - name: Build and push API Docker image
+            - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: apps/api/Dockerfile
+                  file: Dockerfile
                   push: true
-                  tags: ${{ steps.api_meta.outputs.tags }}
-                  labels: ${{ steps.api_meta.outputs.labels }}
-
-            - name: Build and push web application Docker image
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: apps/web/Dockerfile
-                  push: true
-                  tags: ${{ steps.web_meta.outputs.tags }}
-                  labels: ${{ steps.web_meta.outputs.labels }}
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+                  platforms: linux/amd64,linux/arm64
+                  build-args: |
+                    BUILDKIT_INLINE_CACHE=1
