@@ -65,7 +65,7 @@ jobs:
               uses: actions/cache@v3
               id: cache
               with:
-                  path: ~/.pnpm
+                  path: pnpm
                   key: ${{ runner.os }}-api-node-${{ hashFiles('apps/api/package-lock.json') }}
                   restore-keys: |
                     ${{ runner.os }}-api-node-
@@ -75,7 +75,7 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "~/.pnpm": "~/.pnpm",
+                      "pnpm": "~/.pnpm",
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
@@ -131,7 +131,7 @@ jobs:
               uses: actions/cache@v3
               id: cache
               with:
-                  path: ~/.pnpm
+                  path: pnpm
                   key: ${{ runner.os }}-web-node-${{ hashFiles('apps/web/package-lock.json') }}
                   restore-keys: |
                     ${{ runner.os }}-web-node-
@@ -141,7 +141,7 @@ jobs:
               with:
                   cache-map: |
                       {
-                      "~/.pnpm": "~/.pnpm",
+                      "pnpm": "~/.pnpm",
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
