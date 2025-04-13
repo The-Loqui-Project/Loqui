@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "tsx ./dist/server.js",
     "dev": "tsx watch server.ts --clear-screen=false",
     "db:gen": "drizzle-kit generate",
     "db:push": "drizzle-kit push --config=drizzle-dev.config.ts",
