@@ -1,7 +1,7 @@
 // API client functions for interacting with the Loqui API
 
 export interface Project {
-  Id: number;
+  id: number;
   optIn: string; // date-time
 }
 
@@ -36,7 +36,7 @@ export interface ProposalItem {
   rank: number;
   language: string;
   user: {
-    Id: number;
+    id: number;
     role: string;
   };
 }
@@ -59,7 +59,7 @@ export async function getAllProjects(): Promise<
     description: any;
     slug: any;
     icon_url: any;
-    Id: number;
+    id: number;
     modrinth_data: any;
   }[]
 > {
