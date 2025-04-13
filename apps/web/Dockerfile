@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=${PNPM_HOME} \
 RUN --mount=type=cache,target=${PNPM_HOME} echo "PNPM cache after install: $(ls -la ${PNPM_HOME})"
 
 RUN cp apps/web/template.env apps/web/.env && \
-  sed -i "s/IS_DEV_MODE=true/IS_DEV_MODE=false/g" apps/web/.env
+  sed -i 's/IS_DEV_MODE=true/IS_DEV_MODE=false/g' apps/web/.env
 
 FROM node:alpine AS runner
 
