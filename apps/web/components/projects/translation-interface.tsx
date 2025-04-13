@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { getCookie } from "cookies-next";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 import {
   type StringItem,
   getStringDetails,
@@ -12,37 +16,13 @@ import {
   deleteProposal,
   editProposal,
 } from "@/lib/api-client-wrapper";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  ThumbsUp,
-  ThumbsDown,
-  MessageSquare,
-  Loader2,
-  AlertCircle,
-  Trash2,
-  Pencil,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/auth-context";
 
-// Define proper types for the proposals
-interface Proposal {
-  id: string;
-  value: string;
-  note?: string;
-  score: number;
-  status?: "accurate" | "inaccurate";
-  user?: {
-    id: string;
-  };
-}
+// Import our new components
+import NavigationHeader from "./proposals/navigation-header";
+import ProgressPanel from "./proposals/progress-panel";
+import TranslationForm from "./proposals/translation-form";
+import ProposalList from "./proposals/proposal-list";
+import { Proposal } from "./proposals/types";
 
 interface TranslationInterfaceProps {
   projectId: string;
@@ -58,6 +38,8 @@ export default function TranslationInterface({
   onBack,
 }: TranslationInterfaceProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredStrings, setFilteredStrings] = useState<StringItem[]>(strings);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,14 +48,10 @@ export default function TranslationInterface({
   const [proposals, setProposals] = useState<Record<string, Proposal[]>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
-  const [editingProposal, setEditingProposal] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState("");
-  const [editNote, setEditNote] = useState("");
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Record<string, boolean>>({});
 
-  const { toast } = useToast();
-
+  // Filter strings when search term changes
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredStrings(strings);
@@ -89,8 +67,8 @@ export default function TranslationInterface({
     }
   }, [searchTerm, strings]);
 
+  // Load proposals for the current string
   useEffect(() => {
-    // Load proposals for visible strings
     if (filteredStrings.length > 0 && selectedLanguage) {
       loadProposalsForString(filteredStrings[currentIndex]!.id);
     }
@@ -133,7 +111,11 @@ export default function TranslationInterface({
     }
   };
 
-  const handleSaveTranslation = async (stringId: string) => {
+  const handleSaveTranslation = async (
+    stringId: string,
+    translationText: string,
+    note?: string,
+  ) => {
     const token = getCookie("token");
     if (!token || !selectedLanguage) {
       toast({
@@ -144,7 +126,6 @@ export default function TranslationInterface({
       return;
     }
 
-    const translationText = translations[stringId];
     if (!translationText?.trim()) {
       toast({
         title: "Error",
@@ -198,7 +179,7 @@ export default function TranslationInterface({
       await createProposal(
         translation.id,
         translationText,
-        notes[stringId] || undefined,
+        note,
         token.toString(),
       );
 
@@ -268,9 +249,115 @@ export default function TranslationInterface({
     }
   };
 
-  const handleUseProposal = (stringId: string, proposal: any) => {
-    setTranslations((prev) => ({ ...prev, [stringId]: proposal.value }));
-    setNotes((prev) => ({ ...prev, [stringId]: proposal.note || "" }));
+  const handleDeleteProposal = async (proposalId: string) => {
+    const token = getCookie("token");
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to delete proposals",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentString = filteredStrings[currentIndex];
+    if (!currentString) return;
+
+    try {
+      setDeleting((prev) => ({ ...prev, [proposalId]: true }));
+
+      await deleteProposal(Number(proposalId), token.toString());
+
+      toast({
+        title: "Success",
+        description: "Proposal deleted successfully",
+      });
+
+      // Reload proposals
+      await loadProposalsForString(currentString.id);
+    } catch (error) {
+      console.error("Error deleting proposal:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to delete proposal",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting((prev) => ({ ...prev, [proposalId]: false }));
+    }
+  };
+
+  const handleEditProposal = async (
+    proposalId: string,
+    value: string,
+    note: string,
+  ) => {
+    const token = getCookie("token");
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to edit proposals",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const currentString = filteredStrings[currentIndex];
+    if (!currentString) return;
+
+    if (!value.trim()) {
+      toast({
+        title: "Error",
+        description: "Translation cannot be empty",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if this edit would create a duplicate
+    const existingProposals = proposals[currentString.id] || [];
+    const isDuplicate = existingProposals.some(
+      (p) => p.id !== proposalId && p.value.trim() === value.trim(),
+    );
+
+    if (isDuplicate) {
+      toast({
+        title: "Error",
+        description: "This translation already exists as another proposal",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setEditing((prev) => ({ ...prev, [proposalId]: true }));
+
+      await editProposal(
+        Number(proposalId),
+        value,
+        note || undefined,
+        token.toString(),
+      );
+
+      toast({
+        title: "Success",
+        description: "Proposal updated successfully",
+      });
+
+      // Reload proposals
+      await loadProposalsForString(currentString.id);
+    } catch (error) {
+      console.error("Error editing proposal:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to edit proposal",
+        variant: "destructive",
+      });
+    } finally {
+      setEditing((prev) => ({ ...prev, [proposalId]: false }));
+    }
   };
 
   const handleNext = () => {
@@ -296,124 +383,7 @@ export default function TranslationInterface({
     return Math.round((translatedCount / filteredStrings.length) * 100);
   };
 
-  const handleDeleteProposal = async (proposalId: string) => {
-    const token = getCookie("token");
-    if (!token) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to delete proposals",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setDeleting((prev) => ({ ...prev, [proposalId]: true }));
-
-      await deleteProposal(Number(proposalId), token.toString());
-
-      toast({
-        title: "Success",
-        description: "Proposal deleted successfully",
-      });
-
-      // Reload proposals for the current string
-      await loadProposalsForString(currentString!.id);
-    } catch (error) {
-      console.error("Error deleting proposal:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to delete proposal",
-        variant: "destructive",
-      });
-    } finally {
-      setDeleting((prev) => ({ ...prev, [proposalId]: false }));
-    }
-  };
-
-  const startEditing = (proposal: Proposal) => {
-    setEditingProposal(proposal.id);
-    setEditValue(proposal.value);
-    setEditNote(proposal.note || "");
-  };
-
-  const cancelEditing = () => {
-    setEditingProposal(null);
-    setEditValue("");
-    setEditNote("");
-  };
-
-  const handleEditProposal = async (proposalId: string) => {
-    const token = getCookie("token");
-    if (!token) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to edit proposals",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!editValue.trim()) {
-      toast({
-        title: "Error",
-        description: "Translation cannot be empty",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if this edit would create a duplicate
-    const existingProposals = proposals[currentString!.id] || [];
-    const isDuplicate = existingProposals.some(
-      (p) => p.id !== proposalId && p.value.trim() === editValue.trim(),
-    );
-
-    if (isDuplicate) {
-      toast({
-        title: "Error",
-        description: "This translation already exists as another proposal",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setEditing((prev) => ({ ...prev, [proposalId]: true }));
-
-      await editProposal(
-        Number(proposalId),
-        editValue,
-        editNote || undefined,
-        token.toString(),
-      );
-
-      toast({
-        title: "Success",
-        description: "Proposal updated successfully",
-      });
-
-      // Reset editing state
-      setEditingProposal(null);
-      setEditValue("");
-      setEditNote("");
-
-      // Reload proposals for the current string
-      await loadProposalsForString(currentString!.id);
-    } catch (error) {
-      console.error("Error editing proposal:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to edit proposal",
-        variant: "destructive",
-      });
-    } finally {
-      setEditing((prev) => ({ ...prev, [proposalId]: false }));
-    }
-  };
-
+  // Empty state when no strings match search
   if (filteredStrings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
@@ -428,317 +398,46 @@ export default function TranslationInterface({
     );
   }
 
-  const currentString = filteredStrings[currentIndex];
+  const currentString = filteredStrings[currentIndex]!;
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with navigation and search */}
-      <div className="flex items-center justify-between mb-4 gap-4">
-        <Button variant="outline" onClick={onBack}>
-          <ChevronLeft className="mr-2 h-4 w-4" /> Back to Languages
-        </Button>
+      {/* Use our new NavigationHeader component */}
+      <NavigationHeader
+        onBack={onBack}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        currentIndex={currentIndex}
+        totalStrings={filteredStrings.length}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+      />
 
-        <div className="flex-1 max-w-md relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search strings..."
-            className="pl-8"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+      {/* Use our new ProgressPanel component */}
+      <ProgressPanel completionPercentage={getCompletionPercentage()} />
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            {currentIndex + 1} of {filteredStrings.length} strings
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handlePrevious}
-              disabled={currentIndex === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleNext}
-              disabled={currentIndex === filteredStrings.length - 1}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Use our new TranslationForm component */}
+      <TranslationForm
+        stringId={currentString.id}
+        stringValue={currentString.value}
+        stringKey={currentString.key}
+        initialTranslation={translations[currentString.id] || ""}
+        initialNote={notes[currentString.id] || ""}
+        onSubmit={handleSaveTranslation}
+        saving={saving[currentString.id] || false}
+      />
 
-      {/* Progress bar */}
-      <div className="mb-4">
-        <div className="flex justify-between text-sm mb-1">
-          <span>Translation Progress</span>
-          <span>{getCompletionPercentage()}%</span>
-        </div>
-        <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary"
-            style={{ width: `${getCompletionPercentage()}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Add this after the progress bar */}
-      <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
-        <p className="font-medium mb-1">Translation Process:</p>
-        <ol className="list-decimal pl-5 space-y-1">
-          <li>Review existing proposals or create a new one</li>
-          <li>Vote on proposals you agree with</li>
-          <li>
-            The proposal with the most votes will become the official
-            translation
-          </li>
-        </ol>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-lg border p-4">
-        {/* Source string (left side) */}
-        <div className="flex flex-col">
-          <div className="mb-1 text-sm font-medium">Source (English)</div>
-          <div className="min-h-24 p-3 rounded-md bg-muted/50 mb-2">
-            {currentString!.value}
-          </div>
-          <div className="text-xs text-muted-foreground font-mono">
-            Key: {currentString!.key}
-          </div>
-        </div>
-
-        <div className="flex flex-col">
-          <div className="flex items-center justify-between mb-1">
-            <div className="text-sm font-medium">
-              Submit New Proposal ({selectedLanguage})
-            </div>
-          </div>
-
-          <div className="relative">
-            <Textarea
-              placeholder="Enter translation..."
-              className="min-h-24 resize-none"
-              value={translations[currentString!.id] || ""}
-              onChange={(e) =>
-                setTranslations((prev) => ({
-                  ...prev,
-                  [currentString!.id]: e.target.value,
-                }))
-              }
-            />
-            <div className="absolute top-2 right-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7"
-                onClick={() => handleSaveTranslation(currentString!.id)}
-                disabled={saving[currentString!.id]}
-              >
-                {saving[currentString!.id] ? (
-                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                ) : (
-                  <MessageSquare className="h-4 w-4 mr-1" />
-                )}
-                Submit Proposal
-              </Button>
-            </div>
-          </div>
-
-          <div className="mt-2">
-            <Textarea
-              placeholder="Add notes or context (optional)..."
-              className="text-sm resize-none h-16"
-              value={notes[currentString!.id] || ""}
-              onChange={(e) =>
-                setNotes((prev) => ({
-                  ...prev,
-                  [currentString!.id]: e.target.value,
-                }))
-              }
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Main translation interface */}
-      <div className="mt-4 border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-medium">Community Proposals</h3>
-          <Badge variant="outline" className="ml-2">
-            {proposals[currentString!.id]?.length || 0} Proposals
-          </Badge>
-        </div>
-
-        {loading[currentString!.id] ? (
-          <div className="flex justify-center p-4">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        ) : proposals[currentString!.id] &&
-          proposals[currentString!.id]!.length > 0 ? (
-          <div className="space-y-3">
-            {proposals[currentString!.id]!.map((proposal) => (
-              <div
-                key={proposal.id}
-                className={cn(
-                  "border rounded-md p-3",
-                  proposal.status === "accurate" &&
-                    "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
-                  proposal.status === "inaccurate" &&
-                    "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
-                  editingProposal === proposal.id &&
-                    "border-blue-500/30 bg-blue-50/30 dark:bg-blue-950/10",
-                )}
-              >
-                {editingProposal === proposal.id ? (
-                  // Editing interface
-                  <div className="space-y-3">
-                    <Textarea
-                      className="min-h-24 resize-none"
-                      value={editValue}
-                      placeholder="Enter translation..."
-                      onChange={(e) => setEditValue(e.target.value)}
-                    />
-                    <Textarea
-                      className="resize-none h-16 text-sm"
-                      value={editNote}
-                      placeholder="Add notes or context (optional)..."
-                      onChange={(e) => setEditNote(e.target.value)}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={cancelEditing}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleEditProposal(proposal.id)}
-                        disabled={editing[proposal.id]}
-                      >
-                        {editing[proposal.id] ? (
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                        ) : (
-                          "Save Changes"
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  // Normal display interface
-                  <>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {proposal.status === "accurate" && (
-                          <Badge className="bg-green-500">Accurate</Badge>
-                        )}
-                        {proposal.status === "inaccurate" && (
-                          <Badge className="bg-red-500">Inaccurate</Badge>
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          by {proposal.user?.id || "Unknown"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {proposal.user?.id === user?.modrinthUserData?.id ||
-                        "" ? (
-                          <div className="flex items-center">
-                            <Badge className="bg-blue-500 mr-2">Yours</Badge>
-                            {/* Only show edit/delete options if score is 0 */}
-                            {proposal.score === 0 && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-blue-500 hover:text-blue-600"
-                                  onClick={() => startEditing(proposal)}
-                                  title="Edit proposal"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 text-red-500 hover:text-red-600"
-                                  onClick={() =>
-                                    handleDeleteProposal(proposal.id)
-                                  }
-                                  disabled={deleting[proposal.id]}
-                                  title="Delete proposal"
-                                >
-                                  {deleting[proposal.id] ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() =>
-                                handleVote(currentString!.id, proposal.id, "up")
-                              }
-                            >
-                              <ThumbsUp className="h-4 w-4" />
-                            </Button>
-                            <span className="mx-1 text-sm font-medium">
-                              {proposal.score}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() =>
-                                handleVote(
-                                  currentString!.id,
-                                  proposal.id,
-                                  "down",
-                                )
-                              }
-                            >
-                              <ThumbsDown className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    <p className="mb-1">{proposal.value}</p>
-                    {proposal.note && (
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-medium">Note:</span>{" "}
-                        {proposal.note}
-                      </p>
-                    )}
-                    <div className="mt-2 flex justify-end">
-                      <span className="text-xs text-muted-foreground">
-                        {proposal.score > 0
-                          ? "Leading proposal"
-                          : "Vote to support this proposal"}
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted-foreground py-4">
-            No proposals for this string yet. Be the first to contribute!
-          </p>
-        )}
-      </div>
+      {/* Use our new ProposalList component */}
+      <ProposalList
+        stringId={currentString.id}
+        proposals={proposals[currentString.id]}
+        loading={loading[currentString.id] || false}
+        onVote={handleVote}
+        onDelete={handleDeleteProposal}
+        onEdit={handleEditProposal}
+        deleting={deleting}
+        editing={editing}
+      />
     </div>
   );
 }
