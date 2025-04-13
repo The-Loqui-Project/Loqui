@@ -3,6 +3,7 @@ import db from "../../../db";
 import { proposal, proposalVote } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
 import { and, eq, sql } from "drizzle-orm";
+import { updateProposalStatuses } from "../../../util/proposal-utils";
 
 export default {
   type: "POST",
@@ -163,7 +164,13 @@ export default {
           score: sql`${proposal.score} + ${scoreChange}`,
         })
         .where(eq(proposal.id, proposalId))
-        .returning({ newScore: proposal.score });
+        .returning({
+          newScore: proposal.score,
+          translationId: proposal.translationId,
+        });
+
+      // Update proposal statuses based on new vote
+      await updateProposalStatuses(updatedProposal.translationId);
 
       response.status(200).send({
         message: `Vote ${voteType} registered successfully`,

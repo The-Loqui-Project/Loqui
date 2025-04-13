@@ -15,6 +15,8 @@ import {
   createTranslation,
   deleteProposal,
   editProposal,
+  getProjectProgress,
+  TranslationProgress,
 } from "@/lib/api-client-wrapper";
 
 // Import our new components
@@ -50,6 +52,7 @@ export default function TranslationInterface({
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<Record<string, boolean>>({});
   const [editing, setEditing] = useState<Record<string, boolean>>({});
+  const [progress, setProgress] = useState<TranslationProgress>({});
 
   // Filter strings when search term changes
   useEffect(() => {
@@ -73,6 +76,13 @@ export default function TranslationInterface({
       loadProposalsForString(filteredStrings[currentIndex]!.id);
     }
   }, [currentIndex, filteredStrings, selectedLanguage]);
+
+  // Fetch project progress when component loads or language changes
+  useEffect(() => {
+    if (projectId && selectedLanguage) {
+      fetchProjectProgress();
+    }
+  }, [projectId, selectedLanguage]);
 
   const loadProposalsForString = async (stringId: string) => {
     if (!selectedLanguage || loading[stringId]) return;
@@ -108,6 +118,17 @@ export default function TranslationInterface({
       console.error("Error loading proposals:", error);
     } finally {
       setLoading((prev) => ({ ...prev, [stringId]: false }));
+    }
+  };
+
+  const fetchProjectProgress = async () => {
+    if (!projectId) return;
+
+    try {
+      const progressData = await getProjectProgress(projectId);
+      setProgress(progressData);
+    } catch (error) {
+      console.error("Error fetching project progress:", error);
     }
   };
 
@@ -373,14 +394,11 @@ export default function TranslationInterface({
   };
 
   const getCompletionPercentage = () => {
-    if (filteredStrings.length === 0) return 0;
+    if (!selectedLanguage || !progress[selectedLanguage]) return 0;
 
-    // Count strings that have translations
-    const translatedCount = Object.keys(translations).filter(
-      (key) => translations[key]!.trim().length > 0,
-    ).length;
-
-    return Math.round((translatedCount / filteredStrings.length) * 100);
+    // Use the progress data from the API for the selected language
+    const langProgress = progress[selectedLanguage];
+    return Math.round(langProgress.progress * 100);
   };
 
   // Empty state when no strings match search

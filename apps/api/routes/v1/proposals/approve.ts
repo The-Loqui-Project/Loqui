@@ -2,7 +2,8 @@ import APIRoute from "../../route";
 import db from "../../../db";
 import { proposal } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
-import { and, eq, not } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { updateProposalStatuses } from "../../../util/proposal-utils";
 
 export default {
   type: "POST",
@@ -91,39 +92,12 @@ export default {
         .update(proposal)
         .set({
           approvals: proposalData.approvals + 1,
-          status: "accurate", // Mark as accurate when approved
         })
         .where(eq(proposal.id, proposalId))
         .returning({ approvals: proposal.approvals });
 
-      // Determine if this should be the accepted translation
-      // Based on the ranking algorithm: score + (approvals * 4)
-      const translationProposals = await db.query.proposal.findMany({
-        where: (p, { eq }) => eq(p.translationId, proposalData.translationId),
-        orderBy: (p, { desc, sql }) => [
-          desc(sql`${p.score} + ${p.approvals} * 4`),
-        ],
-      });
-
-      // If this proposal is now at the top, mark it as the primary accurate one
-      // and set others to pending or inaccurate
-      if (
-        translationProposals.length > 0 &&
-        translationProposals[0].id === proposalId
-      ) {
-        // Set all other proposals for this translation to pending/inaccurate
-        await db
-          .update(proposal)
-          .set({
-            status: "pending",
-          })
-          .where(
-            and(
-              eq(proposal.translationId, proposalData.translationId),
-              not(eq(proposal.id, proposalId)),
-            ),
-          );
-      }
+      // Update proposal statuses based on new approval
+      await updateProposalStatuses(proposalData.translationId);
 
       response.status(200).send({
         message: "Proposal approved successfully",

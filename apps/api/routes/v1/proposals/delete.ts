@@ -3,6 +3,7 @@ import db from "../../../db";
 import { proposal, proposalVote } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
 import { and, eq, count } from "drizzle-orm";
+import { updateProposalStatuses } from "../../../util/proposal-utils";
 
 export default {
   type: "DELETE",
@@ -108,8 +109,14 @@ export default {
         }
       }
 
+      // Store translation ID for later updating other proposals
+      const translationId = proposalData.translationId;
+
       // Delete the proposal
       await db.delete(proposal).where(eq(proposal.id, proposalId));
+
+      // Update other proposals to ensure proper ordering and status
+      await updateProposalStatuses(translationId, proposalId);
 
       response.status(200).send({
         message: "Proposal deleted successfully",
