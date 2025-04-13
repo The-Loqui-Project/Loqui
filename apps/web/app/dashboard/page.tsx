@@ -21,7 +21,7 @@ import {
 } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
 
-export function Dashboard() {
+export default function Dashboard() {
   const { user, isAuthenticated } = useAuth();
   const [userProjects, setUserProjects] = useState<any[]>([]);
   const [projectsToTranslate, setProjectsToTranslate] = useState<any[]>([]);
