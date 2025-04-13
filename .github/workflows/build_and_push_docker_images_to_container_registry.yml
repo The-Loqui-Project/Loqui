@@ -38,35 +38,15 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Generate API Docker metadata
-              id: api_meta
+            - name: Generate Docker metadata
+              id: meta
               uses: docker/metadata-action@v5
               with:
                   images: |
-                      ghcr.io/${{ github.repository }}/api
+                      ghcr.io/${{ github.repository }}/turborepo
                   labels: |
-                      org.opencontainers.image.title=Loqui API
-                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/api).
-                      org.opencontainers.image.vendor=The Loqui Project
-                  tags: |
-                      type=schedule
-                      type=ref,event=branch
-                      type=ref,event=pr
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=semver,pattern={{major}}
-                      type=sha
-                      type=raw,value=latest,enable={{is_default_branch}}
-
-            - name: Generate web application Docker metadata
-              id: web_meta
-              uses: docker/metadata-action@v5
-              with:
-                  images: |
-                      ghcr.io/${{ github.repository }}/web
-                  labels: |
-                      org.opencontainers.image.title=Loqui web application
-                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui/tree/main/apps/web).
+                      org.opencontainers.image.title=Loqui Turborepo
+                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui).
                       org.opencontainers.image.vendor=The Loqui Project
                   tags: |
                       type=schedule
@@ -100,20 +80,11 @@ jobs:
                       }
                   skip-extraction: ${{ steps.cache.outputs.cache-hit }}
 
-            - name: Build and push API Docker image
+            - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
                   context: .
-                  file: apps/api/Dockerfile
+                  file: Dockerfile
                   push: true
-                  tags: ${{ steps.api_meta.outputs.tags }}
-                  labels: ${{ steps.api_meta.outputs.labels }}
-
-            - name: Build and push web application Docker image
-              uses: docker/build-push-action@v6
-              with:
-                  context: .
-                  file: apps/web/Dockerfile
-                  push: true
-                  tags: ${{ steps.web_meta.outputs.tags }}
-                  labels: ${{ steps.web_meta.outputs.labels }}
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
