@@ -1,15 +1,15 @@
 import type { NextConfig } from "next";
 
-const isProduction = false;
+const isProduction = !process.env.IS_DEV_MODE;
 
 const nextConfig: NextConfig = {
   env: {
     API_URL: isProduction
       ? "https://api.loqui.imb11.dev/"
-      : "http://localhost:8080/",
+      : process.env.API_URL,
     CURRENT_URL: isProduction
       ? "https://loqui.imb11.dev/"
-      : "http://localhost:3000/",
+      : process.env.CURRENT_URL,
   },
   images: {
     remotePatterns: [
