@@ -6,7 +6,8 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "start": "pnpm --recursive --parallel --filter api --filter web run start"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
