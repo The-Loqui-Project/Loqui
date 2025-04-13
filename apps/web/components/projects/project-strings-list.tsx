@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import type { StringItem } from "@/lib/api-client-wrapper";
 import TranslationInterface from "@/components/projects/translation-interface";
 
@@ -13,15 +14,18 @@ export default function ProjectStringsList({
   strings,
   selectedLanguage,
 }: ProjectStringsListProps) {
+  const router = useRouter();
+
+  const handleBack = () => {
+    router.push(`/project/${projectId}`);
+  };
+
   return (
     <TranslationInterface
       projectId={projectId}
       strings={strings}
       selectedLanguage={selectedLanguage}
-      onBack={() => {
-        // This will be handled by the parent component's backToLanguages function
-        window.history.back();
-      }}
+      onBack={handleBack}
     />
   );
 }
