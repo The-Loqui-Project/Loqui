@@ -43,9 +43,9 @@ jobs:
               uses: docker/metadata-action@v5
               with:
                   images: |
-                      ghcr.io/${{ github.repository }}/turborepo
+                      ghcr.io/${{ github.repository }}
                   labels: |
-                      org.opencontainers.image.title=Loqui Turborepo
+                      org.opencontainers.image.title=Loqui
                       org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui).
                       org.opencontainers.image.vendor=The Loqui Project
                   tags: |
