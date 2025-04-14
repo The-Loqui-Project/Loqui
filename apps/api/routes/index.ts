@@ -35,6 +35,10 @@ import V1_TranslationsCreate from "./v1/translations/create";
 import V1_ReportsList from "./v1/proposals/reports/list";
 import V1_ReportsResolve from "./v1/proposals/reports/resolve";
 
+// Tasks
+import V1_TasksList from "./v1/tasks/list";
+import V1_TasksGet from "./v1/tasks/get";
+
 interface RouteStorage {
   [apiVersion: string]: {
     [routeName: string]: APIRoute;
@@ -76,6 +80,10 @@ const routes: RouteStorage = {
     // Reports Management
     reports_list: V1_ReportsList,
     reports_resolve: V1_ReportsResolve,
+
+    // Tasks
+    tasks_list: V1_TasksList,
+    tasks_get: V1_TasksGet,
   },
 };
 
