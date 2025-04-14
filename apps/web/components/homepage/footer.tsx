@@ -16,8 +16,8 @@ export function Footer() {
           </div>
           <p className="text-xs text-muted-foreground/70">
             {meta.branch && meta.commit
-              ? `Build: ${meta.branch} (${(meta.commit as string).substring(0, 7)})`
-              : "Development build"}
+              ? `Build: ${meta.branch}@${(meta.commit as string).substring(0, 7)}`
+              : "Local Development build"}
           </p>
         </div>
         <div className="flex items-center gap-4">
