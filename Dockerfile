@@ -46,9 +46,6 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 
 ENV NODE_ENV=production
-# Set runtime environment variables
-ENV NEXT_PUBLIC_CURRENT_URL=${CURRENT_URL}
-ENV NEXT_PUBLIC_API_URL=${API_URL}
 
 # Start both services
 CMD ["pnpm", "run", "start"]
