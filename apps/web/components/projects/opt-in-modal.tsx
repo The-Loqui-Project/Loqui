@@ -186,7 +186,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
 
       // Store task IDs with their associated project names for better UX
       if (result.taskIds && result.taskIds.length > 0) {
-        const newTaskWithProjects = result.taskIds.map(
+        const newTaskWithProjects: TaskWithProject[] = result.taskIds.map(
           (taskId: string, index: number) => {
             // Find the corresponding project in the selected projects, using non-null assertion
             const projectId = selectedProjects[index]!;
@@ -195,7 +195,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
               taskId,
               projectId,
               projectName: projectData?.title || projectId,
-            };
+            } as TaskWithProject;
           },
         );
 
