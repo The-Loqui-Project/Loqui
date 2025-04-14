@@ -8,6 +8,7 @@ import { TaskProvider } from "@/contexts/task-context";
 import { Navbar } from "@/components/homepage/navbar";
 import { Footer } from "@/components/homepage/footer";
 import { CountryFlagPolyfill } from "@/components/country-flag-polyfill";
+import { Toaster } from "@/components/ui/toaster";
 
 // Load Inter font but don't apply it directly to body
 // This allows us to include it in our font stack while preserving the Twemoji Country Flags font
@@ -46,6 +47,7 @@ export default function RootLayout({
                 {children}
                 <Footer />
               </div>
+              <Toaster />
             </TaskProvider>
           </AuthProvider>
         </ThemeProvider>
