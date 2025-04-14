@@ -78,6 +78,16 @@ jobs:
                   restore-keys: |
                     ${{ runner.os }}-pnpm-
 
+            - name: Update meta.ts with branch and commit
+              run: |
+                BRANCH="${GITHUB_REF#refs/heads/}"
+                if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+                  BRANCH="${GITHUB_REF#refs/tags/}"
+                fi
+                COMMIT=$(git rev-parse --short HEAD)
+                sed -i "s|export const branch: null \| string = null|export const branch: null \| string = '${BRANCH}'|" packages/meta/meta.ts
+                sed -i "s|export const commit: null \| string = null|export const commit: null \| string = '${COMMIT}'|" packages/meta/meta.ts
+
             - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
