@@ -4,12 +4,8 @@ const isProduction = !process.env.IS_DEV_MODE;
 
 const nextConfig: NextConfig = {
   env: {
-    API_URL: isProduction
-      ? "https://api.loqui.imb11.dev/"
-      : process.env.API_URL,
-    CURRENT_URL: isProduction
-      ? "https://loqui.imb11.dev/"
-      : process.env.CURRENT_URL,
+    API_URL: process.env.API_URL,
+    CURRENT_URL: process.env.CURRENT_URL,
   },
   images: {
     remotePatterns: [
