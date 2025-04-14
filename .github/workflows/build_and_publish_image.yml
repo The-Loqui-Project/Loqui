@@ -87,6 +87,24 @@ jobs:
                 COMMIT=$(git rev-parse --short HEAD)
                 sed -i "s|export const branch: null \| string = null|export const branch: null \| string = '${BRANCH}'|" packages/meta/meta.ts
                 sed -i "s|export const commit: null \| string = null|export const commit: null \| string = '${COMMIT}'|" packages/meta/meta.ts
+            
+            - name: Determine URL variables based on branch
+              id: set-urls
+              run: |
+                BRANCH="${GITHUB_REF#refs/heads/}"
+                if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+                  BRANCH="${GITHUB_REF#refs/tags/}"
+                fi
+                
+                if [[ "$BRANCH" == "prod" ]]; then
+                  echo "CURRENT_URL=${{ vars.PROD_CURRENT_URL }}" >> $GITHUB_OUTPUT
+                  echo "API_URL=${{ vars.PROD_API_URL }}" >> $GITHUB_OUTPUT
+                  echo "Using production URLs for branch: $BRANCH"
+                else
+                  echo "CURRENT_URL=${{ vars.STAGING_CURRENT_URL }}" >> $GITHUB_OUTPUT
+                  echo "API_URL=${{ vars.STAGING_API_URL }}" >> $GITHUB_OUTPUT
+                  echo "Using staging URLs for branch: $BRANCH"
+                fi
 
             - name: Build and push Docker image
               uses: docker/build-push-action@v6
@@ -101,3 +119,5 @@ jobs:
                   platforms: linux/amd64,linux/arm64
                   build-args: |
                     BUILDKIT_INLINE_CACHE=1
+                    CURRENT_URL=${{ steps.set-urls.outputs.CURRENT_URL }}
+                    API_URL=${{ steps.set-urls.outputs.API_URL }}

@@ -4,6 +4,10 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# Define build arguments for URLs
+ARG CURRENT_URL
+ARG API_URL
+
 FROM base AS dependencies
 WORKDIR /app
 
@@ -17,6 +21,10 @@ RUN --mount=type=cache,target=${PNPM_HOME} pnpm install --frozen-lockfile
 
 FROM dependencies AS builder
 WORKDIR /app
+
+# Set environment variables for the build process
+ENV CURRENT_URL=${CURRENT_URL}
+ENV API_URL=${API_URL}
 
 COPY . .
 
@@ -38,6 +46,9 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 
 ENV NODE_ENV=production
+# Set runtime environment variables
+ENV NEXT_PUBLIC_CURRENT_URL=${CURRENT_URL}
+ENV NEXT_PUBLIC_API_URL=${API_URL}
 
 # Start both services
 CMD ["pnpm", "run", "start"]
