@@ -1,9 +1,10 @@
-// filepath: /workspaces/Loqui/apps/api/util/auth-utils.ts
 import { FastifyReply, FastifyRequest } from "fastify";
 import validateModrinthToken from "./auth";
 import db from "../db";
 import { user } from "../db/schema/schema";
 import { User } from "typerinth/dist/interfaces/users";
+import axios from "axios";
+import TeamMember from "typerinth/dist/interfaces/teams/TeamMember";
 
 // User roles in hierarchy (low to high)
 const ROLE_HIERARCHY = ["translator", "approved", "moderator", "admin"];
@@ -15,6 +16,20 @@ export interface AuthUser {
   reputation: number;
   modrinthUser?: User;
 }
+
+// Modrinth permission bit flags
+export const ModrinthPermissions = {
+  UPLOAD_VERSION: 1, // 1st bit
+  DELETE_VERSION: 2, // 2nd bit
+  EDIT_DETAILS: 4, // 3rd bit
+  EDIT_BODY: 8, // 4th bit
+  MANAGE_INVITES: 128, // 8th bit
+  REMOVE_MEMBER: 256, // 9th bit
+  EDIT_MEMBER: 512, // 10th bit
+  DELETE_PROJECT: 1024, // 11th bit
+  VIEW_ANALYTICS: 2048, // 12th bit
+  VIEW_PAYOUTS: 4096, // 13th bit
+};
 
 export class AuthUtils {
   /**
@@ -166,5 +181,167 @@ export class AuthUtils {
     }
 
     return id;
+  }
+
+  /**
+   * Check if a user has the required permission for a Modrinth project
+   * @param projectId - The Modrinth project ID
+   * @param userId - The Modrinth user ID
+   * @param authorization - The authorization header with Modrinth token
+   * @param requiredPermission - The permission flag to check (from ModrinthPermissions)
+   * @returns An object with the result of the permission check and any error message
+   */
+  static async checkModrinthProjectPermission(
+    projectId: string,
+    userId: string,
+    authorization: string,
+    requiredPermission: number,
+  ): Promise<{
+    hasPermission: boolean;
+    errorMessage?: string;
+    teamId?: string;
+  }> {
+    try {
+      // Fetch project info to get team ID
+      const projectResponse = await axios.get(
+        `https://api.modrinth.com/v2/project/${projectId}`,
+      );
+
+      if (!projectResponse.data || !projectResponse.data.team) {
+        return {
+          hasPermission: false,
+          errorMessage: `Failed to fetch project information for ${projectId}`,
+        };
+      }
+
+      const teamId = projectResponse.data.team;
+
+      // Get team members to check permissions
+      const teamResponse = await axios.get(
+        `https://api.modrinth.com/v2/team/${teamId}/members`,
+        {
+          headers: {
+            Authorization: authorization,
+          },
+        },
+      );
+
+      if (!teamResponse.data || !Array.isArray(teamResponse.data)) {
+        return {
+          hasPermission: false,
+          errorMessage: `Failed to fetch team information for project ${projectId}`,
+        };
+      }
+
+      // Find the user in team members
+      const userMember = teamResponse.data.find(
+        (member: TeamMember) => member.user.id === userId,
+      );
+
+      if (!userMember) {
+        return {
+          hasPermission: false,
+          errorMessage: `User is not a member of the team for project ${projectId}`,
+        };
+      }
+
+      // Check if user has the required permission
+      const hasPermission =
+        (userMember.permissions & requiredPermission) === requiredPermission;
+
+      return {
+        hasPermission,
+        teamId,
+        errorMessage: hasPermission
+          ? undefined
+          : `User does not have the required permission for project ${projectId}`,
+      };
+    } catch (error) {
+      console.error(
+        `Error checking permission for project ${projectId}:`,
+        error,
+      );
+      return {
+        hasPermission: false,
+        errorMessage: `Failed to check permissions for project ${projectId}`,
+      };
+    }
+  }
+
+  /**
+   * Check permissions for multiple Modrinth projects
+   * @param projectIds - Array of Modrinth project IDs
+   * @param userId - The Modrinth user ID
+   * @param authorization - The authorization header with Modrinth token
+   * @param requiredPermission - The permission flag to check (from ModrinthPermissions)
+   * @returns An object with arrays of authorized and unauthorized project IDs
+   */
+  static async checkModrinthProjectsPermissions(
+    projectIds: string[],
+    userId: string,
+    authorization: string,
+    requiredPermission: number,
+  ): Promise<{
+    authorizedProjects: string[];
+    unauthorizedProjects: string[];
+    projectInfos?: any[];
+  }> {
+    try {
+      // Fetch projects information
+      const idsString = '["' + projectIds.join('","') + '"]';
+      const projectsResponse = await axios.get(
+        "https://api.modrinth.com/v2/projects",
+        {
+          params: {
+            ids: idsString,
+          },
+        },
+      );
+
+      if (!projectsResponse.data || !Array.isArray(projectsResponse.data)) {
+        return {
+          authorizedProjects: [],
+          unauthorizedProjects: projectIds,
+        };
+      }
+
+      const projectsInfos = projectsResponse.data;
+      const authorizedProjects: string[] = [];
+      const unauthorizedProjects: string[] = [];
+
+      // Check permissions for each project
+      for (const proj of projectsInfos) {
+        const result = await this.checkModrinthProjectPermission(
+          proj.id,
+          userId,
+          authorization,
+          requiredPermission,
+        );
+
+        if (result.hasPermission) {
+          authorizedProjects.push(proj.id);
+        } else {
+          unauthorizedProjects.push(proj.id);
+        }
+      }
+
+      // Check for projects that weren't found in the API response
+      const returnedProjectIds = new Set(projectsInfos.map((p: any) => p.id));
+      const missingProjectIds = projectIds.filter(
+        (id) => !returnedProjectIds.has(id),
+      );
+
+      return {
+        authorizedProjects,
+        unauthorizedProjects: [...unauthorizedProjects, ...missingProjectIds],
+        projectInfos: projectsInfos,
+      };
+    } catch (error) {
+      console.error("Error checking permissions for multiple projects:", error);
+      return {
+        authorizedProjects: [],
+        unauthorizedProjects: projectIds,
+      };
+    }
   }
 }

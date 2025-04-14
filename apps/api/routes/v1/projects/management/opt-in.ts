@@ -3,8 +3,8 @@ import validateModrinthToken from "../../../../util/auth";
 import axios from "axios";
 import db from "../../../../db";
 import { project } from "../../../../db/schema/schema";
-import { Project } from "typerinth";
 import checkForNewVersions from "../../../../util/modrinth";
+import { AuthUtils, ModrinthPermissions } from "../../../../util/auth-utils";
 
 export default {
   type: "POST",
@@ -64,6 +64,13 @@ export default {
           message: { type: "string" },
         },
       },
+      403: {
+        description: "Request failed - unauthorized.",
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
     },
   },
   func: async (request, response) => {
@@ -73,27 +80,58 @@ export default {
     );
 
     if (!tokenValid) {
-      response.status(400).send({
+      response.status(401).send({
         message: "Unauthorized - Invalid Modrinth Token.",
       });
       return;
     }
 
     try {
-      const projects = request.body as string[];
-      const idsString = '["' + projects.join('","') + '"]';
-
-      // https://docs.modrinth.com/api/operations/getprojects/
-      const projectsInfos: Project[] = (
-        await axios("https://api.modrinth.com/v2/projects", {
-          params: {
-            ids: idsString,
+      // First, get the current user ID from Modrinth
+      const currentUserResponse = await axios.get(
+        "https://api.modrinth.com/v2/user",
+        {
+          headers: {
+            Authorization: authorization!,
           },
-        })
-      ).data;
+        },
+      );
+
+      const userId = currentUserResponse.data.id;
+      if (!userId) {
+        response.status(400).send({
+          message: "Failed to get user information from Modrinth",
+        });
+        return;
+      }
+
+      const projects = request.body as string[];
+
+      // Check permissions for all submitted projects
+      const { authorizedProjects, unauthorizedProjects, projectInfos } =
+        await AuthUtils.checkModrinthProjectsPermissions(
+          projects,
+          userId,
+          authorization!,
+          ModrinthPermissions.MANAGE_INVITES,
+        );
+
+      // If none of the requested projects are authorized, return 403
+      if (authorizedProjects.length === 0) {
+        response.status(403).send({
+          message:
+            "You don't have permission to opt-in any of these projects. MANAGE_INVITES permission is required.",
+          failedProjects: unauthorizedProjects,
+        });
+        return;
+      }
+
+      // Continue with authorized projects only
+      const filteredProjectsInfos =
+        projectInfos?.filter((p) => authorizedProjects.includes(p.id)) || [];
 
       const fetchedProjectIDs: string[] = [];
-      const projectIds = projectsInfos.map((p) => p.id);
+      const projectIds = filteredProjectsInfos.map((p) => p.id);
       const existingProjects = await db.query.project.findMany({
         where: (project, { inArray }) => inArray(project.id, projectIds),
         columns: {
@@ -103,7 +141,7 @@ export default {
       });
 
       const existingIDs = new Set(existingProjects.map((p) => p.id));
-      const newProjects = projectsInfos
+      const newProjects = filteredProjectsInfos
         .filter(
           (p) =>
             !existingIDs.has(p.id) &&
@@ -120,15 +158,20 @@ export default {
         fetchedProjectIDs.push(...newProjects.map((p) => p.id));
       }
 
-      const invalidIDs = projects.filter(
+      const invalidIDs = authorizedProjects.filter(
         (id) => !fetchedProjectIDs.includes(id),
       );
 
-      if (invalidIDs.length > 0) {
+      // Combine unauthorized and invalid projects as failed projects
+      const allFailedProjects = [...unauthorizedProjects, ...invalidIDs];
+
+      if (allFailedProjects.length > 0) {
         response.status(206).send({
           message:
-            "We are processing some submitted projects. Some project IDs were invalid.",
-          failedProjects: invalidIDs,
+            unauthorizedProjects.length > 0
+              ? "Some projects were processed successfully. Some project IDs were invalid or you don't have the MANAGE_INVITES permission for them."
+              : "We are processing some submitted projects. Some project IDs were invalid.",
+          failedProjects: allFailedProjects,
         });
       } else {
         response.status(201).send({

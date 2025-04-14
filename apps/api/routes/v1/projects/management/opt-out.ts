@@ -2,6 +2,8 @@ import APIRoute from "../../../route";
 import validateModrinthToken from "../../../../util/auth";
 import db from "../../../../db";
 import { project } from "../../../../db/schema/schema";
+import axios from "axios";
+import { AuthUtils, ModrinthPermissions } from "../../../../util/auth-utils";
 
 export default {
   type: "POST",
@@ -77,16 +79,58 @@ export default {
     }
 
     try {
+      // First, get the current user ID from Modrinth
+      const currentUserResponse = await axios.get(
+        "https://api.modrinth.com/v2/user",
+        {
+          headers: {
+            Authorization: authorization!,
+          },
+        },
+      );
+
+      const userId = currentUserResponse.data.id;
+      if (!userId) {
+        response.status(400).send({
+          message: "Failed to get user information from Modrinth",
+        });
+        return;
+      }
+
       const projects = request.body as string[];
+
+      // Check permissions for all submitted projects
+      const { authorizedProjects, unauthorizedProjects } =
+        await AuthUtils.checkModrinthProjectsPermissions(
+          projects,
+          userId,
+          authorization!,
+          ModrinthPermissions.MANAGE_INVITES,
+        );
+
+      // If none of the requested projects are authorized, return 403
+      if (authorizedProjects.length === 0) {
+        response.status(403).send({
+          message:
+            "You don't have permission to opt-out any of these projects. MANAGE_INVITES permission is required.",
+          failedProjects: unauthorizedProjects,
+        });
+        return;
+      }
+
+      // Check which projects exist in the database
       const existingProjects = await db.query.project.findMany({
-        where: (project, { inArray }) => inArray(project.id, projects),
+        where: (project, { inArray }) =>
+          inArray(project.id, authorizedProjects),
         columns: {
           id: true,
         },
       });
 
       const existingIDs = new Set(existingProjects.map((p) => p.id));
-      const projectsToOptOut = projects.filter((id) => existingIDs.has(id));
+      const projectsToOptOut = authorizedProjects.filter((id) =>
+        existingIDs.has(id),
+      );
 
       if (projectsToOptOut.length > 0) {
         await db
@@ -96,17 +140,23 @@ export default {
             inArray(project.id, projectsToOptOut)) as any);
       }
 
-      const invalidIDs = projects.filter((id) => !existingIDs.has(id));
+      // Combine unauthorized and invalid projects as failed projects
+      const invalidIDs = authorizedProjects.filter(
+        (id) => !existingIDs.has(id),
+      );
+      const allFailedProjects = [...unauthorizedProjects, ...invalidIDs];
 
-      if (invalidIDs.length > 0) {
+      if (allFailedProjects.length > 0) {
         response.status(206).send({
           message:
-            "We are processing some submitted projects. Some project IDs were invalid.",
-          failedProjects: invalidIDs,
+            unauthorizedProjects.length > 0
+              ? "Some projects were opted out successfully. Some project IDs were invalid or you don't have the MANAGE_INVITES permission for them."
+              : "We are processing the submitted opt-out requests. Some project IDs were invalid.",
+          failedProjects: allFailedProjects,
         });
       } else {
         response.status(200).send({
-          message: "We are processing the submitted projects.",
+          message: "We have successfully processed the opt-out requests.",
         });
       }
     } catch (e) {
