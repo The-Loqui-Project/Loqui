@@ -28,6 +28,12 @@ ENV API_URL=${API_URL}
 
 COPY . .
 
+# Create .env file for Next.js build time
+RUN mkdir -p apps/web && \
+    echo "API_URL=${API_URL}" > apps/web/.env && \
+    echo "CURRENT_URL=${CURRENT_URL}" >> apps/web/.env && \
+    echo "IS_DEV_MODE=false" >> apps/web/.env
+
 RUN pnpm run build
 
 FROM base AS production
@@ -44,6 +50,7 @@ RUN --mount=type=cache,target=${PNPM_HOME} pnpm install --frozen-lockfile
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
+COPY --from=builder /app/apps/web/.env ./apps/web/.env
 
 ENV NODE_ENV=production
 
