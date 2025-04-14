@@ -48,7 +48,8 @@ export interface StringItem {
   appears_in: string[];
 }
 
-const API_BASE_URL = process.env.API_URL || "http://localhost:8080/v1";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/v1";
 
 /**
  * Get all projects that are currently opted into Loqui

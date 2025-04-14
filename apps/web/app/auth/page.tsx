@@ -32,7 +32,7 @@ export default function AuthPage() {
         process.env.API_URL! + "v1/oauth/configuration",
       );
       const data = await oauthConfiguration.json();
-      const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${process.env.CURRENT_URL! + "auth"}&scope=${data.scopes}`;
+      const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${process.env.NEXT_PUBLIC_CURRENT_URL! + "auth"}&scope=${data.scopes}`;
 
       router.push(MODRINTH_URL);
     } catch (error) {
@@ -45,7 +45,7 @@ export default function AuthPage() {
     try {
       setAuthStatus("loading");
       const oauthFinalize = await fetch(
-        process.env.API_URL! + "v1/oauth/finalize",
+        process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/finalize",
         {
           method: "POST",
           headers: {
@@ -53,7 +53,7 @@ export default function AuthPage() {
           },
           body: JSON.stringify({
             code: code,
-            redirect_uri_used: process.env.CURRENT_URL! + "auth",
+            redirect_uri_used: process.env.NEXT_PUBLIC_CURRENT_URL! + "auth",
           }),
         },
       );
