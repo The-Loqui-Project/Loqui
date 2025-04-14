@@ -43,7 +43,7 @@ export default function ProjectLayout({
 
   if (loading) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
+      <div className="flex flex-1 h-[60vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -65,7 +65,7 @@ export default function ProjectLayout({
   }
 
   return (
-    <div className="container py-6">
+    <div className="container flex-1 py-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Sidebar */}
         <div className="lg:col-span-1">
