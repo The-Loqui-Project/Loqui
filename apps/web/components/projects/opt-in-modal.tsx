@@ -421,8 +421,10 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                   variant="default"
                   className="border-green-500 bg-green-50 dark:bg-green-950/20"
                 >
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription>{successMessage}</AlertDescription>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-600 mr-2" />
+                    <AlertDescription>{successMessage}</AlertDescription>
+                  </div>
                 </Alert>
               )}
 
