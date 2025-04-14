@@ -19,8 +19,12 @@ export function Footer() {
               ? `Build: ${meta.branch}@${(meta.commit as string).substring(0, 7)}`
               : "Local Development build"}
           </p>
+          <p className="mt-1 text-xs font-medium text-muted-foreground/80 max-w-md text-center md:text-left">
+            NOT AN OFFICIAL MINECRAFT PRODUCT/SERVICE/EVENT. NOT APPROVED BY OR
+            ASSOCIATED WITH MOJANG OR MICROSOFT
+          </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-4">
           {/*TODO: Privacy Policy + Terms Of Service*/}
           {/*<Link*/}
           {/*  href="#"*/}
@@ -37,6 +41,7 @@ export function Footer() {
           <Link
             href="https://github.com/The-Loqui-Project"
             className="text-sm text-muted-foreground hover:underline"
+            aria-label="GitHub"
           >
             GitHub
           </Link>
