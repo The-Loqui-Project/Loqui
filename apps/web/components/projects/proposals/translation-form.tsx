@@ -41,7 +41,7 @@ export default function TranslationForm({
         <div className="min-h-24 p-3 rounded-md bg-muted/50 mb-2">
           {stringValue}
         </div>
-        <div className="text-xs text-muted-foreground font-mono">
+        <div className="text-xs text-muted-foreground text-wrap break-words overflow-hidden text-ellipsis font-mono">
           Key: {stringKey}
         </div>
       </div>
