@@ -10,6 +10,7 @@ import { FeatureCard } from "@/components/homepage/feature-card";
 import { SectionHeading } from "@/components/homepage/section-heading";
 import { ProcessStep } from "@/components/homepage/process-step";
 import { useAuth } from "@/contexts/auth-context";
+import Link from "next/link";
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -205,7 +206,7 @@ export default function Home() {
 
           <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center mt-6">
             <Button size="lg" className="gap-1" asChild>
-              <a href="/login">Login with Modrinth</a>
+              <Link href="/auth">Login with Modrinth</Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <a href="#features">Learn More</a>
