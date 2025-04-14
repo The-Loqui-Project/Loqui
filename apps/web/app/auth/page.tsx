@@ -105,7 +105,7 @@ export default function AuthPage() {
   }, [code, authStatus]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950/50">
+    <div className="flex-1 container py-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950/50">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
