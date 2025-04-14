@@ -1,16 +1,18 @@
 import { FastifyInstance } from "fastify";
 import taskManager, { Task } from "./task-manager";
+import fastifyWebsocket from "@fastify/websocket";
+import { WebSocket } from "ws";
 
 /**
  * Set up WebSocket server for real-time task status updates
  */
 export async function setupWebSocketServer(server: FastifyInstance) {
   // Register the WebSocket plugin
-  await server.register(require("@fastify/websocket"));
+  await server.register(fastifyWebsocket);
 
   // Define the WebSocket route
   server.get("/ws/tasks", { websocket: true } as any, (connection, req) => {
-    const { socket }: { socket: any } = connection;
+    const socket: WebSocket = connection;
 
     // Set up client state
     const clientState = {

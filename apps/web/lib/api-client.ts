@@ -104,6 +104,7 @@ export async function optInProjects(
   status: "success" | "partial";
   message: string;
   failedProjects?: string[];
+  taskIds: string[];
 }> {
   const response = await fetch(`${API_BASE_URL}v1/projects/managment/submit`, {
     method: "POST",
@@ -117,16 +118,9 @@ export async function optInProjects(
   const data = await response.json();
 
   if (response.status === 201) {
-    return {
-      status: "success",
-      message: data.message,
-    };
+    return data;
   } else if (response.status === 206) {
-    return {
-      status: "partial",
-      message: data.message,
-      failedProjects: data.failedProjects || [],
-    };
+    return data;
   } else {
     throw new Error(data.message || "Failed to opt-in projects");
   }

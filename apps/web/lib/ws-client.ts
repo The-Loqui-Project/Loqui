@@ -44,9 +44,11 @@ class TaskWebSocketClient extends EventEmitter implements TaskEventEmitter {
     super();
     this.baseUrl =
       baseUrl ||
-      (typeof window !== "undefined"
-        ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/tasks`
-        : "ws://localhost:8080/ws/tasks");
+      (process.env.NEXT_PUBLIC_API_URL
+        ? `${process.env.NEXT_PUBLIC_API_URL.replace(/^http/, "ws")}ws/tasks`
+        : typeof window !== "undefined"
+          ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/tasks`
+          : "ws://localhost:8080/ws/tasks");
   }
 
   /**

@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, AlertCircle, CheckCircle, Search, Check } from "lucide-react";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  Search,
+  Check,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,17 +26,11 @@ import {
   optInProjects,
 } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
-import { CardContent } from "@/components/ui/card";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
+import { useTask } from "@/hooks/use-task";
+import { useToast } from "@/hooks/use-toast";
 
 interface ModrinthProject {
   id: string;
@@ -47,6 +48,13 @@ interface OptInModalProps {
   onSuccess?: () => void;
 }
 
+interface TaskWithProject {
+  processed: boolean;
+  taskId: string;
+  projectId: string;
+  projectName: string; // Store the name for better display
+}
+
 export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +64,12 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
   const [projects, setProjects] = useState<ModrinthProject[]>([]);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [taskWithProjects, setTaskWithProjects] = useState<TaskWithProject[]>(
+    [],
+  );
+  const { subscribeToTask, unsubscribeFromTask, tasks, isConnected } =
+    useTask();
+  const { toast } = useToast();
 
   // Fetch user's Modrinth projects when the modal opens
   useEffect(() => {
@@ -63,6 +77,56 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
       fetchUserProjects();
     }
   }, [open]);
+
+  // Subscribe to tasks when they're added
+  useEffect(() => {
+    taskWithProjects.forEach(({ taskId }) => {
+      subscribeToTask(taskId);
+    });
+
+    // Cleanup subscriptions when component unmounts or when taskWithProjects changes
+    return () => {
+      taskWithProjects.forEach(({ taskId }) => {
+        unsubscribeFromTask(taskId);
+      });
+    };
+  }, [taskWithProjects, subscribeToTask, unsubscribeFromTask]);
+
+  // Monitor tasks for completion and show toast when completed
+  useEffect(() => {
+    taskWithProjects.forEach(({ taskId, projectName }) => {
+      const task = tasks.get(taskId);
+
+      if (task && (task.status === "completed" || task.status === "failed")) {
+        // Check if we've already processed this completion
+        const isNewCompletion = !taskWithProjects.find(
+          (tp) => tp.taskId === taskId && tp.processed,
+        );
+
+        if (isNewCompletion && !open) {
+          // Only show toast if modal is closed
+          toast({
+            title:
+              task.status === "completed"
+                ? `${projectName} has been indexed`
+                : `Failed to index ${projectName}`,
+            description:
+              task.status === "completed"
+                ? "The project is now ready for translation."
+                : task.error || "An error occurred during processing.",
+            variant: task.status === "completed" ? "default" : "destructive",
+          });
+
+          // Mark this task as processed to avoid duplicate toasts
+          setTaskWithProjects((current) =>
+            current.map((tp) =>
+              tp.taskId === taskId ? { ...tp, processed: true } : tp,
+            ),
+          );
+        }
+      }
+    });
+  }, [tasks, taskWithProjects, open, toast]);
 
   const fetchUserProjects = async () => {
     const token = getCookie("token");
@@ -120,7 +184,25 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
         setSuccessMessage(result.message);
       }
 
-      // Move to step 2 (confirmation)
+      // Store task IDs with their associated project names for better UX
+      if (result.taskIds && result.taskIds.length > 0) {
+        const newTaskWithProjects = result.taskIds.map(
+          (taskId: string, index: number) => {
+            // Find the corresponding project in the selected projects, using non-null assertion
+            const projectId = selectedProjects[index]!;
+            const projectData = projects.find((p) => p.id === projectId);
+            return {
+              taskId,
+              projectId,
+              projectName: projectData?.title || projectId,
+            };
+          },
+        );
+
+        setTaskWithProjects(newTaskWithProjects);
+      }
+
+      // Move to step 2 (confirmation and progress)
       setStep(2);
     } catch (err) {
       console.error("Error opting in projects:", err);
@@ -138,6 +220,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
       onSuccess?.();
     }
 
+    // Only reset the step and form values, keep the task subscriptions active
     setStep(1);
     setSelectedProjects([]);
     setError(null);
@@ -173,12 +256,12 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {step === 1 ? "Add Projects to Loqui" : "Confirmation"}
+            {step === 1 ? "Add Projects to Loqui" : "Processing Projects"}
           </DialogTitle>
           <DialogDescription>
             {step === 1
               ? "Select the projects you want to opt-in to Loqui"
-              : "Your projects have been submitted"}
+              : "Your projects are being processed. You can close this dialog and continue browsing."}
           </DialogDescription>
         </DialogHeader>
 
@@ -343,6 +426,93 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                 </Alert>
               )}
 
+              {!isConnected && (
+                <Alert variant="warning">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Connection to task server was lost. Progress updates may not
+                    be accurate.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="p-2 rounded-md bg-muted/50">
+                <p className="text-sm mb-3">
+                  Your projects are being processed in the background. You can
+                  close this dialog and continue browsing - we'll notify you
+                  when processing is complete.
+                </p>
+              </div>
+
+              {taskWithProjects.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Processing Status:</h3>
+                  {taskWithProjects.map(
+                    ({ taskId, projectId, projectName }) => {
+                      const task = tasks.get(taskId);
+                      const projectData = projects.find(
+                        (p) => p.id === projectId,
+                      );
+
+                      return (
+                        <div key={taskId} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <Avatar className="h-6 w-6 mr-2">
+                                <AvatarImage
+                                  src={projectData?.icon_url || ""}
+                                  alt={projectName}
+                                />
+                                <AvatarFallback className="text-xs">
+                                  {projectName?.substring(0, 1)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium">
+                                {projectName}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {task ? (
+                                task.status === "completed" ? (
+                                  <span className="text-green-600 flex items-center">
+                                    <CheckCircle className="h-3 w-3 mr-1" />{" "}
+                                    Complete
+                                  </span>
+                                ) : task.status === "failed" ? (
+                                  <span className="text-red-600 flex items-center">
+                                    <AlertCircle className="h-3 w-3 mr-1" />{" "}
+                                    Failed
+                                  </span>
+                                ) : (
+                                  `${task.status} ${task.progress ? `(${Math.round(task.progress)}%)` : ""}`
+                                )
+                              ) : (
+                                "Waiting..."
+                              )}
+                            </div>
+                          </div>
+                          <Progress
+                            value={
+                              task
+                                ? task.status === "completed"
+                                  ? 100
+                                  : task.progress
+                                : 0
+                            }
+                            className="h-2"
+                          />
+                          {task?.status === "failed" && task.error && (
+                            <div className="text-xs text-red-600 mt-1">
+                              {task.error}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              )}
+
               {failedProjects.length > 0 && (
                 <div>
                   <Label>Failed Projects:</Label>
@@ -361,7 +531,10 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
             </div>
 
             <DialogFooter className="mt-4">
-              <Button onClick={handleClose}>Close</Button>
+              <Button variant="outline" onClick={handleClose}>
+                Close (Processing Will Continue){" "}
+                <ExternalLink className="ml-1 h-3 w-3" />
+              </Button>
             </DialogFooter>
           </>
         )}
