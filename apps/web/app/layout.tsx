@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AuthProvider, useAuth } from "@/contexts/auth-context";
+import { AuthProvider } from "@/contexts/auth-context";
+import { TaskProvider } from "@/contexts/task-context";
 import { Navbar } from "@/components/homepage/navbar";
 import { Footer } from "@/components/homepage/footer";
 import { CountryFlagPolyfill } from "@/components/country-flag-polyfill";
@@ -38,12 +39,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <CountryFlagPolyfill />
-            <div className="flex min-h-screen flex-col">
-              <Navbar />
-              {children}
-              <Footer />
-            </div>
+            <TaskProvider>
+              <CountryFlagPolyfill />
+              <div className="flex min-h-screen flex-col">
+                <Navbar />
+                {children}
+                <Footer />
+              </div>
+            </TaskProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
