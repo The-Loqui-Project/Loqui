@@ -103,19 +103,21 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
           (tp) => tp.taskId === taskId && tp.processed,
         );
 
-        if (isNewCompletion && !open) {
+        if (isNewCompletion) {
           // Only show toast if modal is closed
-          toast({
-            title:
-              task.status === "completed"
-                ? `${projectName} has been indexed`
-                : `Failed to index ${projectName}`,
-            description:
-              task.status === "completed"
-                ? "The project is now ready for translation."
-                : task.error || "An error occurred during processing.",
-            variant: task.status === "completed" ? "default" : "destructive",
-          });
+          if (!open) {
+            toast({
+              title:
+                task.status === "completed"
+                  ? `${projectName} has been indexed`
+                  : `Failed to index ${projectName}`,
+              description:
+                task.status === "completed"
+                  ? "The project is now ready for translation."
+                  : task.error || "An error occurred during processing.",
+              variant: task.status === "completed" ? "default" : "destructive",
+            });
+          }
 
           // Mark this task as processed to avoid duplicate toasts
           setTaskWithProjects((current) =>
@@ -123,10 +125,16 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
               tp.taskId === taskId ? { ...tp, processed: true } : tp,
             ),
           );
+
+          // If a task completes successfully, trigger the onSuccess callback
+          // even if the modal is closed
+          if (task.status === "completed" && !open) {
+            onSuccess?.();
+          }
         }
       }
     });
-  }, [tasks, taskWithProjects, open, toast]);
+  }, [tasks, taskWithProjects, open, toast, onSuccess]);
 
   const fetchUserProjects = async () => {
     const token = getCookie("token");
