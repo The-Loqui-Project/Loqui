@@ -11,6 +11,7 @@ import V1_LanguagesAll from "./v1/languages/all";
 // Projects
 import V1_ProjectManagementOptIn from "./v1/projects/management/opt-in";
 import V1_ProjectManagementOptOut from "./v1/projects/management/opt-out";
+import V1_ProjectManagementUserProjects from "./v1/projects/management/user-projects";
 import V1_ProjectGetStrings from "./v1/projects/[id]/strings";
 import V1_ProjectGetString from "./v1/projects/[id]/string/[id]";
 import V1_ProjectGetProgress from "./v1/projects/[id]/progress";
@@ -52,6 +53,7 @@ const routes: RouteStorage = {
     // Projects
     project_management_opt_in: V1_ProjectManagementOptIn,
     project_management_opt_out: V1_ProjectManagementOptOut,
+    project_management_user_projects: V1_ProjectManagementUserProjects,
     project_get_strings: V1_ProjectGetStrings,
     project_get_string: V1_ProjectGetString,
     project_get_progress: V1_ProjectGetProgress,

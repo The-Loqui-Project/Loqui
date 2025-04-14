@@ -63,8 +63,8 @@ importers:
         specifier: ^8.13.1
         version: 8.13.1
       typerinth:
-        specifier: ^0.0.5
-        version: 0.0.5(typescript@5.7.2)
+        specifier: ^1.1.0
+        version: 1.1.0(typescript@5.7.2)
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -4124,8 +4124,8 @@ packages:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
 
-  typerinth@0.0.5:
-    resolution: {integrity: sha512-HPtV5GZvcu8OTij2o4XU3zwPSwI2KBEQtgS+4dDKHzwcioHHtYM1TaYVv+9Q7wXFdMW55GE3XYnD6As+gsFa1g==}
+  typerinth@1.1.0:
+    resolution: {integrity: sha512-11+6HEOE0T/CVSVrpPTeICHFdkDUEN//dgRICFydnnesGmIwuksjxUK50RA92PX9R0pmUf0DVoY1Je51TDk5WA==}
     peerDependencies:
       typescript: ^5.6.2
 
@@ -8048,7 +8048,7 @@ snapshots:
       possible-typed-array-names: 1.0.0
       reflect.getprototypeof: 1.0.6
 
-  typerinth@0.0.5(typescript@5.7.2):
+  typerinth@1.1.0(typescript@5.7.2):
     dependencies:
       node-cache: 5.1.2
       typescript: 5.7.2

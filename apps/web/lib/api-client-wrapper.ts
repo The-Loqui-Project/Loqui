@@ -29,6 +29,9 @@ export function withErrorToast<T extends (...args: any[]) => Promise<any>>(
 // Export wrapped versions of all API functions
 export const getAllProjects = withErrorToast(APIClient.getAllProjects);
 export const getUserProjects = withErrorToast(APIClient.getUserProjects);
+export const getUserModrinthProjects = withErrorToast(
+  APIClient.getUserModrinthProjects,
+);
 export const optInProjects = withErrorToast(APIClient.optInProjects);
 export const getProjectProgress = withErrorToast(APIClient.getProjectProgress);
 export const getLanguages = withErrorToast(APIClient.getLanguages);

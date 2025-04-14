@@ -491,3 +491,37 @@ export async function getProjectDetails(projectId: number): Promise<unknown> {
 
   return await response.json();
 }
+
+/**
+ * Get projects from Modrinth that the authenticated user has permission to manage
+ * @param token Modrinth authentication token
+ */
+export async function getUserModrinthProjects(token: string): Promise<{
+  projects: Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon_url: string | null;
+    slug: string;
+    project_type: string;
+    optedIn: boolean;
+  }>;
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/projects/management/user-projects`,
+    {
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch user's Modrinth projects: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
