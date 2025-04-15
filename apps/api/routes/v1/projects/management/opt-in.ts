@@ -29,6 +29,15 @@ export default {
             description:
               "A confirmation message to say that projects were successfully added.",
           },
+          taskIds: {
+            type: "array",
+            description:
+              "Task IDs that can be used to track the progress of project processing",
+            items: {
+              type: "string",
+              description: "Task ID",
+            },
+          },
         },
       },
       206: {
@@ -38,6 +47,15 @@ export default {
             type: "string",
             description:
               "A confirmation message to say that some projects were successfully added.",
+          },
+          taskIds: {
+            type: "array",
+            description:
+              "Task IDs that can be used to track the progress of project processing",
+            items: {
+              type: "string",
+              description: "Task ID",
+            },
           },
           failedProjects: {
             type: "array",
@@ -165,22 +183,29 @@ export default {
       // Combine unauthorized and invalid projects as failed projects
       const allFailedProjects = [...unauthorizedProjects, ...invalidIDs];
 
+      // Start version checking tasks for each project and collect the task IDs
+      const taskIds: string[] = [];
+
+      for (const projectId of fetchedProjectIDs) {
+        // This now returns a task ID instead of waiting for completion
+        const taskId = await checkForNewVersions(projectId);
+        taskIds.push(taskId);
+      }
+
       if (allFailedProjects.length > 0) {
         response.status(206).send({
           message:
             unauthorizedProjects.length > 0
               ? "Some projects were processed successfully. Some project IDs were invalid or you don't have the MANAGE_INVITES permission for them."
               : "We are processing some submitted projects. Some project IDs were invalid.",
+          taskIds,
           failedProjects: allFailedProjects,
         });
       } else {
         response.status(201).send({
           message: "We are processing the submitted projects.",
+          taskIds,
         });
-      }
-
-      for (const project of newProjects) {
-        await checkForNewVersions(project.id);
       }
     } catch (e) {
       request.log.error(

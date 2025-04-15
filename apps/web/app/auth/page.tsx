@@ -28,8 +28,9 @@ export default function AuthPage() {
   async function setupModrinthAuth() {
     try {
       setAuthStatus("loading");
+      console.log(process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/configuration");
       const oauthConfiguration = await fetch(
-        process.env.API_URL! + "v1/oauth/configuration",
+        process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/configuration",
       );
       const data = await oauthConfiguration.json();
       const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${process.env.NEXT_PUBLIC_CURRENT_URL! + "auth"}&scope=${data.scopes}`;
