@@ -4,9 +4,13 @@ import { checkProjectsForNewVersions, checkProjectsValid } from "./projects";
 export async function setupJobs() {
   const jobs: CronJob[] = [
     // Every day at 3am eastern time (7am UTC)
-    new CronJob("0 7 * * *", checkProjectsValid),
+    new CronJob("0 7 * * *", () => {
+      checkProjectsValid();
+    }),
     // Every 2 days at 2am eastern time (6:00am UTC)
-    new CronJob("0 6 */2 * *", checkProjectsForNewVersions),
+    new CronJob("0 6 */2 * *", () => {
+      checkProjectsForNewVersions();
+    }),
   ];
 
   jobs.map((job) => job.start());
