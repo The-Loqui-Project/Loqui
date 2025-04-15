@@ -152,7 +152,7 @@ export default function Home() {
                     <ProcessStep
                       number={4}
                       title="Earn Recognition"
-                      description="Earn a share of Modrinth revenue when your work is included in translation resource packs."
+                      description="Get appropriately credited whenever your translation is included in translation resource packs."
                     />
                   </ol>
                 </div>
