@@ -437,7 +437,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
               )}
 
               {!isConnected && (
-                <Alert variant="warning">
+                <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     Connection to task server was lost. Progress updates may not
@@ -539,13 +539,6 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                 </div>
               )}
             </div>
-
-            <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={handleClose}>
-                Close (Processing Will Continue){" "}
-                <ExternalLink className="ml-1 h-3 w-3" />
-              </Button>
-            </DialogFooter>
           </>
         )}
       </DialogContent>
