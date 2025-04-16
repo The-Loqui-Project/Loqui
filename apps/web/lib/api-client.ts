@@ -554,3 +554,41 @@ export async function getProposal(proposalId: number): Promise<{
 
   return await response.json();
 }
+
+/**
+ * Report a proposal as inappropriate or incorrect
+ * @param proposalId ID of the proposal to report
+ * @param reason Reason for reporting the proposal
+ * @param priority Priority level of the report (default: medium)
+ * @param token Modrinth authentication token
+ */
+export async function reportProposal(
+  proposalId: number,
+  reason: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
+  token: string,
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/proposals/${proposalId}/report`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reason,
+        priority,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report proposal: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}

@@ -43,6 +43,7 @@ export const editProposal = withErrorToast(APIClient.editProposal);
 export const getProposal = withErrorToast(APIClient.getProposal);
 export const voteOnProposal = withErrorToast(APIClient.voteOnProposal);
 export const deleteProposal = withErrorToast(APIClient.deleteProposal);
+export const reportProposal = withErrorToast(APIClient.reportProposal);
 export const createTranslation = withErrorToast(APIClient.createTranslation);
 export const getProjectDetails = withErrorToast(APIClient.getProjectDetails);
 
