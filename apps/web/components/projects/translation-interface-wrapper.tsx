@@ -3,17 +3,17 @@ import { useRouter } from "next/navigation";
 import type { StringItem } from "@/lib/api-client-wrapper";
 import TranslationInterface from "@/components/projects/translation-interface";
 
-interface ProjectStringsListProps {
+interface TranslationInterfaceWrapperProps {
   projectId: number;
   strings: StringItem[];
   selectedLanguage: string | null;
 }
 
-export default function ProjectStringsList({
+export default function TranslationInterfaceWrapper({
   projectId,
   strings,
   selectedLanguage,
-}: ProjectStringsListProps) {
+}: TranslationInterfaceWrapperProps) {
   const router = useRouter();
 
   const handleBack = () => {

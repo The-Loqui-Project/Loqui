@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,8 @@ interface TranslationFormProps {
     translation: string,
     note?: string,
   ) => Promise<void>;
+  onTranslationChange?: (stringId: number, value: string) => void;
+  onNoteChange?: (stringId: number, value: string) => void;
   saving: boolean;
 }
 
@@ -24,10 +26,38 @@ export default function TranslationForm({
   initialTranslation = "",
   initialNote = "",
   onSubmit,
+  onTranslationChange,
+  onNoteChange,
   saving,
 }: TranslationFormProps) {
   const [translation, setTranslation] = useState(initialTranslation);
   const [note, setNote] = useState(initialNote);
+
+  // Update local state when props change (e.g., when switching strings)
+  useEffect(() => {
+    setTranslation(initialTranslation);
+    setNote(initialNote);
+  }, [initialTranslation, initialNote, stringId]);
+
+  // Update local state and propagate changes to parent component
+  const handleTranslationChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = e.target.value;
+    setTranslation(value);
+    if (onTranslationChange) {
+      onTranslationChange(stringId, value);
+    }
+  };
+
+  // Update local state and propagate changes to parent component
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setNote(value);
+    if (onNoteChange) {
+      onNoteChange(stringId, value);
+    }
+  };
 
   const handleSubmit = () => {
     onSubmit(stringId, translation, note || undefined);
@@ -57,7 +87,7 @@ export default function TranslationForm({
             placeholder="Enter translation..."
             className="min-h-24 resize-none"
             value={translation}
-            onChange={(e) => setTranslation(e.target.value)}
+            onChange={handleTranslationChange}
           />
           <div className="absolute top-2 right-2">
             <Button
@@ -82,7 +112,7 @@ export default function TranslationForm({
             placeholder="Add notes or context (optional)..."
             className="text-sm resize-none h-16"
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={handleNoteChange}
           />
         </div>
       </div>

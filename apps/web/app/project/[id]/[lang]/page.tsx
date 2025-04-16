@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getProjectStrings, type StringItem } from "@/lib/api-client-wrapper";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import ProjectStringsList from "@/components/projects/project-strings-list";
+import TranslationInterfaceWrapper from "@/components/projects/translation-interface-wrapper";
 
 export default function ProjectLanguagePage() {
   const params = useParams();
@@ -57,7 +57,7 @@ export default function ProjectLanguagePage() {
   }
 
   return (
-    <ProjectStringsList
+    <TranslationInterfaceWrapper
       projectId={projectId}
       strings={strings}
       selectedLanguage={languageCode}

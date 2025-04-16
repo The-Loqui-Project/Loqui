@@ -48,6 +48,9 @@ export default function TranslationInterface({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<
+    Record<string, { translation: string; note: string }>
+  >({});
   const [proposals, setProposals] = useState<Record<string, Proposal[]>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
@@ -112,23 +115,28 @@ export default function TranslationInterface({
         [stringId]: result.proposals || [],
       }));
 
-      // If there are proposals, pre-fill with the highest voted one
-      if (result.proposals && result.proposals.length > 0) {
-        const bestProposal = [...result.proposals].sort(
-          (a, b) => b.score - a.score,
-        )[0];
-        if (bestProposal) {
-          setTranslations((prev) => ({
-            ...prev,
-            [stringId]: bestProposal.value,
-          }));
-          if (bestProposal.note) {
-            setNotes((prev) => ({
-              ...prev,
-              [stringId]: bestProposal.note!,
-            }));
-          }
-        }
+      // First check if we have a saved draft for this string
+      if (drafts[stringId]) {
+        // Use the saved draft
+        setTranslations((prev) => ({
+          ...prev,
+          [stringId]: drafts[stringId]!.translation,
+        }));
+        setNotes((prev) => ({
+          ...prev,
+          [stringId]: drafts[stringId]!.note,
+        }));
+      }
+      // If no draft exists, clear the form
+      else {
+        setTranslations((prev) => ({
+          ...prev,
+          [stringId]: "",
+        }));
+        setNotes((prev) => ({
+          ...prev,
+          [stringId]: "",
+        }));
       }
     } catch (error) {
       console.error("Error loading proposals:", error);
@@ -225,7 +233,7 @@ export default function TranslationInterface({
         description: "Translation saved successfully",
       });
 
-      // Reset the form
+      // Reset the form and remove any saved draft for this string
       setTranslations((prev) => ({
         ...prev,
         [stringId]: "",
@@ -234,6 +242,12 @@ export default function TranslationInterface({
         ...prev,
         [stringId]: "",
       }));
+      // Remove the draft since the proposal was submitted
+      setDrafts((prev) => {
+        const newDrafts = { ...prev };
+        delete newDrafts[stringId];
+        return newDrafts;
+      });
 
       // Reload proposals
       await loadProposalsForString(stringId);
@@ -397,19 +411,40 @@ export default function TranslationInterface({
     }
   };
 
+  const saveDraft = (stringId: number) => {
+    // Get the current values from the form
+    const currentTranslation = translations[stringId] || "";
+    const currentNote = notes[stringId] || "";
+
+    // Only save if there's actual content (at least in the translation field)
+    if (currentTranslation.trim()) {
+      setDrafts((prev) => ({
+        ...prev,
+        [stringId]: { translation: currentTranslation, note: currentNote },
+      }));
+    }
+  };
+
   const handleNext = () => {
     if (currentIndex < filteredStrings.length - 1) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
       setCurrentIndex(currentIndex + 1);
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
       setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleSelectString = (selectedItem: StringItem) => {
+    // Save the draft for the current string before navigating
+    saveDraft(currentString.id);
+
     // Find the index of the selected string in the filtered strings
     const index = filteredStrings.findIndex(
       (item) => item.id === selectedItem.id,
@@ -461,6 +496,20 @@ export default function TranslationInterface({
 
   const currentString = filteredStrings[currentIndex]!;
 
+  const handleTranslationChange = (stringId: number, value: string) => {
+    setTranslations((prev) => ({
+      ...prev,
+      [stringId]: value,
+    }));
+  };
+
+  const handleNoteChange = (stringId: number, value: string) => {
+    setNotes((prev) => ({
+      ...prev,
+      [stringId]: value,
+    }));
+  };
+
   return (
     <div className="flex flex-col h-full">
       {getLanguageDisplay()}
@@ -487,6 +536,8 @@ export default function TranslationInterface({
         initialNote={notes[currentString.id] || ""}
         onSubmit={handleSaveTranslation}
         saving={saving[currentString.id] || false}
+        onTranslationChange={handleTranslationChange}
+        onNoteChange={handleNoteChange}
       />
 
       <ProposalList
