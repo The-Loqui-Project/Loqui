@@ -6,14 +6,14 @@ import {
   CircleDot,
   Copyright,
   FileLock2,
-  Github,
-  MessageSquare,
   Shield,
   Users,
-  Wrench,
 } from "lucide-react";
 import LoquiIcon from "@/components/loqui-icon";
 import { meta } from "@repo/meta/meta";
+import DiscordIcon from "@/components/ui/icons/discord-icon";
+import ModrinthIcon from "@/components/ui/icons/modrinth-icon";
+import GitHubIcon from "@/components/ui/icons/github-icon";
 
 export function Footer() {
   return (
@@ -49,7 +49,7 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10 mx-auto sm:mx-0">
             {/* Column 1: Links */}
             <div className="flex flex-col gap-4">
               <h3 className="text-sm font-semibold relative inline-block">
@@ -59,19 +59,19 @@ export function Footer() {
               <div className="flex flex-col gap-3">
                 <FooterLink
                   href="https://github.com/The-Loqui-Project"
-                  icon={<Github className="h-4 w-4" />}
+                  icon={<GitHubIcon className="h-4 w-4" />}
                   label="GitHub"
                   external
                 />
                 <FooterLink
                   href="https://modrinth.com/organization/loqui"
-                  icon={<Wrench className="h-4 w-4" />}
+                  icon={<ModrinthIcon className="h-4 w-4" />}
                   label="Modrinth"
                   external
                 />
                 <FooterLink
                   href="https://discord.imb11.dev"
-                  icon={<MessageSquare className="h-4 w-4" />}
+                  icon={<DiscordIcon className="h-4 w-4" />}
                   label="Discord"
                   external
                 />
