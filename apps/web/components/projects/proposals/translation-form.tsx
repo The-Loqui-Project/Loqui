@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Loader2, MessageSquare } from "lucide-react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { useState, useEffect } from "react";
+import { Loader2, Send, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface TranslationFormProps {
   stringId: number;
@@ -14,6 +16,8 @@ interface TranslationFormProps {
     translation: string,
     note?: string,
   ) => Promise<void>;
+  onTranslationChange?: (stringId: number, value: string) => void;
+  onNoteChange?: (stringId: number, value: string) => void;
   saving: boolean;
 }
 
@@ -24,13 +28,84 @@ export default function TranslationForm({
   initialTranslation = "",
   initialNote = "",
   onSubmit,
+  onTranslationChange,
+  onNoteChange,
   saving,
 }: TranslationFormProps) {
   const [translation, setTranslation] = useState(initialTranslation);
   const [note, setNote] = useState(initialNote);
+  const { toast } = useToast();
+  const [copyingValue, setCopyingValue] = useState(false);
+  const [copyingKey, setCopyingKey] = useState(false);
+
+  // Update local state when props change (e.g., when switching strings)
+  useEffect(() => {
+    setTranslation(initialTranslation);
+    setNote(initialNote);
+  }, [initialTranslation, initialNote, stringId]);
+
+  // Update local state and propagate changes to parent component
+  const handleTranslationChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = e.target.value;
+    setTranslation(value);
+    if (onTranslationChange) {
+      onTranslationChange(stringId, value);
+    }
+  };
+
+  // Update local state and propagate changes to parent component
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setNote(value);
+    if (onNoteChange) {
+      onNoteChange(stringId, value);
+    }
+  };
 
   const handleSubmit = () => {
     onSubmit(stringId, translation, note || undefined);
+  };
+
+  // Copy source string value to clipboard
+  const copyValueToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(stringValue);
+      setCopyingValue(true);
+      toast({
+        title: "Copied!",
+        description: "Source text copied to clipboard",
+      });
+      // Reset copy icon after 2 seconds
+      setTimeout(() => setCopyingValue(false), 2000);
+    } catch (_err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy text to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Copy key to clipboard
+  const copyKeyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(stringKey);
+      setCopyingKey(true);
+      toast({
+        title: "Copied!",
+        description: "Key copied to clipboard",
+      });
+      // Reset copy icon after 2 seconds
+      setTimeout(() => setCopyingKey(false), 2000);
+    } catch (_err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy key to clipboard",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -38,11 +113,37 @@ export default function TranslationForm({
       {/* Source string (left side) */}
       <div className="flex flex-col">
         <div className="mb-1 text-sm font-medium">Source (English)</div>
-        <div className="min-h-24 p-3 rounded-md bg-muted/50 mb-2">
+        <div className="group relative min-h-24 p-3 rounded-md bg-muted/50 mb-2">
           {stringValue}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={copyValueToClipboard}
+            title="Copy source text"
+          >
+            {copyingValue ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-        <div className="text-xs text-muted-foreground text-wrap break-words overflow-hidden text-ellipsis font-mono">
+        <div className="text-xs text-muted-foreground text-wrap break-words overflow-hidden text-ellipsis font-mono group relative">
           Key: {stringKey}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={copyKeyToClipboard}
+            title="Copy key"
+          >
+            {copyingKey ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
         </div>
       </div>
 
@@ -52,39 +153,34 @@ export default function TranslationForm({
           <div className="text-sm font-medium">Submit New Proposal</div>
         </div>
 
-        <div className="relative">
-          <Textarea
-            placeholder="Enter translation..."
-            className="min-h-24 resize-none"
-            value={translation}
-            onChange={(e) => setTranslation(e.target.value)}
-          />
-          <div className="absolute top-2 right-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7"
-              onClick={handleSubmit}
-              disabled={saving}
-            >
-              {saving ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <MessageSquare className="h-4 w-4 mr-1" />
-              )}
-              Submit Proposal
-            </Button>
-          </div>
-        </div>
+        <Textarea
+          placeholder="Enter translation..."
+          className="min-h-24 resize-none mb-2"
+          value={translation}
+          onChange={handleTranslationChange}
+        />
 
-        <div className="mt-2">
-          <Textarea
-            placeholder="Add notes or context (optional)..."
-            className="text-sm resize-none h-16"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
+        <Textarea
+          placeholder="Add notes or context (optional)..."
+          className="text-sm resize-none h-16 mb-2"
+          value={note}
+          onChange={handleNoteChange}
+        />
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-end"
+          onClick={handleSubmit}
+          disabled={saving}
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4 mr-1" />
+          )}
+          Submit Proposal
+        </Button>
       </div>
     </div>
   );

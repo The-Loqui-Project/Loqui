@@ -29,6 +29,7 @@ import V1_ProposalReport from "./v1/proposals/report";
 import V1_StringReport from "./v1/proposals/report-string";
 import V1_ProposalsList from "./v1/proposals/list";
 import V1_ProposalEdit from "./v1/proposals/edit";
+import V1_ProposalGet from "./v1/proposals/get";
 import V1_TranslationsCreate from "./v1/translations/create";
 
 // Reports Management
@@ -73,6 +74,7 @@ const routes: RouteStorage = {
     proposal_delete: V1_ProposalDelete,
     proposal_report: V1_ProposalReport,
     proposal_edit: V1_ProposalEdit,
+    proposal_get: V1_ProposalGet,
     string_report: V1_StringReport,
     proposals_list: V1_ProposalsList,
     translation_create: V1_TranslationsCreate,

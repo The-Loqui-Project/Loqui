@@ -27,12 +27,12 @@ export default function NavigationHeader({
   onSelectString,
 }: NavigationHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-4 gap-4">
-      <Button variant="outline" onClick={onBack}>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+      <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
         <ChevronLeft className="mr-2 h-4 w-4" /> Back to Languages
       </Button>
 
-      <div className="flex-1 max-w-md">
+      <div className="flex-1 w-full sm:max-w-md">
         <SearchBar
           items={items}
           placeholder="Search strings..."
@@ -40,8 +40,8 @@ export default function NavigationHeader({
         />
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-2">
+        <span className="text-sm text-muted-foreground whitespace-nowrap">
           {currentIndex + 1} of {totalStrings} strings
         </span>
         <div className="flex items-center gap-1">

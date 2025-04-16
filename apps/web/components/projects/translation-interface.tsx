@@ -20,6 +20,7 @@ import {
   TranslationProgress,
   getLanguages,
   Language,
+  getProposal,
 } from "@/lib/api-client-wrapper";
 
 import NavigationHeader from "./proposals/navigation-header";
@@ -48,6 +49,9 @@ export default function TranslationInterface({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<
+    Record<string, { translation: string; note: string }>
+  >({});
   const [proposals, setProposals] = useState<Record<string, Proposal[]>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
@@ -55,6 +59,7 @@ export default function TranslationInterface({
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState<TranslationProgress>({});
   const [languages, setLanguages] = useState<Language[]>([]);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Fetch languages when component loads
   useEffect(() => {
@@ -69,6 +74,64 @@ export default function TranslationInterface({
 
     fetchLanguages();
   }, []);
+
+  // Check for proposal ID in URL hash when component loads
+  useEffect(() => {
+    const checkUrlForProposal = async () => {
+      // Don't run this until filtered strings are loaded
+      if (!filteredStrings.length || !selectedLanguage) return;
+
+      try {
+        // Extract proposal ID from the URL hash if it exists
+        const hash = window.location.hash;
+        const proposalIdMatch = hash.match(/^#proposal-(\d+)$/);
+
+        if (proposalIdMatch && proposalIdMatch[1]) {
+          const proposalId = parseInt(proposalIdMatch[1], 10);
+
+          if (!isNaN(proposalId)) {
+            // Get proposal details from API
+            const result = await getProposal(proposalId);
+
+            if (result && result.proposal) {
+              const proposal = result.proposal;
+              const stringId = proposal.translation.item.id;
+
+              // Find the index of this string in our filteredStrings array
+              const stringIndex = filteredStrings.findIndex(
+                (s) => s.id === stringId,
+              );
+
+              if (stringIndex !== -1) {
+                // Set the current index to show this string
+                setCurrentIndex(stringIndex);
+
+                // Make sure we load the proposals for this string
+                await loadProposalsForString(stringId);
+              } else {
+                console.warn(
+                  `String with ID ${stringId} not found in current filtered strings`,
+                );
+              }
+            }
+          }
+        }
+
+        // Mark initial load as complete regardless of whether we found a proposal
+        setInitialLoadComplete(true);
+      } catch (error) {
+        console.error("Error loading proposal from URL:", error);
+        toast({
+          title: "Unable to find proposal",
+          description: "The proposal you linked to could not be found.",
+          variant: "destructive",
+        });
+        setInitialLoadComplete(true);
+      }
+    };
+
+    checkUrlForProposal();
+  }, [filteredStrings, selectedLanguage]);
 
   // Filter strings when search term changes
   useEffect(() => {
@@ -88,10 +151,10 @@ export default function TranslationInterface({
 
   // Load proposals for the current string
   useEffect(() => {
-    if (filteredStrings.length > 0 && selectedLanguage) {
+    if (filteredStrings.length > 0 && selectedLanguage && initialLoadComplete) {
       loadProposalsForString(filteredStrings[currentIndex]!.id);
     }
-  }, [currentIndex, filteredStrings, selectedLanguage]);
+  }, [currentIndex, filteredStrings, selectedLanguage, initialLoadComplete]);
 
   // Fetch project progress when component loads or language changes
   useEffect(() => {
@@ -112,23 +175,28 @@ export default function TranslationInterface({
         [stringId]: result.proposals || [],
       }));
 
-      // If there are proposals, pre-fill with the highest voted one
-      if (result.proposals && result.proposals.length > 0) {
-        const bestProposal = [...result.proposals].sort(
-          (a, b) => b.score - a.score,
-        )[0];
-        if (bestProposal) {
-          setTranslations((prev) => ({
-            ...prev,
-            [stringId]: bestProposal.value,
-          }));
-          if (bestProposal.note) {
-            setNotes((prev) => ({
-              ...prev,
-              [stringId]: bestProposal.note!,
-            }));
-          }
-        }
+      // First check if we have a saved draft for this string
+      if (drafts[stringId]) {
+        // Use the saved draft
+        setTranslations((prev) => ({
+          ...prev,
+          [stringId]: drafts[stringId]!.translation,
+        }));
+        setNotes((prev) => ({
+          ...prev,
+          [stringId]: drafts[stringId]!.note,
+        }));
+      }
+      // If no draft exists, clear the form
+      else {
+        setTranslations((prev) => ({
+          ...prev,
+          [stringId]: "",
+        }));
+        setNotes((prev) => ({
+          ...prev,
+          [stringId]: "",
+        }));
       }
     } catch (error) {
       console.error("Error loading proposals:", error);
@@ -225,7 +293,7 @@ export default function TranslationInterface({
         description: "Translation saved successfully",
       });
 
-      // Reset the form
+      // Reset the form and remove any saved draft for this string
       setTranslations((prev) => ({
         ...prev,
         [stringId]: "",
@@ -234,6 +302,12 @@ export default function TranslationInterface({
         ...prev,
         [stringId]: "",
       }));
+      // Remove the draft since the proposal was submitted
+      setDrafts((prev) => {
+        const newDrafts = { ...prev };
+        delete newDrafts[stringId];
+        return newDrafts;
+      });
 
       // Reload proposals
       await loadProposalsForString(stringId);
@@ -397,19 +471,42 @@ export default function TranslationInterface({
     }
   };
 
+  const saveDraft = (stringId: number) => {
+    // Get the current values from the form
+    const currentTranslation = translations[stringId] || "";
+    const currentNote = notes[stringId] || "";
+
+    // Only save if there's actual content (at least in the translation field)
+    if (currentTranslation.trim()) {
+      setDrafts((prev) => ({
+        ...prev,
+        [stringId]: { translation: currentTranslation, note: currentNote },
+      }));
+    }
+  };
+
   const handleNext = () => {
     if (currentIndex < filteredStrings.length - 1) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
       setCurrentIndex(currentIndex + 1);
+      fetchProjectProgress();
     }
   };
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
       setCurrentIndex(currentIndex - 1);
+      fetchProjectProgress();
     }
   };
 
   const handleSelectString = (selectedItem: StringItem) => {
+    // Save the draft for the current string before navigating
+    saveDraft(currentString.id);
+
     // Find the index of the selected string in the filtered strings
     const index = filteredStrings.findIndex(
       (item) => item.id === selectedItem.id,
@@ -417,6 +514,8 @@ export default function TranslationInterface({
     if (index !== -1) {
       setCurrentIndex(index);
     }
+
+    fetchProjectProgress();
   };
 
   const getCompletionPercentage = () => {
@@ -461,6 +560,20 @@ export default function TranslationInterface({
 
   const currentString = filteredStrings[currentIndex]!;
 
+  const handleTranslationChange = (stringId: number, value: string) => {
+    setTranslations((prev) => ({
+      ...prev,
+      [stringId]: value,
+    }));
+  };
+
+  const handleNoteChange = (stringId: number, value: string) => {
+    setNotes((prev) => ({
+      ...prev,
+      [stringId]: value,
+    }));
+  };
+
   return (
     <div className="flex flex-col h-full">
       {getLanguageDisplay()}
@@ -487,6 +600,8 @@ export default function TranslationInterface({
         initialNote={notes[currentString.id] || ""}
         onSubmit={handleSaveTranslation}
         saving={saving[currentString.id] || false}
+        onTranslationChange={handleTranslationChange}
+        onNoteChange={handleNoteChange}
       />
 
       <ProposalList
