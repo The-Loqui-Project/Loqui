@@ -85,8 +85,3 @@ jobs:
         run: |
           cd apps/web
           CURRENT_URL="${{ steps.set-urls.outputs.CURRENT_URL }}" API_URL="${{ steps.set-urls.outputs.API_URL }}" pnpm run build
-    needs: check_changes
-    if: needs.check_changes.outputs.has_changes != 'true'
-    steps:
-      - name: No Web changes detected
-        run: echo "No Web app changes detected - workflow marked as successful"
