@@ -430,6 +430,7 @@ export default function TranslationInterface({
       // Save the draft for the current string before navigating
       saveDraft(currentString.id);
       setCurrentIndex(currentIndex + 1);
+      fetchProjectProgress();
     }
   };
 
@@ -438,6 +439,7 @@ export default function TranslationInterface({
       // Save the draft for the current string before navigating
       saveDraft(currentString.id);
       setCurrentIndex(currentIndex - 1);
+      fetchProjectProgress();
     }
   };
 
@@ -452,6 +454,8 @@ export default function TranslationInterface({
     if (index !== -1) {
       setCurrentIndex(index);
     }
+
+    fetchProjectProgress();
   };
 
   const getCompletionPercentage = () => {
