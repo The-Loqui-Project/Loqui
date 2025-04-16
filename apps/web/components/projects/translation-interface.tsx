@@ -20,6 +20,7 @@ import {
   TranslationProgress,
   getLanguages,
   Language,
+  getProposal,
 } from "@/lib/api-client-wrapper";
 
 import NavigationHeader from "./proposals/navigation-header";
@@ -58,6 +59,7 @@ export default function TranslationInterface({
   const [editing, setEditing] = useState<Record<string, boolean>>({});
   const [progress, setProgress] = useState<TranslationProgress>({});
   const [languages, setLanguages] = useState<Language[]>([]);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   // Fetch languages when component loads
   useEffect(() => {
@@ -72,6 +74,64 @@ export default function TranslationInterface({
 
     fetchLanguages();
   }, []);
+
+  // Check for proposal ID in URL hash when component loads
+  useEffect(() => {
+    const checkUrlForProposal = async () => {
+      // Don't run this until filtered strings are loaded
+      if (!filteredStrings.length || !selectedLanguage) return;
+
+      try {
+        // Extract proposal ID from the URL hash if it exists
+        const hash = window.location.hash;
+        const proposalIdMatch = hash.match(/^#proposal-(\d+)$/);
+
+        if (proposalIdMatch && proposalIdMatch[1]) {
+          const proposalId = parseInt(proposalIdMatch[1], 10);
+
+          if (!isNaN(proposalId)) {
+            // Get proposal details from API
+            const result = await getProposal(proposalId);
+
+            if (result && result.proposal) {
+              const proposal = result.proposal;
+              const stringId = proposal.translation.item.id;
+
+              // Find the index of this string in our filteredStrings array
+              const stringIndex = filteredStrings.findIndex(
+                (s) => s.id === stringId,
+              );
+
+              if (stringIndex !== -1) {
+                // Set the current index to show this string
+                setCurrentIndex(stringIndex);
+
+                // Make sure we load the proposals for this string
+                await loadProposalsForString(stringId);
+              } else {
+                console.warn(
+                  `String with ID ${stringId} not found in current filtered strings`,
+                );
+              }
+            }
+          }
+        }
+
+        // Mark initial load as complete regardless of whether we found a proposal
+        setInitialLoadComplete(true);
+      } catch (error) {
+        console.error("Error loading proposal from URL:", error);
+        toast({
+          title: "Unable to find proposal",
+          description: "The proposal you linked to could not be found.",
+          variant: "destructive",
+        });
+        setInitialLoadComplete(true);
+      }
+    };
+
+    checkUrlForProposal();
+  }, [filteredStrings, selectedLanguage]);
 
   // Filter strings when search term changes
   useEffect(() => {
@@ -91,10 +151,10 @@ export default function TranslationInterface({
 
   // Load proposals for the current string
   useEffect(() => {
-    if (filteredStrings.length > 0 && selectedLanguage) {
+    if (filteredStrings.length > 0 && selectedLanguage && initialLoadComplete) {
       loadProposalsForString(filteredStrings[currentIndex]!.id);
     }
-  }, [currentIndex, filteredStrings, selectedLanguage]);
+  }, [currentIndex, filteredStrings, selectedLanguage, initialLoadComplete]);
 
   // Fetch project progress when component loads or language changes
   useEffect(() => {

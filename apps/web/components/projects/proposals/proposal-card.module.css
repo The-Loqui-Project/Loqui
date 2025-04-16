@@ -1,0 +1,15 @@
+/* Proposal highlight animation when targeted via anchor links */
+@keyframes proposalFlash {
+  0%, 100% {
+    border-color: hsl(var(--border));
+    box-shadow: none;
+  }
+  50% {
+    border-color: #ff3333;
+    box-shadow: 0 0 0 2px rgba(255, 51, 51, 0.3);
+  }
+}
+
+.highlight {
+  animation: proposalFlash 2s ease-in-out 3;
+}

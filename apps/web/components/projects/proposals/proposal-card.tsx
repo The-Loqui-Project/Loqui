@@ -1,11 +1,20 @@
-import { useState } from "react";
-import { Loader2, Pencil, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Loader2,
+  Link,
+  Pencil,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 import { Proposal } from "./types";
+import styles from "./proposal-card.module.css";
 
 interface ProposalCardProps {
   proposal: Proposal;
@@ -31,9 +40,54 @@ export default function ProposalCard({
   editing,
 }: ProposalCardProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(proposal.value);
   const [editNote, setEditNote] = useState(proposal.note || "");
+  const [isHighlighted, setIsHighlighted] = useState(false);
+
+  const proposalId = `proposal-${proposal.id}`;
+
+  useEffect(() => {
+    // Check if this proposal is targeted by the URL hash
+    if (window.location.hash === `#${proposalId}`) {
+      // Add the highlight class
+      setIsHighlighted(true);
+
+      // Scroll to the proposal
+      setTimeout(() => {
+        document
+          .getElementById(proposalId)
+          ?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+
+      // Remove highlight after animation completes
+      const timeout = setTimeout(() => setIsHighlighted(false), 6000);
+      return () => clearTimeout(timeout);
+    }
+  }, [proposalId]);
+
+  const copyLinkToClipboard = () => {
+    // Create the full URL with the proposal anchor
+    const url = `${window.location.origin}${window.location.pathname}#${proposalId}`;
+
+    // Copy to clipboard
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast({
+          title: "Link copied",
+          description: "Proposal link copied to clipboard",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy the link to clipboard",
+          variant: "destructive",
+        });
+      });
+  };
 
   const startEditing = () => {
     setIsEditing(true);
@@ -57,13 +111,16 @@ export default function ProposalCard({
 
   return (
     <div
+      id={proposalId}
       className={cn(
+        styles.proposalCard,
         "border rounded-md p-3",
         proposal.status === "accurate" &&
           "border-green-500/30 bg-green-50/30 dark:bg-green-950/10",
         proposal.status === "inaccurate" &&
           "border-red-500/30 bg-red-50/30 dark:bg-red-950/10",
         isEditing && "border-blue-500/30 bg-blue-50/30 dark:bg-blue-950/10",
+        isHighlighted && styles.highlight,
       )}
     >
       {isEditing ? (
@@ -169,6 +226,15 @@ export default function ProposalCard({
                   </Button>
                 </>
               )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-gray-500 hover:text-gray-600"
+                onClick={copyLinkToClipboard}
+                title="Copy link to proposal"
+              >
+                <Link className="h-4 w-4" />
+              </Button>
             </div>
           </div>
           <p className="mb-1">{proposal.value}</p>

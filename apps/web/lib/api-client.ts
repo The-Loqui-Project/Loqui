@@ -519,3 +519,38 @@ export async function getUserModrinthProjects(token: string): Promise<{
 
   return await response.json();
 }
+
+/**
+ * Get a proposal by ID with its associated string information
+ * @param proposalId ID of the proposal to retrieve
+ */
+export async function getProposal(proposalId: number): Promise<{
+  proposal: {
+    id: number;
+    value: string;
+    note?: string;
+    status: string;
+    score: number;
+    translation: {
+      id: number;
+      languageCode: string;
+      item: {
+        id: number;
+        key: string;
+        value: string;
+      };
+    };
+    user: {
+      id: string;
+      role: string;
+    };
+  };
+}> {
+  const response = await fetch(`${API_BASE_URL}v1/proposals/${proposalId}`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch proposal: ${response.status}`);
+  }
+
+  return await response.json();
+}
