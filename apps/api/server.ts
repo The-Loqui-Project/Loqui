@@ -131,10 +131,10 @@ if (process.env.DEV_MODE) {
 }
 
 // Start the server
-server.listen({ port: 8080 }, (err, address) => {
+server.listen({ port: 8080, host: "0.0.0.0" }, (err, address) => {
   if (err) {
     server.log.error(err);
     process.exit(1);
   }
-  console.log(`Server listening at http://localhost:8080/`);
+  console.log(`Server listening at ${address}`);
 });
