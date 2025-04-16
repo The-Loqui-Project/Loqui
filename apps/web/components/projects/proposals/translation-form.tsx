@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -82,39 +82,34 @@ export default function TranslationForm({
           <div className="text-sm font-medium">Submit New Proposal</div>
         </div>
 
-        <div className="relative">
-          <Textarea
-            placeholder="Enter translation..."
-            className="min-h-24 resize-none"
-            value={translation}
-            onChange={handleTranslationChange}
-          />
-          <div className="absolute top-2 right-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7"
-              onClick={handleSubmit}
-              disabled={saving}
-            >
-              {saving ? (
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-              ) : (
-                <MessageSquare className="h-4 w-4 mr-1" />
-              )}
-              Submit Proposal
-            </Button>
-          </div>
-        </div>
+        <Textarea
+          placeholder="Enter translation..."
+          className="min-h-24 resize-none mb-2"
+          value={translation}
+          onChange={handleTranslationChange}
+        />
 
-        <div className="mt-2">
-          <Textarea
-            placeholder="Add notes or context (optional)..."
-            className="text-sm resize-none h-16"
-            value={note}
-            onChange={handleNoteChange}
-          />
-        </div>
+        <Textarea
+          placeholder="Add notes or context (optional)..."
+          className="text-sm resize-none h-16 mb-2"
+          value={note}
+          onChange={handleNoteChange}
+        />
+
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-end"
+          onClick={handleSubmit}
+          disabled={saving}
+        >
+          {saving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4 mr-1" />
+          )}
+          Submit Proposal
+        </Button>
       </div>
     </div>
   );

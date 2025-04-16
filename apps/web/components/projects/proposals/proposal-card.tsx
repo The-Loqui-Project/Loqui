@@ -101,15 +101,15 @@ export default function ProposalCard({
       ) : (
         // Normal display interface
         <>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {proposal.status === "accurate" && (
                 <Badge className="bg-green-500">Accurate</Badge>
               )}
               {proposal.status === "inaccurate" && (
                 <Badge className="bg-red-500">Inaccurate</Badge>
               )}
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground break-all">
                 by {proposal.user?.id || "Unknown"}
               </span>
             </div>
