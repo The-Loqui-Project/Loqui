@@ -1,21 +1,11 @@
 name: Build Web
 
 on:
-  push:
-    branches:
-      - '**'
-    paths:
-      - 'apps/web/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/build_web.yml'
-  pull_request:
-    paths:
-      - 'apps/web/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/build_web.yml'
-  workflow_dispatch:
+    push:
+        branches:
+            - '**'
+        tags:
+            - 'v*.*.*'
 
 jobs:
   build_web:

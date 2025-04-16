@@ -1,21 +1,11 @@
 name: Build API Application
 
 on:
-  push:
-    branches:
-      - '**'
-    paths:
-      - 'apps/api/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/build_api.yml'
-  pull_request:
-    paths:
-      - 'apps/api/**'
-      - 'packages/**'
-      - 'pnpm-lock.yaml'
-      - '.github/workflows/build_api.yml'
-  workflow_dispatch:
+    push:
+        branches:
+            - '**'
+        tags:
+            - 'v*.*.*'
 
 jobs:
   build_api:
