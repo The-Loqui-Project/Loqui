@@ -96,7 +96,7 @@ export function Footer() {
                   label="Terms of Service"
                 />
                 <FooterLink
-                  href="https://github.com/The-Loqui-Project/Loqui#License-1-ov-file"
+                  href="https://github.com/The-Loqui-Project/Loqui#license"
                   icon={<Copyright className="h-4 w-4" />}
                   label="License (GPL v3)"
                   external
