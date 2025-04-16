@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 interface TranslationFormProps {
   stringId: number;
@@ -32,6 +34,9 @@ export default function TranslationForm({
 }: TranslationFormProps) {
   const [translation, setTranslation] = useState(initialTranslation);
   const [note, setNote] = useState(initialNote);
+  const { toast } = useToast();
+  const [copyingValue, setCopyingValue] = useState(false);
+  const [copyingKey, setCopyingKey] = useState(false);
 
   // Update local state when props change (e.g., when switching strings)
   useEffect(() => {
@@ -63,16 +68,82 @@ export default function TranslationForm({
     onSubmit(stringId, translation, note || undefined);
   };
 
+  // Copy source string value to clipboard
+  const copyValueToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(stringValue);
+      setCopyingValue(true);
+      toast({
+        title: "Copied!",
+        description: "Source text copied to clipboard",
+      });
+      // Reset copy icon after 2 seconds
+      setTimeout(() => setCopyingValue(false), 2000);
+    } catch (_err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy text to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Copy key to clipboard
+  const copyKeyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(stringKey);
+      setCopyingKey(true);
+      toast({
+        title: "Copied!",
+        description: "Key copied to clipboard",
+      });
+      // Reset copy icon after 2 seconds
+      setTimeout(() => setCopyingKey(false), 2000);
+    } catch (_err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy key to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-card rounded-lg border p-4">
       {/* Source string (left side) */}
       <div className="flex flex-col">
         <div className="mb-1 text-sm font-medium">Source (English)</div>
-        <div className="min-h-24 p-3 rounded-md bg-muted/50 mb-2">
+        <div className="group relative min-h-24 p-3 rounded-md bg-muted/50 mb-2">
           {stringValue}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={copyValueToClipboard}
+            title="Copy source text"
+          >
+            {copyingValue ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
         </div>
-        <div className="text-xs text-muted-foreground text-wrap break-words overflow-hidden text-ellipsis font-mono">
+        <div className="text-xs text-muted-foreground text-wrap break-words overflow-hidden text-ellipsis font-mono group relative">
           Key: {stringKey}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={copyKeyToClipboard}
+            title="Copy key"
+          >
+            {copyingKey ? (
+              <Check className="h-3 w-3" />
+            ) : (
+              <Copy className="h-3 w-3" />
+            )}
+          </Button>
         </div>
       </div>
 
