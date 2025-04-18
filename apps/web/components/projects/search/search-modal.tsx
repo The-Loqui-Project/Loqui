@@ -1,13 +1,12 @@
 "use client";
 
 import type React from "react";
-
-import { useState, useRef, useEffect, type RefObject } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { Command, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { SearchResults } from "./search-results";
-import { StringItem } from "../proposals/types";
+import { StringItem } from "@/lib/api-client";
 
 interface SearchModalProps {
   isOpen: boolean;

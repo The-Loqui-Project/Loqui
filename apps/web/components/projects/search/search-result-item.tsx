@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { StringItem } from "../proposals/types";
+import { useEffect, useRef } from "react";
+import { StringItem } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { File } from "lucide-react";
 

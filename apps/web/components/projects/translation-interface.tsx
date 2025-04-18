@@ -1,33 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getCookie } from "cookies-next";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/auth-context";
 import { getCountryFlag } from "@/lib/utils";
-import {
-  type StringItem,
-  getStringDetails,
-  getStringProposals,
-  createProposal,
-  voteOnProposal,
-  createTranslation,
-  deleteProposal,
-  editProposal,
-  getProjectProgress,
-  TranslationProgress,
-  getLanguages,
-  Language,
-  getProposal,
-} from "@/lib/api-client-wrapper";
-
 import NavigationHeader from "./proposals/navigation-header";
 import ProgressPanel from "./proposals/progress-panel";
 import TranslationForm from "./proposals/translation-form";
 import ProposalList from "./proposals/proposal-list";
-import { Proposal } from "./proposals/types";
+import { Proposal, StringItem } from "./proposals/types";
+import { useApi } from "@/hooks/use-api";
+import { Language, TranslationProgress } from "@/lib/api-client";
 
 interface TranslationInterfaceProps {
   projectId: number;
@@ -43,6 +28,18 @@ export default function TranslationInterface({
   onBack,
 }: TranslationInterfaceProps) {
   const { toast } = useToast();
+  const {
+    createProposal,
+    createTranslation,
+    deleteProposal,
+    editProposal,
+    getLanguages,
+    getProjectProgress,
+    getProposal,
+    getStringDetails,
+    getStringProposals,
+    voteOnProposal,
+  } = useApi();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredStrings, setFilteredStrings] = useState<StringItem[]>(strings);

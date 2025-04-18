@@ -17,8 +17,6 @@ interface NavigationHeaderProps {
 
 export default function NavigationHeader({
   onBack,
-  searchTerm,
-  onSearchChange,
   currentIndex,
   totalStrings,
   onPrevious,

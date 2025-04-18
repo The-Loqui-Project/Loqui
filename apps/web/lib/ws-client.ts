@@ -30,7 +30,10 @@ interface TaskEventEmitter {
   ): boolean;
 }
 
-class TaskWebSocketClient extends EventEmitter implements TaskEventEmitter {
+export class TaskWebSocketClient
+  extends EventEmitter
+  implements TaskEventEmitter
+{
   private ws: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
@@ -38,17 +41,11 @@ class TaskWebSocketClient extends EventEmitter implements TaskEventEmitter {
   private subscribedTasks = new Set<string>();
   private connected = false;
   private reconnectInterval = 1000; // Start with 1 second, will increase with backoff
-  private baseUrl: string;
+  private readonly baseUrl: string;
 
-  constructor(baseUrl?: string) {
+  constructor(baseUrl: string) {
     super();
-    this.baseUrl =
-      baseUrl ||
-      (process.env.NEXT_PUBLIC_API_URL
-        ? `${process.env.NEXT_PUBLIC_API_URL.replace(/^http/, "ws")}ws/tasks`
-        : typeof window !== "undefined"
-          ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}/ws/tasks`
-          : "ws://localhost:8080/ws/tasks");
+    this.baseUrl = baseUrl.replace(/^http/, "ws") + "/ws/tasks";
   }
 
   /**
@@ -239,8 +236,3 @@ class TaskWebSocketClient extends EventEmitter implements TaskEventEmitter {
     return this.connected;
   }
 }
-
-// Create a singleton instance
-const taskWebSocketClient = new TaskWebSocketClient();
-
-export default taskWebSocketClient;

@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  Search,
-  Check,
-  ExternalLink,
-} from "lucide-react";
+import { AlertCircle, Check, CheckCircle, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,16 +14,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  getUserModrinthProjects,
-  optInProjects,
-} from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useTask } from "@/hooks/use-task";
 import { useToast } from "@/hooks/use-toast";
+import { useApi } from "@/hooks/use-api";
 
 interface ModrinthProject {
   id: string;
@@ -56,6 +46,9 @@ interface TaskWithProject {
 }
 
 export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
+  const { toast } = useToast();
+  const { getUserModrinthProjects, optInProjects } = useApi();
+
   const [step, setStep] = useState<1 | 2>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +62,6 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
   );
   const { subscribeToTask, unsubscribeFromTask, tasks, isConnected } =
     useTask();
-  const { toast } = useToast();
 
   // Fetch user's Modrinth projects when the modal opens
   useEffect(() => {
@@ -319,11 +311,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                               {notOptedInProjects.map((project) => (
                                 <div
                                   key={project.id}
-                                  className={`flex items-start p-2 rounded-md hover:bg-muted cursor-pointer ${
-                                    selectedProjects.includes(project.id)
-                                      ? "bg-muted"
-                                      : ""
-                                  }`}
+                                  className={`flex items-start p-2 rounded-md hover:bg-muted cursor-pointer ${selectedProjects.includes(project.id) ? "bg-muted" : ""}`}
                                   onClick={() =>
                                     toggleProjectSelection(project.id)
                                   }

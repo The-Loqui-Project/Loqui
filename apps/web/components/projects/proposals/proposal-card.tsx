@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-  Loader2,
   Link,
+  Loader2,
   Pencil,
   ThumbsDown,
   ThumbsUp,
@@ -123,8 +123,7 @@ export default function ProposalCard({
         isHighlighted && styles.highlight,
       )}
     >
-      {isEditing ? (
-        // Editing interface
+      {isEditing ? ( // Editing interface
         <div className="space-y-3">
           <Textarea
             className="min-h-24 resize-none"
@@ -154,9 +153,8 @@ export default function ProposalCard({
               )}
             </Button>
           </div>
-        </div>
+        </div> // Normal display interface
       ) : (
-        // Normal display interface
         <>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
             <div className="flex flex-wrap items-center gap-2">

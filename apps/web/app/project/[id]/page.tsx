@@ -7,7 +7,7 @@ import {
   getLanguages,
   type Language,
   type TranslationProgress,
-} from "@/lib/api-client-wrapper";
+} from "@/lib/with-error-toast";
 import { Loader2 } from "lucide-react";
 import {
   Card,

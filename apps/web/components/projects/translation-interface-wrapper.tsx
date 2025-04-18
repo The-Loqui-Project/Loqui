@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import type { StringItem } from "@/lib/api-client-wrapper";
 import TranslationInterface from "@/components/projects/translation-interface";
+import { StringItem } from "@/lib/api-client";
 
 interface TranslationInterfaceWrapperProps {
   projectId: number;

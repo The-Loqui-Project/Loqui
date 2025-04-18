@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Moon, Sun, Laptop, Menu } from "lucide-react";
+import { Laptop, LayoutDashboard, LogOut, Menu, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoquiIcon from "@/components/loqui-icon";
 import { useAuth } from "@/contexts/auth-context";

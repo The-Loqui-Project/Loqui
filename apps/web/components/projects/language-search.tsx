@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Loader, Loader2, Search } from "lucide-react";
-import type { Language, TranslationProgress } from "@/lib/api-client-wrapper";
+import { Loader2, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getCountryFlag } from "@/lib/utils";
+import { Language, TranslationProgress } from "@/lib/api-client";
 
 export default function LanguageSearch({
   languages,

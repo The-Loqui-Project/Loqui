@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2 } from "lucide-react";
 
 interface FeatureCardProps {
   icon: LucideIcon;

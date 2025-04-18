@@ -9,32 +9,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useAuth } from "@/contexts/auth-context";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useApi } from "@/hooks/use-api";
 
 export default function AuthPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { login, isAuthenticated, user } = useAuth();
-
   const [authStatus, setAuthStatus] = useState<
     "initial" | "loading" | "success" | "error"
   >("initial");
+  const { apiUrl } = useApi();
   const code = searchParams.get("code");
-  // Add a ref to track if we've already processed the code
   const codeProcessed = useRef(false);
 
   async function setupModrinthAuth() {
+    if (!apiUrl) return;
+
+    console.log(apiUrl);
+
     try {
       setAuthStatus("loading");
-      console.log(process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/configuration");
-      const oauthConfiguration = await fetch(
-        process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/configuration",
-      );
+      const oauthConfiguration = await fetch(`${apiUrl}v1/oauth/configuration`);
       const data = await oauthConfiguration.json();
-      const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${process.env.NEXT_PUBLIC_CURRENT_URL! + "auth"}&scope=${data.scopes}`;
-
+      const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${window.location.origin}/auth&scope=${data.scopes}`;
       router.push(MODRINTH_URL);
     } catch (error) {
       console.error("Error setting up Modrinth auth:", error);
@@ -43,21 +42,23 @@ export default function AuthPage() {
   }
 
   async function finalizeModrinthAuth() {
+    if (!apiUrl) return;
+
     try {
       setAuthStatus("loading");
-      const oauthFinalize = await fetch(
-        process.env.NEXT_PUBLIC_API_URL! + "v1/oauth/finalize",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            code: code,
-            redirect_uri_used: process.env.NEXT_PUBLIC_CURRENT_URL! + "auth",
-          }),
+      console.log(apiUrl);
+      const oauthFinalize = await fetch(`${apiUrl}v1/oauth/finalize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          code: code,
+          redirect_uri_used: `${window.location.origin}/auth`,
+        }),
+      });
+
+      console.log("OAuth Finalize Response:", await oauthFinalize.json());
 
       const {
         token,
@@ -84,7 +85,8 @@ export default function AuthPage() {
   }
 
   useEffect(() => {
-    // If already authenticated, redirect to dashboard
+    if (!apiUrl) return; // wait until apiUrl is available
+
     if (isAuthenticated && user) {
       setTimeout(() => {
         router.push("/");
@@ -101,9 +103,8 @@ export default function AuthPage() {
     else if (!code && authStatus === "initial") {
       setupModrinthAuth();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code, authStatus]);
+  }, [code, authStatus, apiUrl]);
 
   return (
     <div className="flex-1 container py-8 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950/50">

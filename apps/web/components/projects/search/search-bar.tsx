@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SearchModal } from "./search-modal";
-import { StringItem } from "../proposals/types";
+import { StringItem } from "@/lib/api-client";
 
 interface SearchBarProps {
   items: StringItem[];

@@ -5,10 +5,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Language, TranslationProgress } from "@/lib/api-client-wrapper";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Globe, ChevronRight } from "lucide-react";
+import { ChevronRight, Globe } from "lucide-react";
+import { Language } from "@/lib/api-client";
 
 interface LanguageProgressCardProps {
   language: Language;

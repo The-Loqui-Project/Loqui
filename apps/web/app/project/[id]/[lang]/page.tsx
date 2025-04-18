@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getProjectStrings, type StringItem } from "@/lib/api-client-wrapper";
+import { getProjectStrings, type StringItem } from "@/lib/with-error-toast";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import TranslationInterfaceWrapper from "@/components/projects/translation-interface-wrapper";

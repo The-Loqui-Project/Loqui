@@ -9,24 +9,25 @@ import { ProjectCard } from "@/components/homepage/project-card";
 import { AddProjectCard } from "@/components/homepage/add-project-card";
 import { OptInModal } from "@/components/projects/opt-in-modal";
 import { useAuth } from "@/contexts/auth-context";
-import {
-  calculateOverallProgress,
-  countActiveLanguages,
-  getAllProjects,
-  getProjectProgress,
-  getTotalStrings,
-  getUntranslatedStrings,
-  getUserProjects,
-} from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
+import { useApi } from "@/hooks/use-api";
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [userProjects, setUserProjects] = useState<any[]>([]);
   const [projectsToTranslate, setProjectsToTranslate] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [optInModalOpen, setOptInModalOpen] = useState(false);
+  const {
+    calculateOverallProgress,
+    countActiveLanguages,
+    getAllProjects,
+    getProjectProgress,
+    getTotalStrings,
+    getUntranslatedStrings,
+    getUserProjects,
+  } = useApi();
 
   // Fetch user projects and projects to translate
   useEffect(() => {

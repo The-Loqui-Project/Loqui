@@ -9,9 +9,9 @@ import { Navbar } from "@/components/homepage/navbar";
 import { Footer } from "@/components/homepage/footer";
 import { CountryFlagPolyfill } from "@/components/country-flag-polyfill";
 import { Toaster } from "@/components/ui/toaster";
+import { getApiUrl } from "@/lib/get-settings";
+import { APIProvider } from "@/contexts/api-context";
 
-// Load Inter font but don't apply it directly to body
-// This allows us to include it in our font stack while preserving the Twemoji Country Flags font
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -25,11 +25,13 @@ export const metadata: Metadata = {
     "A free and open-source platform that makes translating Minecraft mods easy through crowdsourcing.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
+  const apiUrl = await getApiUrl();
+
+  console.log("API URL:", apiUrl);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -40,15 +42,17 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <TaskProvider>
-              <CountryFlagPolyfill />
-              <div className="flex min-h-screen flex-col">
-                <Navbar />
-                {children}
-                <Footer />
-              </div>
-              <Toaster />
-            </TaskProvider>
+            <APIProvider apiUrl={apiUrl}>
+              <TaskProvider>
+                <CountryFlagPolyfill />
+                <div className="flex min-h-screen flex-col">
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </div>
+                <Toaster />
+              </TaskProvider>
+            </APIProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -2,12 +2,14 @@
 
 import React, {
   createContext,
-  useEffect,
-  useState,
   useCallback,
+  useEffect,
   useRef,
+  useState,
 } from "react";
-import taskWebSocketClient, { Task } from "../lib/ws-client";
+import { Task, TaskWebSocketClient } from "@/lib/ws-client";
+import { useApiClient } from "./api-context";
+import { useApi } from "@/hooks/use-api";
 
 interface TaskContextType {
   tasks: Map<string, Task>;
@@ -36,16 +38,22 @@ export function TaskProvider({ children }: TaskProviderProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const taskUpdateHandlerRef = useRef<((task: Task) => void) | null>(null);
-  const errorHandlerRef = useRef<((error: Error) => void) | null>(null);
-  const connectedHandlerRef = useRef<(() => void) | null>(null);
-  const disconnectedHandlerRef = useRef<((reason?: string) => void) | null>(
-    null,
-  );
+  const { apiUrl } = useApi();
+  const wsClientRef = useRef<TaskWebSocketClient | null>(null);
 
-  // Set up WebSocket connection and event handlers
+  const taskUpdateHandlerRef = useRef<(task: Task) => void>();
+  const errorHandlerRef = useRef<(error: Error) => void>();
+  const connectedHandlerRef = useRef<() => void>();
+  const disconnectedHandlerRef = useRef<(reason?: string) => void>();
+
   useEffect(() => {
-    // Create the event handlers
+    if (!apiUrl) return;
+
+    const baseApiUrl = new URL(apiUrl);
+    const wsUrl = `${baseApiUrl.protocol === "https:" ? "wss" : "ws"}://${baseApiUrl.host}`;
+    const wsClient = new TaskWebSocketClient(wsUrl);
+    wsClientRef.current = wsClient;
+
     const handleTaskUpdate = (task: Task) => {
       setTasks((prevTasks) => {
         const newTasks = new Map(prevTasks);
@@ -67,49 +75,41 @@ export function TaskProvider({ children }: TaskProviderProps) {
       setIsConnected(false);
     };
 
-    // Save handlers to refs so we can properly remove listeners
+    // Save handlers
     taskUpdateHandlerRef.current = handleTaskUpdate;
     errorHandlerRef.current = handleError;
     connectedHandlerRef.current = handleConnected;
     disconnectedHandlerRef.current = handleDisconnected;
 
-    // Add event listeners
-    taskWebSocketClient.on("taskUpdate", handleTaskUpdate);
-    taskWebSocketClient.on("error", handleError);
-    taskWebSocketClient.on("connected", handleConnected);
-    taskWebSocketClient.on("disconnected", handleDisconnected);
+    wsClient.on("taskUpdate", handleTaskUpdate);
+    wsClient.on("error", handleError);
+    wsClient.on("connected", handleConnected);
+    wsClient.on("disconnected", handleDisconnected);
 
-    // Connect to the WebSocket server
-    taskWebSocketClient.connect();
+    wsClient.connect();
 
-    // Cleanup function to run on unmount
     return () => {
-      if (taskUpdateHandlerRef.current) {
-        taskWebSocketClient.off("taskUpdate", taskUpdateHandlerRef.current);
-      }
-      if (errorHandlerRef.current) {
-        taskWebSocketClient.off("error", errorHandlerRef.current);
-      }
-      if (connectedHandlerRef.current) {
-        taskWebSocketClient.off("connected", connectedHandlerRef.current);
-      }
-      if (disconnectedHandlerRef.current) {
-        taskWebSocketClient.off("disconnected", disconnectedHandlerRef.current);
-      }
+      if (taskUpdateHandlerRef.current)
+        wsClient.off("taskUpdate", taskUpdateHandlerRef.current);
+      if (errorHandlerRef.current)
+        wsClient.off("error", errorHandlerRef.current);
+      if (connectedHandlerRef.current)
+        wsClient.off("connected", connectedHandlerRef.current);
+      if (disconnectedHandlerRef.current)
+        wsClient.off("disconnected", disconnectedHandlerRef.current);
     };
-  }, []);
+  }, [apiUrl]);
 
-  // Reconnect if the window becomes focused or connectivity is restored
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible" && !isConnected) {
-        taskWebSocketClient.connect();
+        wsClientRef.current?.connect();
       }
     };
 
     const handleOnline = () => {
       if (!isConnected) {
-        taskWebSocketClient.connect();
+        wsClientRef.current?.connect();
       }
     };
 
@@ -122,14 +122,12 @@ export function TaskProvider({ children }: TaskProviderProps) {
     };
   }, [isConnected]);
 
-  // Subscribe to a task
   const subscribeToTask = useCallback((taskId: string) => {
-    taskWebSocketClient.subscribeToTask(taskId);
+    wsClientRef.current?.subscribeToTask(taskId);
   }, []);
 
-  // Unsubscribe from a task
   const unsubscribeFromTask = useCallback((taskId: string) => {
-    taskWebSocketClient.unsubscribeFromTask(taskId);
+    wsClientRef.current?.unsubscribeFromTask(taskId);
   }, []);
 
   const value = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { StringItem } from "../proposals/types";
+import { StringItem } from "@/lib/api-client";
 import { SearchResultItem } from "./search-result-item";
 
 interface SearchResultsProps {
