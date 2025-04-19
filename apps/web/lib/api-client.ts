@@ -52,6 +52,33 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/v1";
 
 /**
+ * Get the current authenticated user's information
+ * @param token Modrinth authentication token
+ */
+export async function getCurrentUser(token: string): Promise<{
+  id: string;
+  username: string;
+  role: string;
+  isModerator: boolean;
+  isAdmin: boolean;
+}> {
+  const response = await fetch(`${API_BASE_URL}v1/auth/user`, {
+    headers: {
+      Authorization: token,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to get user data: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
  * Get all projects that are currently opted into Loqui
  */
 export async function getAllProjects(): Promise<
@@ -559,4 +586,599 @@ export async function getProposal(proposalId: number): Promise<{
   }
 
   return await response.json();
+}
+
+/**
+ * Report a proposal as inappropriate or incorrect
+ * @param proposalId ID of the proposal to report
+ * @param reason Reason for reporting the proposal
+ * @param priority Priority level of the report (default: medium)
+ * @param token Modrinth authentication token
+ */
+export async function reportProposal(
+  proposalId: number,
+  reason: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
+  token: string,
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/proposals/${proposalId}/report`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reason,
+        priority,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report proposal: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Report an original string as inappropriate or offensive
+ * @param stringId ID of the string to report
+ * @param reason Reason for reporting the string
+ * @param priority Priority level of the report (default: medium)
+ * @param token Modrinth authentication token
+ */
+export async function reportString(
+  stringId: number,
+  reason: string,
+  token: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(`${API_BASE_URL}v1/string/${stringId}/report`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reason,
+      priority,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report string: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Report a project as inappropriate or problematic
+ * @param projectId ID of the project to report
+ * @param reason Reason for reporting the project
+ * @param priority Priority level of the report (default: medium)
+ * @param token Modrinth authentication token
+ */
+export async function reportProject(
+  projectId: string,
+  reason: string,
+  token: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/project/${projectId}/report`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reason,
+        priority,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report project: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get all proposal reports (moderator+ only)
+ * @param status Filter by status (default: "open")
+ * @param limit Number of reports to return (default: 50)
+ * @param offset Pagination offset (default: 0)
+ * @param token Modrinth authentication token
+ */
+export async function getProposalReports(
+  token: string,
+  status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  limit: number = 50,
+  offset: number = 0,
+): Promise<{
+  reports: Array<{
+    id: number;
+    priority: "low" | "medium" | "high" | "critical";
+    status: "open" | "investigating" | "resolved" | "invalid";
+    reason: string;
+    createdAt: string;
+    resolvedAt?: string;
+    proposal: {
+      id: number;
+      value: string;
+      status: string;
+    };
+    reporter: {
+      id: string;
+      role: string;
+    };
+    resolvedBy?: {
+      id: string;
+      role: string;
+    };
+  }>;
+  total: number;
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/proposals/reports?status=${status}&limit=${limit}&offset=${offset}`,
+    {
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to fetch proposal reports: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Resolve a proposal report (moderator+ only)
+ * @param reportId ID of the report
+ * @param status New status
+ * @param note Optional resolution note
+ * @param token Modrinth authentication token
+ */
+export async function resolveProposalReport(
+  reportId: number,
+  status: "resolved" | "invalid" | "investigating",
+  note: string | undefined,
+  token: string,
+): Promise<{
+  message: string;
+  report: {
+    id: number;
+    status: string;
+    resolvedAt?: string;
+    resolvedById?: string;
+    resolutionNote?: string;
+  };
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/proposals/reports/${reportId}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+        ...(note ? { note } : {}),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to resolve report: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get all string reports (moderator+ only)
+ * @param token Modrinth authentication token
+ * @param status Filter by status
+ */
+export async function getStringReports(
+  token: string,
+  status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+): Promise<{
+  reports: Array<{
+    id: number;
+    priority: "low" | "medium" | "high" | "critical";
+    status: "open" | "investigating" | "resolved" | "invalid";
+    reason: string;
+    createdAt: string;
+    resolvedAt?: string;
+    string: {
+      id: number;
+      key: string;
+      value: string;
+    };
+    reporter: {
+      id: string;
+      role: string;
+    };
+    resolvedBy?: {
+      id: string;
+      role: string;
+    };
+  }>;
+  total: number;
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/strings/reports?status=${status}`,
+    {
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to fetch string reports: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Resolve a string report (moderator+ only)
+ * @param reportId ID of the report
+ * @param status New status
+ * @param note Optional resolution note
+ * @param token Modrinth authentication token
+ */
+export async function resolveStringReport(
+  reportId: number,
+  status: "resolved" | "invalid" | "investigating",
+  note: string | undefined,
+  token: string,
+): Promise<{
+  message: string;
+  report: {
+    id: number;
+    status: string;
+    resolvedAt?: string;
+    resolvedById?: string;
+    resolutionNote?: string;
+  };
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/strings/reports/${reportId}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+        ...(note ? { note } : {}),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to resolve string report: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get all project reports (moderator+ only)
+ * @param token Modrinth authentication token
+ * @param status Filter by status
+ */
+export async function getProjectReports(
+  token: string,
+  status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+): Promise<{
+  reports: Array<{
+    id: number;
+    priority: "low" | "medium" | "high" | "critical";
+    status: "open" | "investigating" | "resolved" | "invalid";
+    reason: string;
+    createdAt: string;
+    resolvedAt?: string;
+    project: {
+      id: string;
+      title?: string;
+    };
+    reporter: {
+      id: string;
+      role: string;
+    };
+    resolvedBy?: {
+      id: string;
+      role: string;
+    };
+  }>;
+  total: number;
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/projects/reports?status=${status}`,
+    {
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to fetch project reports: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Resolve a project report (moderator+ only)
+ * @param reportId ID of the report
+ * @param status New status
+ * @param note Optional resolution note
+ * @param token Modrinth authentication token
+ */
+export async function resolveProjectReport(
+  reportId: number,
+  status: "resolved" | "invalid" | "investigating",
+  note: string | undefined,
+  token: string,
+): Promise<{
+  message: string;
+  report: {
+    id: number;
+    status: string;
+    resolvedAt?: string;
+    resolvedById?: string;
+    resolutionNote?: string;
+  };
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/projects/reports/${reportId}/resolve`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status,
+        ...(note ? { note } : {}),
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to resolve project report: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Opt-out a project from Loqui (moderator+ only)
+ * @param projectId ID of the project
+ * @param token Modrinth authentication token
+ */
+export async function optOutProject(
+  projectId: string,
+  token: string,
+): Promise<{ message: string }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/projects/management/opt-out`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([projectId]),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to opt-out project: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Reset proposal score/votes
+ * @param proposalId ID of the proposal
+ * @param token Modrinth authentication token
+ */
+export async function resetProposalVotes(
+  proposalId: number,
+  token: string,
+): Promise<{ message: string }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/proposals/${proposalId}/reset-votes`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to reset proposal votes: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
+
+/**
+ * Get all reports for moderator dashboard (combines proposal, string, and project reports)
+ * @param token Modrinth authentication token
+ * @param status Filter by status
+ */
+export async function getAllReports(
+  token: string,
+  status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+): Promise<{
+  reports: Array<{
+    id: number;
+    type: "proposal" | "string" | "project";
+    priority: "low" | "medium" | "high" | "critical";
+    status: "open" | "investigating" | "resolved" | "invalid";
+    reason: string;
+    createdAt: string;
+    resolvedAt?: string;
+    content: {
+      id: number | string;
+      value?: string;
+      key?: string;
+      title?: string;
+      status?: string;
+    };
+    reporter: {
+      id: string;
+      role: string;
+    };
+    resolvedBy?: {
+      id: string;
+      role: string;
+    };
+  }>;
+  total: {
+    proposal: number;
+    string: number;
+    project: number;
+    all: number;
+  };
+}> {
+  // Fetch all types of reports
+  const [proposalReports, stringReports, projectReports] = await Promise.all([
+    getProposalReports(token, status).catch(() => ({ reports: [], total: 0 })),
+    getStringReports(token, status).catch(() => ({ reports: [], total: 0 })),
+    getProjectReports(token, status).catch(() => ({ reports: [], total: 0 })),
+  ]);
+
+  // Format proposal reports
+  const formattedProposalReports = proposalReports.reports.map((report) => ({
+    id: report.id,
+    type: "proposal" as const,
+    priority: report.priority,
+    status: report.status,
+    reason: report.reason,
+    createdAt: report.createdAt,
+    resolvedAt: report.resolvedAt,
+    content: {
+      id: report.proposal.id,
+      value: report.proposal.value,
+      status: report.proposal.status,
+    },
+    reporter: report.reporter,
+    resolvedBy: report.resolvedBy,
+  }));
+
+  // Format string reports
+  const formattedStringReports = stringReports.reports.map((report) => ({
+    id: report.id,
+    type: "string" as const,
+    priority: report.priority,
+    status: report.status,
+    reason: report.reason,
+    createdAt: report.createdAt,
+    resolvedAt: report.resolvedAt,
+    content: {
+      id: report.string.id,
+      value: report.string.value,
+      key: report.string.key,
+    },
+    reporter: report.reporter,
+    resolvedBy: report.resolvedBy,
+  }));
+
+  // Format project reports
+  const formattedProjectReports = projectReports.reports.map((report) => ({
+    id: report.id,
+    type: "project" as const,
+    priority: report.priority,
+    status: report.status,
+    reason: report.reason,
+    createdAt: report.createdAt,
+    resolvedAt: report.resolvedAt,
+    content: {
+      id: report.project.id,
+      title: report.project.title,
+    },
+    reporter: report.reporter,
+    resolvedBy: report.resolvedBy,
+  }));
+
+  // Combine all reports and sort by priority and creation date
+  const allReports = [
+    ...formattedProposalReports,
+    ...formattedStringReports,
+    ...formattedProjectReports,
+  ].sort((a, b) => {
+    // Sort by priority first (critical > high > medium > low)
+    const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
+    const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+
+    if (priorityDiff !== 0) return priorityDiff;
+
+    // Then sort by creation date (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  return {
+    reports: allReports,
+    total: {
+      proposal: proposalReports.total,
+      string: stringReports.total,
+      project: projectReports.total,
+      all: proposalReports.total + stringReports.total + projectReports.total,
+    },
+  };
 }

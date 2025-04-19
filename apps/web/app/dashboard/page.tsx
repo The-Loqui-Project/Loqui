@@ -206,6 +206,7 @@ export default function Dashboard() {
               {userProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
+                  id={project.id}
                   title={project.title}
                   description={`Last updated ${getTimeSince(project.optIn)}`}
                   progress={project.overallProgress}
@@ -216,6 +217,8 @@ export default function Dashboard() {
                   buttonText="View Details"
                   buttonHref={`/projects/${project.slug}`}
                   imageUrl={project.icon_url}
+                  slug={project.slug}
+                  hideReportButton={true} // Hide report button for own projects
                 />
               ))}
               <AddProjectCard onClick={handleOpenOptInModal} />
@@ -247,6 +250,7 @@ export default function Dashboard() {
                 {projectsToTranslate.map((project) => (
                   <ProjectCard
                     key={project.id}
+                    id={project.id}
                     title={project.title}
                     description={project.description}
                     progress={project.overallProgress}
@@ -260,6 +264,8 @@ export default function Dashboard() {
                     buttonText="Start Translating"
                     buttonHref={`/project/${project.id}`}
                     imageUrl={project.icon_url}
+                    slug={project.slug}
+                    hideReportButton={false} // Explicitly allow report button for translation projects
                   />
                 ))}
               </div>

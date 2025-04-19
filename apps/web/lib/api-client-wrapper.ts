@@ -43,8 +43,29 @@ export const editProposal = withErrorToast(APIClient.editProposal);
 export const getProposal = withErrorToast(APIClient.getProposal);
 export const voteOnProposal = withErrorToast(APIClient.voteOnProposal);
 export const deleteProposal = withErrorToast(APIClient.deleteProposal);
+export const reportProposal = withErrorToast(APIClient.reportProposal);
+export const reportString = withErrorToast(APIClient.reportString);
 export const createTranslation = withErrorToast(APIClient.createTranslation);
 export const getProjectDetails = withErrorToast(APIClient.getProjectDetails);
+export const reportProject = withErrorToast(APIClient.reportProject);
+export const getCurrentUser = withErrorToast(APIClient.getCurrentUser);
+
+// Add moderation dashboard API wrappers
+export const getAllReports = withErrorToast(APIClient.getAllReports);
+export const getProposalReports = withErrorToast(APIClient.getProposalReports);
+export const getStringReports = withErrorToast(APIClient.getStringReports);
+export const getProjectReports = withErrorToast(APIClient.getProjectReports);
+export const resolveProposalReport = withErrorToast(
+  APIClient.resolveProposalReport,
+);
+export const resolveStringReport = withErrorToast(
+  APIClient.resolveStringReport,
+);
+export const resolveProjectReport = withErrorToast(
+  APIClient.resolveProjectReport,
+);
+export const optOutProject = withErrorToast(APIClient.optOutProject);
+export const resetProposalVotes = withErrorToast(APIClient.resetProposalVotes);
 
 // Re-export utility functions that don't make API calls
 export const calculateOverallProgress = APIClient.calculateOverallProgress;

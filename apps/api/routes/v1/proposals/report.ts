@@ -113,15 +113,20 @@ export default {
         return;
       }
 
-      // Check if this user has already reported this proposal
+      // Check if this user has already reported this proposal and has an unresolved report
       const existingReport = await db.query.proposalReport.findFirst({
-        where: (r, { and, eq }) =>
-          and(eq(r.proposalId, proposalId), eq(r.reporterId, authUser.id)),
+        where: (r, { and, eq, not, inArray }) =>
+          and(
+            eq(r.proposalId, proposalId),
+            eq(r.reporterId, authUser.id),
+            inArray(r.status, ["open", "investigating"]),
+          ),
       });
 
       if (existingReport) {
         response.status(400).send({
-          message: "You have already reported this proposal",
+          message:
+            "You have already reported this proposal and your report is still being processed",
         });
         return;
       }

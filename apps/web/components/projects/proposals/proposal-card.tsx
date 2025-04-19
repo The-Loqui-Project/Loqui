@@ -6,6 +6,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   Trash2,
+  Flag,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Proposal } from "./types";
 import styles from "./proposal-card.module.css";
+import ProposalReportModal from "./proposal-report-modal";
 
 interface ProposalCardProps {
   proposal: Proposal;
@@ -45,6 +47,9 @@ export default function ProposalCard({
   const [editValue, setEditValue] = useState(proposal.value);
   const [editNote, setEditNote] = useState(proposal.note || "");
   const [isHighlighted, setIsHighlighted] = useState(false);
+
+  // Report related state - only need to track dialog open state
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const proposalId = `proposal-${proposal.id}`;
 
@@ -235,6 +240,17 @@ export default function ProposalCard({
               >
                 <Link className="h-4 w-4" />
               </Button>
+              {!isOwnProposal && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-yellow-500 hover:text-yellow-600"
+                  onClick={() => setReportDialogOpen(true)}
+                  title="Report this proposal"
+                >
+                  <Flag className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
           <p className="mb-1">{proposal.value}</p>
@@ -252,6 +268,13 @@ export default function ProposalCard({
           </div>
         </>
       )}
+
+      {/* Report Dialog */}
+      <ProposalReportModal
+        proposalId={proposal.id}
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+      />
     </div>
   );
 }
