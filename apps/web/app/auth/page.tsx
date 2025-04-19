@@ -27,11 +27,11 @@ export default function AuthPage() {
   async function setupModrinthAuth() {
     if (!apiUrl) return;
 
-    console.log(apiUrl);
-
     try {
       setAuthStatus("loading");
-      const oauthConfiguration = await fetch(`${apiUrl}v1/oauth/configuration`);
+      const oauthConfiguration = await fetch(
+        `${apiUrl}/v1/oauth/configuration`,
+      );
       const data = await oauthConfiguration.json();
       const MODRINTH_URL = `https://modrinth.com/auth/authorize?client_id=${data.client_id}&redirect_uri=${window.location.origin}/auth&scope=${data.scopes}`;
       router.push(MODRINTH_URL);
@@ -46,8 +46,7 @@ export default function AuthPage() {
 
     try {
       setAuthStatus("loading");
-      console.log(apiUrl);
-      const oauthFinalize = await fetch(`${apiUrl}v1/oauth/finalize`, {
+      const oauthFinalize = await fetch(`${apiUrl}/v1/oauth/finalize`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -57,8 +56,6 @@ export default function AuthPage() {
           redirect_uri_used: `${window.location.origin}/auth`,
         }),
       });
-
-      console.log("OAuth Finalize Response:", await oauthFinalize.json());
 
       const {
         token,

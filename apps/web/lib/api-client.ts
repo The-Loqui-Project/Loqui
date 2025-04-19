@@ -52,13 +52,13 @@ export class APIv1 {
   public readonly apiUrl: string;
 
   constructor(apiUrl: string) {
-    this.apiUrl = apiUrl;
+    this.apiUrl = apiUrl.replace(/\/$/, ""); // Remove trailing slash
   }
 
   /**
    * Get all projects that are currently opted into Loqui
    */
-  async getAllProjects(): Promise<
+  getAllProjects = async (): Promise<
     {
       title: any;
       description: any;
@@ -67,21 +67,23 @@ export class APIv1 {
       id: number;
       modrinth_data: any;
     }[]
-  > {
+  > => {
     const response = await fetch(`${this.apiUrl}/v1/projects/all`);
+
+    console.log("APIv1.getAllProjects", response);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.status}`);
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get projects that belong to the authenticated user
    * @param token Modrinth authentication token
    */
-  async getUserProjects(token: string): Promise<UserProject[]> {
+  getUserProjects = async (token: string): Promise<UserProject[]> => {
     const response = await fetch(`${this.apiUrl}/v1/projects/user`, {
       headers: {
         Authorization: token,
@@ -94,14 +96,14 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Opt-in one or more projects to Loqui
    * @param projectIds Array of Modrinth project IDs
    * @param token Modrinth authentication token
    */
-  async optInProjects(
+  optInProjects = async (
     projectIds: string[],
     token: string,
   ): Promise<{
@@ -109,7 +111,7 @@ export class APIv1 {
     message: string;
     failedProjects?: string[];
     taskIds: string[];
-  }> {
+  }> => {
     const response = await fetch(
       `${this.apiUrl}/v1/projects/managment/submit`,
       {
@@ -131,13 +133,15 @@ export class APIv1 {
     } else {
       throw new Error(data.message || "Failed to opt-in projects");
     }
-  }
+  };
 
   /**
    * Get translation progress for a project
    * @param projectId The ID of the project
    */
-  async getProjectProgress(projectId: number): Promise<TranslationProgress> {
+  getProjectProgress = async (
+    projectId: number,
+  ): Promise<TranslationProgress> => {
     const response = await fetch(
       `${this.apiUrl}/v1/project/${projectId}/progress`,
     );
@@ -147,14 +151,14 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Calculate overall progress percentage for a project
    * @param progress The translation progress object
    * @returns A number between 0-100 representing overall translation percentage
    */
-  calculateOverallProgress(progress: TranslationProgress): number {
+  calculateOverallProgress = (progress: TranslationProgress): number => {
     if (!progress || Object.keys(progress).length === 0) return 0;
 
     // en_us is the source language and doesn't count for progress calculation
@@ -171,27 +175,27 @@ export class APIv1 {
 
     // Return the average progress as a percentage (0-100)
     return Math.round((totalProgress / languages.length) * 100);
-  }
+  };
 
   /**
    * Count the number of languages with at least one translation
    * @param progress The translation progress object
    * @returns The count of languages with some progress
    */
-  countActiveLanguages(progress: TranslationProgress): number {
+  countActiveLanguages = (progress: TranslationProgress): number => {
     if (!progress || Object.keys(progress).length === 0) return 0;
 
     return Object.keys(progress).filter(
       (lang) => lang !== "en_us" && progress[lang]!.translated > 0,
     ).length;
-  }
+  };
 
   /**
    * Get the total number of strings for a project
    * @param progress The translation progress object
    * @returns The total number of translatable strings
    */
-  getTotalStrings(progress: TranslationProgress): number {
+  getTotalStrings = (progress: TranslationProgress): number => {
     if (!progress || Object.keys(progress).length === 0) return 0;
 
     // All languages have the same total, so we can take it from any language
@@ -201,14 +205,14 @@ export class APIv1 {
     return languages.length > 0 && progress[firstLang]
       ? progress[firstLang].total
       : 0;
-  }
+  };
 
   /**
    * Get the number of untranslated strings across all languages
    * @param progress The translation progress object
    * @returns The total number of untranslated strings
    */
-  getUntranslatedStrings(progress: TranslationProgress): number {
+  getUntranslatedStrings = (progress: TranslationProgress): number => {
     if (!progress || Object.keys(progress).length === 0) return 0;
 
     const languages = Object.keys(progress).filter((lang) => lang !== "en_us");
@@ -226,12 +230,12 @@ export class APIv1 {
     });
 
     return totalStrings - translatedStrings;
-  }
+  };
 
   /**
    * Get all available languages
    */
-  async getLanguages(): Promise<Language[]> {
+  getLanguages = async (): Promise<Language[]> => {
     const response = await fetch(`${this.apiUrl}/v1/languages`);
 
     if (!response.ok) {
@@ -239,13 +243,13 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get strings from a project
    * @param projectId ID of the project
    */
-  async getProjectStrings(projectId: number): Promise<StringItem[]> {
+  getProjectStrings = async (projectId: number): Promise<StringItem[]> => {
     const response = await fetch(
       `${this.apiUrl}/v1/project/${projectId}/strings`,
     );
@@ -255,14 +259,17 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get details for a specific string
    * @param projectId ID of the project
    * @param stringId ID of the string
    */
-  async getStringDetails(projectId: number, stringId: number): Promise<any> {
+  getStringDetails = async (
+    projectId: number,
+    stringId: number,
+  ): Promise<any> => {
     const response = await fetch(
       `${this.apiUrl}/v1/project/${projectId}/string/${stringId}`,
     );
@@ -272,20 +279,20 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get proposals for a string
    * @param stringId ID of the string
    * @param languageCode Optional language code to filter proposals by
    */
-  async getStringProposals(
+  getStringProposals = async (
     stringId: number,
     languageCode?: string,
   ): Promise<{
     original: { Id: number; key: string; value: string };
     proposals: ProposalItem[];
-  }> {
+  }> => {
     const url = languageCode
       ? `${this.apiUrl}/v1/string/${stringId}/proposals?language=${languageCode}`
       : `${this.apiUrl}/v1/string/${stringId}/proposals`;
@@ -297,7 +304,7 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Create a new proposal
@@ -306,12 +313,15 @@ export class APIv1 {
    * @param note Optional note about the proposal
    * @param token Modrinth authentication token
    */
-  async createProposal(
+  createProposal = async (
     translationId: number,
     value: string,
     note: string | undefined,
     token: string,
-  ): Promise<{ id: number; message: string }> {
+  ): Promise<{
+    id: number;
+    message: string;
+  }> => {
     const response = await fetch(`${this.apiUrl}/v1/proposals/create`, {
       method: "POST",
       headers: {
@@ -333,7 +343,7 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Edit a proposal
@@ -342,7 +352,7 @@ export class APIv1 {
    * @param note Optional new note
    * @param token Modrinth authentication token
    */
-  async editProposal(
+  editProposal = async (
     proposalId: number,
     value: string,
     note: string | undefined,
@@ -350,7 +360,7 @@ export class APIv1 {
   ): Promise<{
     message: string;
     proposal: { id: number; value: string; note?: string };
-  }> {
+  }> => {
     const response = await fetch(
       `${this.apiUrl}/v1/proposals/${proposalId}/edit`,
       {
@@ -374,7 +384,7 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Vote on a proposal
@@ -382,11 +392,14 @@ export class APIv1 {
    * @param voteType Type of vote ('up', 'down', or 'none')
    * @param token Modrinth authentication token
    */
-  async voteOnProposal(
+  voteOnProposal = async (
     proposalId: number,
     voteType: "up" | "down" | "none",
     token: string,
-  ): Promise<{ message: string; newScore: number }> {
+  ): Promise<{
+    message: string;
+    newScore: number;
+  }> => {
     const response = await fetch(
       `${this.apiUrl}/v1/proposals/${proposalId}/vote`,
       {
@@ -407,17 +420,17 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Delete a proposal (moderator+ only)
    * @param proposalId ID of the proposal to delete
    * @param token Modrinth authentication token
    */
-  async deleteProposal(
+  deleteProposal = async (
     proposalId: number,
     token: string,
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string }> => {
     const response = await fetch(`${this.apiUrl}/v1/proposals/${proposalId}`, {
       method: "DELETE",
       headers: {
@@ -433,7 +446,7 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Create a new translation record
@@ -441,11 +454,11 @@ export class APIv1 {
    * @param languageCode Language code
    * @param token Modrinth authentication token
    */
-  async createTranslation(
+  createTranslation = async (
     itemId: number,
     languageCode: string,
     token: string,
-  ): Promise<{ id: number }> {
+  ): Promise<{ id: number }> => {
     const response = await fetch(`${this.apiUrl}/v1/translations/create`, {
       method: "POST",
       headers: {
@@ -466,13 +479,13 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get project details from Modrinth API
    * @param projectId ID or slug of the project
    */
-  async getProjectDetails(projectId: number): Promise<unknown> {
+  getProjectDetails = async (projectId: number): Promise<unknown> => {
     const response = await fetch(
       `https://api.modrinth.com/v2/project/${projectId}`,
     );
@@ -482,13 +495,15 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get projects from Modrinth that the authenticated user has permission to manage
    * @param token Modrinth authentication token
    */
-  async getUserModrinthProjects(token: string): Promise<{
+  getUserModrinthProjects = async (
+    token: string,
+  ): Promise<{
     projects: Array<{
       id: string;
       title: string;
@@ -498,7 +513,7 @@ export class APIv1 {
       project_type: string;
       optedIn: boolean;
     }>;
-  }> {
+  }> => {
     const response = await fetch(
       `${this.apiUrl}/v1/projects/management/user-projects`,
       {
@@ -516,13 +531,15 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 
   /**
    * Get a proposal by ID with its associated string information
    * @param proposalId ID of the proposal to retrieve
    */
-  async getProposal(proposalId: number): Promise<{
+  getProposal = async (
+    proposalId: number,
+  ): Promise<{
     proposal: {
       id: number;
       value: string;
@@ -543,7 +560,7 @@ export class APIv1 {
         role: string;
       };
     };
-  }> {
+  }> => {
     const response = await fetch(`${this.apiUrl}/v1/proposals/${proposalId}`);
 
     if (!response.ok) {
@@ -551,5 +568,5 @@ export class APIv1 {
     }
 
     return await response.json();
-  }
+  };
 }

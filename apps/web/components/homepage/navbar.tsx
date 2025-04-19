@@ -10,13 +10,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-interface NavbarProps {
-  isAuthenticated?: boolean;
-}
-
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { logout, user, isAuthenticated } = useAuth();
   const { setTheme, theme } = useTheme();
   const router = useRouter();

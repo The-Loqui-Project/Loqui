@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getProjectDetails } from "@/lib/with-error-toast";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import ProjectInfoSidebar from "@/components/projects/project-info-sidebar";
+import { useApi } from "@/hooks/use-api";
 
 export default function ProjectLayout({
   children,
@@ -17,6 +16,7 @@ export default function ProjectLayout({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [projectInfo, setProjectInfo] = useState<any>(null);
+  const { getProjectDetails } = useApi();
 
   const projectId = params.id as unknown as number;
 

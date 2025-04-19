@@ -2,12 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  getProjectProgress,
-  getLanguages,
-  type Language,
-  type TranslationProgress,
-} from "@/lib/with-error-toast";
 import { Loader2 } from "lucide-react";
 import {
   Card,
@@ -17,6 +11,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import LanguageSearch from "@/components/projects/language-search";
+import { Language, TranslationProgress } from "@/lib/api-client";
+import { useApi } from "@/hooks/use-api";
 
 export default function ProjectPage() {
   const params = useParams();
@@ -25,6 +21,7 @@ export default function ProjectPage() {
   const [progress, setProgress] = useState<TranslationProgress>({});
   const [languages, setLanguages] = useState<Language[]>([]);
   const router = useRouter();
+  const { getProjectProgress, getLanguages } = useApi();
 
   const projectId = params.id as unknown as number;
 

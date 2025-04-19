@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { getProjectStrings, type StringItem } from "@/lib/with-error-toast";
+import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import TranslationInterfaceWrapper from "@/components/projects/translation-interface-wrapper";
+import { useApi } from "@/hooks/use-api";
+import { StringItem } from "@/lib/api-client";
 
 export default function ProjectLanguagePage() {
   const params = useParams();
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [strings, setStrings] = useState<StringItem[]>([]);
+  const { getProjectStrings } = useApi();
 
   const projectId = params.id as unknown as number;
   const languageCode = params.lang as string;
