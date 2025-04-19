@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Flag, AlertTriangle } from "lucide-react";
+import { Loader2, Flag } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -134,7 +134,12 @@ export default function StringReportModal({
             : selectedReason.label;
 
       // Use the API wrapper function instead of direct fetch
-      const response = await reportString(stringId, reasonText, token);
+      const response = await reportString(
+        stringId,
+        reasonText,
+        token,
+        selectedReason.priority,
+      );
 
       toast({
         title: "Report Submitted",
@@ -145,8 +150,24 @@ export default function StringReportModal({
       setSelectedReasonId("");
       setAdditionalDetails("");
     } catch (error) {
-      console.error("Error reporting string:", error);
-      // Error is already handled by the withErrorToast wrapper
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+
+      // Check if this is a duplicate report error
+      if (errorMessage.includes("already reported")) {
+        toast({
+          title: "Already Reported",
+          description:
+            "You have already reported this string and your report is still pending review.",
+          variant: "destructive",
+        });
+
+        // Close the modal since they can't submit a new report
+        onOpenChange(false);
+      } else {
+        console.error("Error reporting string:", error);
+        // Other errors are already handled by the withErrorToast wrapper
+      }
     } finally {
       setIsReporting(false);
     }

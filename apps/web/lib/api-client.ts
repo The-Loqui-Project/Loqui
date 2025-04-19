@@ -603,12 +603,14 @@ export async function reportProposal(
  * Report an original string as inappropriate or offensive
  * @param stringId ID of the string to report
  * @param reason Reason for reporting the string
+ * @param priority Priority level of the report (default: medium)
  * @param token Modrinth authentication token
  */
 export async function reportString(
   stringId: number,
   reason: string,
   token: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
 ): Promise<{ message: string; reportId: number }> {
   const response = await fetch(`${API_BASE_URL}v1/string/${stringId}/report`, {
     method: "POST",
@@ -618,6 +620,7 @@ export async function reportString(
     },
     body: JSON.stringify({
       reason,
+      priority,
     }),
   });
 

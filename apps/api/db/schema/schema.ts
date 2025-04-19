@@ -116,27 +116,26 @@ export const proposalReport = pgTable('proposal_report', {
 export const stringReports = pgTable(
   "string_reports",
   {
-    id: serial("id").primaryKey(),
+    id: serial("id").notNull().primaryKey(),                                // Generic serial id
     stringId: integer("string_id")
       .notNull()
       .references(() => item.id, { onDelete: "cascade" }),
-    userId: varchar("user_id", { length: 255 })
+    reporterId: varchar("reporter_id", { length: 255 })                     // -> User id of reporter
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    reason: text("reason").notNull(),
-    status: text("status", { enum: ["pending", "resolved", "invalid"] })
-      .notNull()
-      .default("pending"),
-    moderatorNotes: text("moderator_notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
-    resolvedBy: varchar("resolved_by", { length: 255 }).references(() => user.id),
+    reason: text("reason").notNull(),                                       // Reason for report
+    priority: reportPriorityEnum("priority").notNull().default("medium"),   // Priority of the report
+    status: reportStatusEnum("status").notNull().default("open"),           // Status of the report
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedById: varchar("resolved_by_id", { length: 255 })                // -> User id of moderator who resolved
+      .references(() => user.id, { onDelete: "set null" }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),           // When the report was resolved
+    resolutionNote: text("resolution_note"),                                // Note about how the report was resolved
   },
   (table) => {
     return {
       stringIdIdx: index("string_reports_string_id_idx").on(table.stringId),
-      userIdIdx: index("string_reports_user_id_idx").on(table.userId),
+      reporterIdIdx: index("string_reports_reporter_id_idx").on(table.reporterId),
       statusIdx: index("string_reports_status_idx").on(table.status),
       createdAtIdx: index("string_reports_created_at_idx").on(table.createdAt),
     };
@@ -274,11 +273,11 @@ export const stringReportsRelations = relations(stringReports, ({ one }) => ({
     references: [item.id],
   }),
   user: one(user, {
-    fields: [stringReports.userId],
+    fields: [stringReports.reporterId],
     references: [user.id],
   }),
   resolver: one(user, {
-    fields: [stringReports.resolvedBy],
+    fields: [stringReports.resolvedById],
     references: [user.id],
   }),
 }));

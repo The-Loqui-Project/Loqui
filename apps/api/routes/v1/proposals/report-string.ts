@@ -26,6 +26,11 @@ export default {
           type: "string",
           description: "Reason for reporting the string",
         },
+        priority: {
+          type: "string",
+          enum: ["low", "medium", "high", "critical"],
+          description: "Priority level of the report (default: medium)",
+        },
       },
       required: ["reason"],
     },
@@ -77,7 +82,11 @@ export default {
     const stringId = AuthUtils.parseIdParam(request, response);
     if (stringId === undefined) return;
 
-    const { reason } = request.body as { reason: string };
+    const { reason, priority = "medium" } = request.body as {
+      reason: string;
+      priority?: "low" | "medium" | "high" | "critical";
+    };
+
     if (!reason || reason.trim().length === 0) {
       response.status(400).send({
         message: "Reason is required for reporting a string",
@@ -109,16 +118,33 @@ export default {
         return;
       }
 
+      // Check if this user has already reported this string and has an unresolved report
+      const existingReport = await db.query.stringReports.findFirst({
+        where: (r, { and, eq, not, inArray }) =>
+          and(
+            eq(r.stringId, stringId),
+            eq(r.reporterId, authUser.id),
+            inArray(r.status, ["open", "investigating"]),
+          ),
+      });
+
+      if (existingReport) {
+        response.status(400).send({
+          message:
+            "You have already reported this string and your report is still being processed",
+        });
+        return;
+      }
+
       // Store the report in the database
       const [newReport] = await db
         .insert(stringReports)
         .values({
           stringId: stringId,
-          userId: authUser.id,
-          reason: reason,
-          status: "pending",
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          reporterId: authUser.id,
+          reason: reason.trim(),
+          priority,
+          status: "open",
         })
         .returning({ id: stringReports.id });
 
