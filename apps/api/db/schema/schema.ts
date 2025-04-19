@@ -1,4 +1,4 @@
-import {integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar} from "drizzle-orm/pg-core";
+import {integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar, index} from "drizzle-orm/pg-core";
 import {relations} from "drizzle-orm";
 
 
@@ -111,6 +111,37 @@ export const proposalReport = pgTable('proposal_report', {
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),          // When the report was resolved
     resolutionNote: text("resolution_note"),                               // Note about how the report was resolved
 });
+
+// String reports table
+export const stringReports = pgTable(
+  "string_reports",
+  {
+    id: serial("id").primaryKey(),
+    stringId: integer("string_id")
+      .notNull()
+      .references(() => item.id, { onDelete: "cascade" }),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),
+    status: text("status", { enum: ["pending", "resolved", "invalid"] })
+      .notNull()
+      .default("pending"),
+    moderatorNotes: text("moderator_notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolvedBy: varchar("resolved_by", { length: 255 }).references(() => user.id),
+  },
+  (table) => {
+    return {
+      stringIdIdx: index("string_reports_string_id_idx").on(table.stringId),
+      userIdIdx: index("string_reports_user_id_idx").on(table.userId),
+      statusIdx: index("string_reports_status_idx").on(table.status),
+      createdAtIdx: index("string_reports_created_at_idx").on(table.createdAt),
+    };
+  }
+);
 
 
 ////--- Relations ---////
@@ -236,6 +267,22 @@ export const proposalReportRelations = relations(proposalReport, ({ one }) => ({
     }),
 }));
 
+// StringReports relations
+export const stringReportsRelations = relations(stringReports, ({ one }) => ({
+  string: one(item, {
+    fields: [stringReports.stringId],
+    references: [item.id],
+  }),
+  user: one(user, {
+    fields: [stringReports.userId],
+    references: [user.id],
+  }),
+  resolver: one(user, {
+    fields: [stringReports.resolvedBy],
+    references: [user.id],
+  }),
+}));
+
 /*
 Examples from:
 - https://github.com/DaFuqs/Spectrum/blob/1.20.1-aria-for-painters/src/main/resources/assets/spectrum/lang
@@ -253,6 +300,7 @@ export const schema = {
     proposal,
     proposalVote,
     proposalReport,
+    stringReports,
     userRelations,
     projectRelations,
     versionRelations,
@@ -264,4 +312,5 @@ export const schema = {
     proposalVoteRelations,
     proposalReportRelations,
     approvedUserLanguagesRelations,
+    stringReportsRelations,
 }

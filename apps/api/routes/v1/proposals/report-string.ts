@@ -1,6 +1,6 @@
 import APIRoute from "../../route";
 import db from "../../../db";
-import { item } from "../../../db/schema/schema";
+import { item, stringReports } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
 import { eq } from "drizzle-orm";
 
@@ -34,6 +34,7 @@ export default {
         type: "object",
         properties: {
           message: { type: "string", description: "Success message" },
+          reportId: { type: "number", description: "ID of the created report" },
         },
       },
       400: {
@@ -108,25 +109,33 @@ export default {
         return;
       }
 
-      // In a production environment, we would save this to a reports table
-      // For now, just log it for moderator attention
+      // Store the report in the database
+      const [newReport] = await db
+        .insert(stringReports)
+        .values({
+          stringId: stringId,
+          userId: authUser.id,
+          reason: reason,
+          status: "pending",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning({ id: stringReports.id });
+
+      // Get affected projects for logging purposes
       const projects = Array.from(
         new Set(stringData.versionToItems.map((vti) => vti.version.project.id)),
       );
 
-      console.log(`------ IMPORTANT: STRING REPORTED ------`);
-      console.log(`String ID ${stringId} reported by user ${authUser.id}`);
-      console.log(`Reason: ${reason}`);
-      console.log(`String key: ${stringData.key}`);
-      console.log(`String value: ${stringData.value}`);
-      console.log(`Affected projects: ${projects.join(", ")}`);
       console.log(
-        `This may require moderator review and potential project removal from Loqui`,
+        `String ID ${stringId} (${stringData.key}) reported by user ${authUser.id}`,
       );
-      console.log(`---------------------------------------`);
+      console.log(`Affected projects: ${projects.join(", ")}`);
+      console.log(`Report ID: ${newReport.id}`);
 
       response.status(200).send({
         message: "String reported successfully. Our moderators will review it.",
+        reportId: newReport.id,
       });
     } catch (error) {
       console.error("Error reporting string:", error);

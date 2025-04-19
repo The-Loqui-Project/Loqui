@@ -598,3 +598,35 @@ export async function reportProposal(
 
   return await response.json();
 }
+
+/**
+ * Report an original string as inappropriate or offensive
+ * @param stringId ID of the string to report
+ * @param reason Reason for reporting the string
+ * @param token Modrinth authentication token
+ */
+export async function reportString(
+  stringId: number,
+  reason: string,
+  token: string,
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(`${API_BASE_URL}v1/string/${stringId}/report`, {
+    method: "POST",
+    headers: {
+      Authorization: token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reason,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report string: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}
