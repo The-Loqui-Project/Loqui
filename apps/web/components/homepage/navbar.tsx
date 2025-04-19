@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut, LayoutDashboard, Moon, Sun, Laptop, Menu } from "lucide-react";
 import { useRouter } from "next/navigation";
-import LoquiIcon from "@/components/loqui-icon";
+import LoquiIcon from "@/components/ui/icons/loqui-icon";
 import { useAuth } from "@/contexts/auth-context";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";

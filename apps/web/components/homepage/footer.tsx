@@ -9,7 +9,7 @@ import {
   Shield,
   Users,
 } from "lucide-react";
-import LoquiIcon from "@/components/loqui-icon";
+import LoquiIcon from "@/components/ui/icons/loqui-icon";
 import { meta } from "@repo/meta/meta";
 import DiscordIcon from "@/components/ui/icons/discord-icon";
 import ModrinthIcon from "@/components/ui/icons/modrinth-icon";

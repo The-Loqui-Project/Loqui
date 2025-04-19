@@ -313,7 +313,10 @@ export async function createProposal(
   value: string,
   note: string | undefined,
   token: string,
-): Promise<{ id: number; message: string }> {
+): Promise<{
+  id: number;
+  message: string;
+}> {
   const response = await fetch(`${API_BASE_URL}v1/proposals/create`, {
     method: "POST",
     headers: {
@@ -388,7 +391,10 @@ export async function voteOnProposal(
   proposalId: number,
   voteType: "up" | "down" | "none",
   token: string,
-): Promise<{ message: string; newScore: number }> {
+): Promise<{
+  message: string;
+  newScore: number;
+}> {
   const response = await fetch(
     `${API_BASE_URL}v1/proposals/${proposalId}/vote`,
     {
