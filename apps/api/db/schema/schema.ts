@@ -110,7 +110,12 @@ export const proposalReport = pgTable('proposal_report', {
         .references(() => user.id, { onDelete: 'set null' }),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),          // When the report was resolved
     resolutionNote: text("resolution_note"),                               // Note about how the report was resolved
-});
+}, (table) => [
+    index("proposal_report_proposal_id_idx").on(table.proposalId),
+    index("proposal_report_reporter_id_idx").on(table.reporterId),
+    index("proposal_report_status_idx").on(table.status),
+    index("proposal_report_created_at_idx").on(table.createdAt),
+]);
 
 // String reports table
 export const stringReports = pgTable(
@@ -132,14 +137,40 @@ export const stringReports = pgTable(
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),           // When the report was resolved
     resolutionNote: text("resolution_note"),                                // Note about how the report was resolved
   },
-  (table) => {
-    return {
-      stringIdIdx: index("string_reports_string_id_idx").on(table.stringId),
-      reporterIdIdx: index("string_reports_reporter_id_idx").on(table.reporterId),
-      statusIdx: index("string_reports_status_idx").on(table.status),
-      createdAtIdx: index("string_reports_created_at_idx").on(table.createdAt),
-    };
-  }
+  (table) => [
+    index("string_reports_string_id_idx").on(table.stringId),
+    index("string_reports_reporter_id_idx").on(table.reporterId),
+    index("string_reports_status_idx").on(table.status),
+    index("string_reports_created_at_idx").on(table.createdAt),
+  ]
+);
+
+// Project reports table
+export const projectReports = pgTable(
+  "project_reports",
+  {
+    id: serial("id").notNull().primaryKey(),                                // Generic serial id
+    projectId: varchar("project_id", { length: 255 })
+      .notNull()
+      .references(() => project.id, { onDelete: "cascade" }),
+    reporterId: varchar("reporter_id", { length: 255 })                     // -> User id of reporter
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    reason: text("reason").notNull(),                                       // Reason for report
+    priority: reportPriorityEnum("priority").notNull().default("medium"),   // Priority of the report
+    status: reportStatusEnum("status").notNull().default("open"),           // Status of the report
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedById: varchar("resolved_by_id", { length: 255 })                // -> User id of moderator who resolved
+      .references(() => user.id, { onDelete: "set null" }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),           // When the report was resolved
+    resolutionNote: text("resolution_note"),                                // Note about how the report was resolved
+  },
+  (table) => [
+    index("project_reports_project_id_idx").on(table.projectId),
+    index("project_reports_reporter_id_idx").on(table.reporterId),
+    index("project_reports_status_idx").on(table.status),
+    index("project_reports_created_at_idx").on(table.createdAt),
+  ]
 );
 
 
@@ -282,6 +313,22 @@ export const stringReportsRelations = relations(stringReports, ({ one }) => ({
   }),
 }));
 
+// ProjectReports relations
+export const projectReportsRelations = relations(projectReports, ({ one }) => ({
+  project: one(project, {
+    fields: [projectReports.projectId],
+    references: [project.id],
+  }),
+  reporter: one(user, {
+    fields: [projectReports.reporterId],
+    references: [user.id],
+  }),
+  resolver: one(user, {
+    fields: [projectReports.resolvedById],
+    references: [user.id],
+  }),
+}));
+
 /*
 Examples from:
 - https://github.com/DaFuqs/Spectrum/blob/1.20.1-aria-for-painters/src/main/resources/assets/spectrum/lang
@@ -300,6 +347,7 @@ export const schema = {
     proposalVote,
     proposalReport,
     stringReports,
+    projectReports,
     userRelations,
     projectRelations,
     versionRelations,
@@ -312,4 +360,5 @@ export const schema = {
     proposalReportRelations,
     approvedUserLanguagesRelations,
     stringReportsRelations,
+    projectReportsRelations,
 }

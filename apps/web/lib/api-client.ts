@@ -633,3 +633,41 @@ export async function reportString(
 
   return await response.json();
 }
+
+/**
+ * Report a project as inappropriate or problematic
+ * @param projectId ID of the project to report
+ * @param reason Reason for reporting the project
+ * @param priority Priority level of the report (default: medium)
+ * @param token Modrinth authentication token
+ */
+export async function reportProject(
+  projectId: string,
+  reason: string,
+  token: string,
+  priority: "low" | "medium" | "high" | "critical" = "medium",
+): Promise<{ message: string; reportId: number }> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/project/${projectId}/report`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reason,
+        priority,
+      }),
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to report project: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}

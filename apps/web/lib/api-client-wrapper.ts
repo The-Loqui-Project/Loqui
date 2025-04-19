@@ -47,6 +47,7 @@ export const reportProposal = withErrorToast(APIClient.reportProposal);
 export const reportString = withErrorToast(APIClient.reportString);
 export const createTranslation = withErrorToast(APIClient.createTranslation);
 export const getProjectDetails = withErrorToast(APIClient.getProjectDetails);
+export const reportProject = withErrorToast(APIClient.reportProject);
 
 // Re-export utility functions that don't make API calls
 export const calculateOverallProgress = APIClient.calculateOverallProgress;
