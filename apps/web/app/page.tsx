@@ -206,7 +206,9 @@ export default function Home() {
 
           <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center mt-6">
             <Button size="lg" className="gap-1" asChild>
-              <Link href="/auth">Login with Modrinth</Link>
+              <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
+                {isAuthenticated ? "Open Dashboard" : "Login with Modrinth"}
+              </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
               <a href="#features">Learn More</a>

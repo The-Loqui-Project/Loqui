@@ -7,7 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, Github, MessageSquare } from "lucide-react";
+import { BookText, CircleDot, Code } from "lucide-react";
+import DiscordIcon from "@/components/ui/icons/discord-icon";
 
 interface ProjectInfo {
   slug: string;
@@ -77,8 +78,8 @@ export default function ProjectInfoSidebar({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <Github className="h-3.5 w-3.5" />
-                  Source Code
+                  <Code className="h-3.5 w-3.5" />
+                  Source
                 </a>
               )}
               {projectInfo.issues_url && (
@@ -88,7 +89,7 @@ export default function ProjectInfoSidebar({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <Github className="h-3.5 w-3.5" />
+                  <CircleDot className="h-3.5 w-3.5" />
                   Issues
                 </a>
               )}
@@ -99,7 +100,7 @@ export default function ProjectInfoSidebar({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" />
+                  <BookText className="h-3.5 w-3.5" />
                   Wiki
                 </a>
               )}
@@ -110,7 +111,7 @@ export default function ProjectInfoSidebar({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  <MessageSquare className="h-3.5 w-3.5" />
+                  <DiscordIcon className="h-3.5 w-3.5" />
                   Discord
                 </a>
               )}
