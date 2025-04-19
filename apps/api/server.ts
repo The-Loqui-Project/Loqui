@@ -8,9 +8,14 @@ import { seed } from "./db/seed/seed";
 import { gracefulShutdown, setupJobs } from "./util/jobs";
 import axios from "axios";
 import { setupWebSocketServer } from "./util/websocket-server";
+import { runMigrations } from "./db/migrate/migrate";
 
 console.log("Database URL:", process.env.DATABASE_URL!);
 console.log("Database seeding:", process.env.DATABASE_SEEDING!);
+
+if (process.env.RUN_MIGRATIONS) {
+  runMigrations();
+}
 
 if (process.env.DATABASE_SEEDING === "true") {
   console.log("Seeding database...");
