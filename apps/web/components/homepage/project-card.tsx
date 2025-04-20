@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,8 +9,17 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Flag, MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import ProjectReportModal from "@/components/projects/project-report-modal";
 
 interface ProjectCardProps {
+  id: string | number;
   title: string;
   description: string;
   progress: number;
@@ -20,9 +30,12 @@ interface ProjectCardProps {
   buttonText: string;
   buttonHref: string;
   imageUrl?: string;
+  slug?: string;
+  hideReportButton?: boolean; // Added prop to conditionally hide report button
 }
 
 export function ProjectCard({
+  id,
   title,
   description,
   progress,
@@ -30,7 +43,11 @@ export function ProjectCard({
   buttonText,
   buttonHref,
   imageUrl,
+  slug,
+  hideReportButton = false,
 }: ProjectCardProps) {
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
@@ -45,8 +62,29 @@ export function ProjectCard({
             />
           </div>
         )}
-        <div className="space-y-1 text-center sm:text-left">
-          <CardTitle>{title}</CardTitle>
+        <div className="space-y-1 text-center sm:text-left flex-1">
+          <div className="flex justify-between items-start">
+            <CardTitle>{title}</CardTitle>
+            {!hideReportButton && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">More options</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setReportModalOpen(true)}
+                    className="text-yellow-600"
+                  >
+                    <Flag className="h-4 w-4 mr-2" />
+                    Report Project
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           <CardDescription>{description}</CardDescription>
         </div>
       </CardHeader>
@@ -77,6 +115,15 @@ export function ProjectCard({
           <a href={buttonHref}>{buttonText}</a>
         </Button>
       </CardFooter>
+
+      {/* Report Modal */}
+      <ProjectReportModal
+        projectId={id}
+        projectTitle={title}
+        projectSlug={slug || id.toString()}
+        open={reportModalOpen}
+        onOpenChange={setReportModalOpen}
+      />
     </Card>
   );
 }

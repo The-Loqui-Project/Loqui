@@ -1,6 +1,6 @@
 import APIRoute from "../../route";
 import db from "../../../db";
-import { item } from "../../../db/schema/schema";
+import { item, stringReports } from "../../../db/schema/schema";
 import { AuthUtils } from "../../../util/auth-utils";
 import { eq } from "drizzle-orm";
 
@@ -26,6 +26,11 @@ export default {
           type: "string",
           description: "Reason for reporting the string",
         },
+        priority: {
+          type: "string",
+          enum: ["low", "medium", "high", "critical"],
+          description: "Priority level of the report (default: medium)",
+        },
       },
       required: ["reason"],
     },
@@ -34,6 +39,7 @@ export default {
         type: "object",
         properties: {
           message: { type: "string", description: "Success message" },
+          reportId: { type: "number", description: "ID of the created report" },
         },
       },
       400: {
@@ -76,7 +82,11 @@ export default {
     const stringId = AuthUtils.parseIdParam(request, response);
     if (stringId === undefined) return;
 
-    const { reason } = request.body as { reason: string };
+    const { reason, priority = "medium" } = request.body as {
+      reason: string;
+      priority?: "low" | "medium" | "high" | "critical";
+    };
+
     if (!reason || reason.trim().length === 0) {
       response.status(400).send({
         message: "Reason is required for reporting a string",
@@ -108,25 +118,50 @@ export default {
         return;
       }
 
-      // In a production environment, we would save this to a reports table
-      // For now, just log it for moderator attention
+      // Check if this user has already reported this string and has an unresolved report
+      const existingReport = await db.query.stringReports.findFirst({
+        where: (r, { and, eq, not, inArray }) =>
+          and(
+            eq(r.stringId, stringId),
+            eq(r.reporterId, authUser.id),
+            inArray(r.status, ["open", "investigating"]),
+          ),
+      });
+
+      if (existingReport) {
+        response.status(400).send({
+          message:
+            "You have already reported this string and your report is still being processed",
+        });
+        return;
+      }
+
+      // Store the report in the database
+      const [newReport] = await db
+        .insert(stringReports)
+        .values({
+          stringId: stringId,
+          reporterId: authUser.id,
+          reason: reason.trim(),
+          priority,
+          status: "open",
+        })
+        .returning({ id: stringReports.id });
+
+      // Get affected projects for logging purposes
       const projects = Array.from(
         new Set(stringData.versionToItems.map((vti) => vti.version.project.id)),
       );
 
-      console.log(`------ IMPORTANT: STRING REPORTED ------`);
-      console.log(`String ID ${stringId} reported by user ${authUser.id}`);
-      console.log(`Reason: ${reason}`);
-      console.log(`String key: ${stringData.key}`);
-      console.log(`String value: ${stringData.value}`);
-      console.log(`Affected projects: ${projects.join(", ")}`);
       console.log(
-        `This may require moderator review and potential project removal from Loqui`,
+        `String ID ${stringId} (${stringData.key}) reported by user ${authUser.id}`,
       );
-      console.log(`---------------------------------------`);
+      console.log(`Affected projects: ${projects.join(", ")}`);
+      console.log(`Report ID: ${newReport.id}`);
 
       response.status(200).send({
         message: "String reported successfully. Our moderators will review it.",
+        reportId: newReport.id,
       });
     } catch (error) {
       console.error("Error reporting string:", error);
