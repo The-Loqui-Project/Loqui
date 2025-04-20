@@ -21,7 +21,7 @@ import {
   resetProposalVotes,
 } from "@/lib/api-client-wrapper";
 
-interface ProposalReport {
+export interface ProposalReport {
   id: number;
   type: "proposal";
   priority: "low" | "medium" | "high" | "critical";

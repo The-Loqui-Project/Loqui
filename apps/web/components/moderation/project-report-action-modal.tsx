@@ -19,7 +19,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { resolveProjectReport, optOutProject } from "@/lib/api-client-wrapper";
 
-interface ProjectReport {
+export interface ProjectReport {
   id: number;
   type: "project";
   priority: "low" | "medium" | "high" | "critical";

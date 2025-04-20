@@ -27,9 +27,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProjectReportActionModal } from "./project-report-action-modal";
-import { ProposalReportActionModal } from "./proposal-report-action-modal";
-import { StringReportActionModal } from "./string-report-action-modal";
+import {
+  ProjectReport,
+  ProjectReportActionModal,
+} from "./project-report-action-modal";
+import {
+  ProposalReport,
+  ProposalReportActionModal,
+} from "./proposal-report-action-modal";
+import {
+  StringReport,
+  StringReportActionModal,
+} from "./string-report-action-modal";
 
 interface Report {
   id: number;
@@ -178,7 +187,7 @@ export function ModeratorReportTable({
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMM d, yyyy HH:mm");
-    } catch (e) {
+    } catch {
       return "Invalid date";
     }
   };
@@ -373,7 +382,7 @@ export function ModeratorReportTable({
 
       {selectedReport && selectedReport.type === "project" && (
         <ProjectReportActionModal
-          report={selectedReport}
+          report={selectedReport as ProjectReport}
           open={projectModalOpen}
           onOpenChange={setProjectModalOpen}
           onActionComplete={onReportsChange}
@@ -382,7 +391,7 @@ export function ModeratorReportTable({
 
       {selectedReport && selectedReport.type === "proposal" && (
         <ProposalReportActionModal
-          report={selectedReport}
+          report={selectedReport as ProposalReport}
           open={proposalModalOpen}
           onOpenChange={setProposalModalOpen}
           onActionComplete={onReportsChange}
@@ -391,7 +400,7 @@ export function ModeratorReportTable({
 
       {selectedReport && selectedReport.type === "string" && (
         <StringReportActionModal
-          report={selectedReport}
+          report={selectedReport as StringReport}
           open={stringModalOpen}
           onOpenChange={setStringModalOpen}
           onActionComplete={onReportsChange}

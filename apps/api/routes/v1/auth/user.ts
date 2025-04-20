@@ -42,7 +42,7 @@ export default {
     // Return user information
     response.status(200).send({
       id: authUser.id,
-      username: authUser.username,
+      username: authUser.modrinthUser!.username,
       role: authUser.role,
       isModerator,
       isAdmin,

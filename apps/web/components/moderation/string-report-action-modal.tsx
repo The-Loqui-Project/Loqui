@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { resolveStringReport } from "@/lib/api-client-wrapper";
 
-interface StringReport {
+export interface StringReport {
   id: number;
   type: "string";
   priority: "low" | "medium" | "high" | "critical";
