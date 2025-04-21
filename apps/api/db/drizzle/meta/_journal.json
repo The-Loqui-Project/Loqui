@@ -36,6 +36,13 @@
       "when": 1745063600209,
       "tag": "0004_flippant_wild_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1745250231824,
+      "tag": "0005_skinny_lester",
+      "breakpoints": true
     }
   ]
 }

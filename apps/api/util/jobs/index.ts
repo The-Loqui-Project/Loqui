@@ -1,5 +1,6 @@
 import { CronJob } from "cron";
 import { checkProjectsForNewVersions, checkProjectsValid } from "./projects";
+import { processTranslationPacks } from "./translation-packs";
 
 export async function setupJobs() {
   const jobs: CronJob[] = [
@@ -10,6 +11,10 @@ export async function setupJobs() {
     // Every 2 days at 2am eastern time (6:00am UTC)
     new CronJob("0 6 */2 * *", () => {
       checkProjectsForNewVersions();
+    }),
+    // Every Wednesday at midnight UTC (for translation pack generation)
+    new CronJob("0 0 * * 3", () => {
+      processTranslationPacks();
     }),
   ];
 
