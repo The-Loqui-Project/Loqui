@@ -1,6 +1,6 @@
 {
-  "id": "e8ef953a-3bd0-4080-b8d2-8231bef33207",
-  "prevId": "3bf3f6d2-efa3-4614-afe1-16e5036a82d5",
+  "id": "b6074157-5b5f-43f4-a9bc-7c4d1cde4bc3",
+  "prevId": "5e353fd0-6b8f-4059-8a0d-895495aeb9d7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -78,17 +78,41 @@
           "primaryKey": false,
           "notNull": true
         },
+        "iso_code": {
+          "name": "iso_code",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "native_name": {
           "name": "native_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "native_region": {
+          "name": "native_region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "suggestion_meta": {
           "name": "suggestion_meta",
@@ -416,185 +440,6 @@
           ]
         }
       },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.string_reports": {
-      "name": "string_reports",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "string_id": {
-          "name": "string_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reporter_id": {
-          "name": "reporter_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "priority": {
-          "name": "priority",
-          "type": "REPORT_PRIORITY",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'medium'"
-        },
-        "status": {
-          "name": "status",
-          "type": "REPORT_STATUS",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'open'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "resolved_by_id": {
-          "name": "resolved_by_id",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "resolved_at": {
-          "name": "resolved_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "resolution_note": {
-          "name": "resolution_note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "string_reports_string_id_idx": {
-          "name": "string_reports_string_id_idx",
-          "columns": [
-            {
-              "expression": "string_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "string_reports_reporter_id_idx": {
-          "name": "string_reports_reporter_id_idx",
-          "columns": [
-            {
-              "expression": "reporter_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "string_reports_status_idx": {
-          "name": "string_reports_status_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "string_reports_created_at_idx": {
-          "name": "string_reports_created_at_idx",
-          "columns": [
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "string_reports_string_id_item_id_fk": {
-          "name": "string_reports_string_id_item_id_fk",
-          "tableFrom": "string_reports",
-          "tableTo": "item",
-          "columnsFrom": [
-            "string_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "string_reports_reporter_id_user_id_fk": {
-          "name": "string_reports_reporter_id_user_id_fk",
-          "tableFrom": "string_reports",
-          "tableTo": "user",
-          "columnsFrom": [
-            "reporter_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "string_reports_resolved_by_id_user_id_fk": {
-          "name": "string_reports_resolved_by_id_user_id_fk",
-          "tableFrom": "string_reports",
-          "tableTo": "user",
-          "columnsFrom": [
-            "resolved_by_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

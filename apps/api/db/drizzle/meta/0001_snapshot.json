@@ -1,6 +1,6 @@
 {
-  "id": "b31bbf74-c9d5-471a-a45f-285583099ec6",
-  "prevId": "88e0488b-7a88-4426-bf46-5231c5a0148a",
+  "id": "148f58e3-8f93-4ced-b973-f63a6daeede4",
+  "prevId": "9ce5b085-a0f3-4aca-bf91-92add0699747",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -74,9 +74,15 @@
       "columns": {
         "code": {
           "name": "code",
-          "type": "varchar(10)",
+          "type": "varchar(7)",
           "primaryKey": false,
           "notNull": true
+        },
+        "iso_code": {
+          "name": "iso_code",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
         },
         "name": {
           "name": "name",
@@ -84,11 +90,29 @@
           "primaryKey": false,
           "notNull": true
         },
+        "region": {
+          "name": "region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "native_name": {
           "name": "native_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "native_region": {
+          "name": "native_region",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "suggestion_meta": {
           "name": "suggestion_meta",
