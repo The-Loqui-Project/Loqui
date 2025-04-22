@@ -1,0 +1,1 @@
+ALTER TABLE "language" ALTER COLUMN "iso_code" SET DATA TYPE varchar(15);

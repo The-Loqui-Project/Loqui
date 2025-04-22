@@ -9,18 +9,13 @@ import { gracefulShutdown, setupJobs } from "./util/jobs";
 import axios from "axios";
 import { setupWebSocketServer } from "./util/websocket-server";
 import { runMigrations } from "./db/migrate/migrate";
+import { updateLanguages } from "./util/jobs/language";
 
-console.log("Database URL:", process.env.DATABASE_URL!);
-console.log("Database seeding:", process.env.DATABASE_SEEDING!);
-
-if (process.env.RUN_MIGRATIONS) {
+if (process.env.RUN_MIGRATIONS === "true") {
   runMigrations();
-}
-
-if (process.env.DATABASE_SEEDING === "true") {
-  console.log("Seeding database...");
-  await seed();
-  process.exit(0);
+  updateLanguages(
+    "https://raw.githubusercontent.com/rotgruengelb/mc-lang/refs/heads/main/languages.json",
+  );
 }
 
 const server: FastifyInstance = fastify({
