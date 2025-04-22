@@ -2,7 +2,8 @@ import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig(
-  process.env.DEV_MODE && process.env.USE_PGLITE_DATABASE_CONNECTION
+  process.env.DEV_MODE === "true" &&
+    process.env.USE_PGLITE_DATABASE_CONNECTION === "true"
     ? {
         out: "./db/drizzle",
         driver: "pglite",
