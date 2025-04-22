@@ -4,7 +4,6 @@ import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import { seed } from "./db/seed/seed";
 import { gracefulShutdown, setupJobs } from "./util/jobs";
 import axios from "axios";
 import { setupWebSocketServer } from "./util/websocket-server";
