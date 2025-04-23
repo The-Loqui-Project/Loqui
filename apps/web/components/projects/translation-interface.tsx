@@ -494,6 +494,15 @@ export default function TranslationInterface({
     }
   };
 
+  const handleJumpToIndex = (index: number) => {
+    if (index >= 0 && index < filteredStrings.length) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
+      setCurrentIndex(index);
+      fetchProjectProgress();
+    }
+  };
+
   const handlePrevious = () => {
     if (currentIndex > 0) {
       // Save the draft for the current string before navigating
@@ -588,6 +597,7 @@ export default function TranslationInterface({
         onNext={handleNext}
         items={strings}
         onSelectString={handleSelectString}
+        onJumpToIndex={handleJumpToIndex}
       />
 
       <ProgressPanel completionPercentage={getCompletionPercentage()} />
