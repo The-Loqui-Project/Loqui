@@ -31,6 +31,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useTask } from "@/hooks/use-task";
 import { useToast } from "@/hooks/use-toast";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
 interface ModrinthProject {
   id: string;
@@ -494,7 +495,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                                     Failed
                                   </span>
                                 ) : (
-                                  `${task.status} ${task.progress ? `(${Math.round(task.progress)}%)` : ""}`
+                                  `${capitalizeFirstLetter(task.status)} ${task.progress ? `(${Math.round(task.progress)}%)` : ""}`
                                 )
                               ) : (
                                 "Waiting..."
