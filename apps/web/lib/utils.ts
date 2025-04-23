@@ -6,6 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Capitalizes the first letter of a string
+ * @param str The string to capitalize
+ * @returns The string with the first letter capitalized
+ */
+export function capitalizeFirstLetter(str: string) {
+  return String(str).charAt(0).toUpperCase() + String(str).slice(1);
+}
+
+/**
  * Map of language codes that need special emoji overrides
  * Used for languages that don't conform to the xx_XX pattern
  * or need a special representation
