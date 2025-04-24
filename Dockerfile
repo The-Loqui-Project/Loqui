@@ -49,6 +49,7 @@ RUN --mount=type=cache,target=${PNPM_HOME} pnpm install --frozen-lockfile
 
 # Copy built artifacts
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/db/drizzle ./apps/api/dist/db/drizzle
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 COPY --from=builder /app/apps/web/.env ./apps/web/.env
 
