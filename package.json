@@ -10,11 +10,11 @@
     "start": "pnpm --recursive --parallel --filter api --filter web run start"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.6.1",
-    "@commitlint/config-conventional": "^19.6.0",
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "husky": "^9.1.7",
-    "prettier": "^3.2.5",
-    "turbo": "^2.3.3",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.1",
     "typescript": "5.5.4"
   },
   "packageManager": "pnpm@9.0.0",
