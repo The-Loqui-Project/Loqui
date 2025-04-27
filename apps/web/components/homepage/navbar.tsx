@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Moon, Sun, Laptop, Menu } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  Moon,
+  Sun,
+  Laptop,
+  Menu,
+  MessageSquareWarning,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoquiIcon from "@/components/ui/icons/loqui-icon";
 import { useAuth } from "@/contexts/auth-context";
@@ -88,7 +96,7 @@ export function Navbar() {
               {userRole?.isModerator && (
                 <Link href="/moderation">
                   <Button variant="ghost" size="sm" className="gap-2">
-                    <LayoutDashboard className="h-4 w-4" />
+                    <MessageSquareWarning className="h-4 w-4" />
                     <span>Moderation Dashboard</span>
                   </Button>
                 </Link>
