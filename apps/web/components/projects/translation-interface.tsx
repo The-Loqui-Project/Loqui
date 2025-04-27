@@ -321,7 +321,11 @@ export default function TranslationInterface({
       });
     } finally {
       setSaving((prev) => ({ ...prev, [stringId]: false }));
-      setCurrentIndex(currentIndex + 1);
+      if (currentIndex < filteredStrings.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+
+      fetchProjectProgress();
     }
   };
 
@@ -397,6 +401,7 @@ export default function TranslationInterface({
       });
     } finally {
       setDeleting((prev) => ({ ...prev, [proposalId]: false }));
+      fetchProjectProgress();
     }
   };
 
