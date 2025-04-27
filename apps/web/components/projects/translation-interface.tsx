@@ -321,6 +321,7 @@ export default function TranslationInterface({
       });
     } finally {
       setSaving((prev) => ({ ...prev, [stringId]: false }));
+      setCurrentIndex(currentIndex + 1);
     }
   };
 
