@@ -16,8 +16,12 @@ CREATE TABLE "item" (
 --> statement-breakpoint
 CREATE TABLE "language" (
 	"code" varchar(10) NOT NULL,
+	"iso_code" varchar(15),
 	"name" text NOT NULL,
+	"region" text,
 	"native_name" text NOT NULL,
+	"native_region" text,
+	"note" text,
 	"suggestion_meta" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	CONSTRAINT "language_code_unique" UNIQUE("code")
 );
@@ -25,6 +29,19 @@ CREATE TABLE "language" (
 CREATE TABLE "project" (
 	"id" varchar(255) PRIMARY KEY NOT NULL,
 	"opt-in" timestamp with time zone
+);
+--> statement-breakpoint
+CREATE TABLE "project_reports" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"project_id" varchar(255) NOT NULL,
+	"reporter_id" varchar(255) NOT NULL,
+	"reason" text NOT NULL,
+	"priority" "REPORT_PRIORITY" DEFAULT 'medium' NOT NULL,
+	"status" "REPORT_STATUS" DEFAULT 'open' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"resolved_by_id" varchar(255),
+	"resolved_at" timestamp with time zone,
+	"resolution_note" text
 );
 --> statement-breakpoint
 CREATE TABLE "proposal" (
@@ -59,6 +76,19 @@ CREATE TABLE "proposal_vote" (
 	CONSTRAINT "proposal_vote_proposal_id_user_id_pk" PRIMARY KEY("proposal_id","user_id")
 );
 --> statement-breakpoint
+CREATE TABLE "string_reports" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"string_id" integer NOT NULL,
+	"reporter_id" varchar(255) NOT NULL,
+	"reason" text NOT NULL,
+	"priority" "REPORT_PRIORITY" DEFAULT 'medium' NOT NULL,
+	"status" "REPORT_STATUS" DEFAULT 'open' NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"resolved_by_id" varchar(255),
+	"resolved_at" timestamp with time zone,
+	"resolution_note" text
+);
+--> statement-breakpoint
 CREATE TABLE "translation" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"item_id" integer NOT NULL,
@@ -84,6 +114,9 @@ CREATE TABLE "version_to_item" (
 	CONSTRAINT "version_to_item_version_id_item_id_pk" PRIMARY KEY("version_id","item_id")
 );
 --> statement-breakpoint
+ALTER TABLE "project_reports" ADD CONSTRAINT "project_reports_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "project_reports" ADD CONSTRAINT "project_reports_reporter_id_user_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "project_reports" ADD CONSTRAINT "project_reports_resolved_by_id_user_id_fk" FOREIGN KEY ("resolved_by_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "proposal" ADD CONSTRAINT "proposal_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "proposal" ADD CONSTRAINT "proposal_translation_id_translation_id_fk" FOREIGN KEY ("translation_id") REFERENCES "public"."translation"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "proposal_report" ADD CONSTRAINT "proposal_report_proposal_id_proposal_id_fk" FOREIGN KEY ("proposal_id") REFERENCES "public"."proposal"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -91,7 +124,22 @@ ALTER TABLE "proposal_report" ADD CONSTRAINT "proposal_report_reporter_id_user_i
 ALTER TABLE "proposal_report" ADD CONSTRAINT "proposal_report_resolved_by_id_user_id_fk" FOREIGN KEY ("resolved_by_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "proposal_vote" ADD CONSTRAINT "proposal_vote_proposal_id_proposal_id_fk" FOREIGN KEY ("proposal_id") REFERENCES "public"."proposal"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "proposal_vote" ADD CONSTRAINT "proposal_vote_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "string_reports" ADD CONSTRAINT "string_reports_string_id_item_id_fk" FOREIGN KEY ("string_id") REFERENCES "public"."item"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "string_reports" ADD CONSTRAINT "string_reports_reporter_id_user_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "string_reports" ADD CONSTRAINT "string_reports_resolved_by_id_user_id_fk" FOREIGN KEY ("resolved_by_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "translation" ADD CONSTRAINT "translation_item_id_item_id_fk" FOREIGN KEY ("item_id") REFERENCES "public"."item"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "translation" ADD CONSTRAINT "translation_language_code_language_code_fk" FOREIGN KEY ("language_code") REFERENCES "public"."language"("code") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "translation" ADD CONSTRAINT "translation_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "version" ADD CONSTRAINT "version_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "version" ADD CONSTRAINT "version_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "project_reports_project_id_idx" ON "project_reports" USING btree ("project_id");--> statement-breakpoint
+CREATE INDEX "project_reports_reporter_id_idx" ON "project_reports" USING btree ("reporter_id");--> statement-breakpoint
+CREATE INDEX "project_reports_status_idx" ON "project_reports" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "project_reports_created_at_idx" ON "project_reports" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "proposal_report_proposal_id_idx" ON "proposal_report" USING btree ("proposal_id");--> statement-breakpoint
+CREATE INDEX "proposal_report_reporter_id_idx" ON "proposal_report" USING btree ("reporter_id");--> statement-breakpoint
+CREATE INDEX "proposal_report_status_idx" ON "proposal_report" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "proposal_report_created_at_idx" ON "proposal_report" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "string_reports_string_id_idx" ON "string_reports" USING btree ("string_id");--> statement-breakpoint
+CREATE INDEX "string_reports_reporter_id_idx" ON "string_reports" USING btree ("reporter_id");--> statement-breakpoint
+CREATE INDEX "string_reports_status_idx" ON "string_reports" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "string_reports_created_at_idx" ON "string_reports" USING btree ("created_at");
