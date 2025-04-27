@@ -318,10 +318,14 @@ export function ModeratorReportTable({
                         {formatDate(report.createdAt)}
                       </TooltipTrigger>
                       <TooltipContent>
-                        {report.resolvedAt && (
+                        {report.resolvedAt ? (
                           <p>
                             <strong>Resolved:</strong>{" "}
                             {formatDate(report.resolvedAt)}
+                          </p>
+                        ) : (
+                          <p>
+                            <strong>Unresolved</strong>
                           </p>
                         )}
                       </TooltipContent>
