@@ -40,7 +40,6 @@ export function Navbar() {
     if (isAuthenticated) {
       const token = getCookie("token");
       if (!token) {
-        router.push("/");
         return;
       }
 
