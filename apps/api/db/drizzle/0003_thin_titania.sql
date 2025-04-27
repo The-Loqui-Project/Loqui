@@ -1,1 +1,0 @@
-ALTER TABLE "language" ALTER COLUMN "code" SET DATA TYPE varchar(10);
