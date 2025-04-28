@@ -3,12 +3,22 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LogOut, LayoutDashboard, Moon, Sun, Laptop, Menu } from "lucide-react";
+import {
+  LogOut,
+  LayoutDashboard,
+  Moon,
+  Sun,
+  Laptop,
+  Menu,
+  MessageSquareWarning,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoquiIcon from "@/components/ui/icons/loqui-icon";
 import { useAuth } from "@/contexts/auth-context";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { getCurrentUser } from "@/lib/api-client-wrapper";
+import { getCookie } from "cookies-next";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -17,9 +27,34 @@ interface NavbarProps {
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<{
+    isModerator: boolean;
+    isAdmin: boolean;
+  } | null>(null);
   const { logout, user, isAuthenticated } = useAuth();
   const { setTheme, theme } = useTheme();
   const router = useRouter();
+
+  // Fetch user role and check permissions
+  useEffect(() => {
+    if (isAuthenticated) {
+      const token = getCookie("token");
+      if (!token) {
+        return;
+      }
+
+      getCurrentUser(token.toString())
+        .then((userData) => {
+          setUserRole({
+            isModerator: userData.isModerator,
+            isAdmin: userData.isAdmin,
+          });
+        })
+        .catch((err) => {
+          console.error("Error fetching user role:", err);
+        });
+    }
+  }, [isAuthenticated]);
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
@@ -57,6 +92,14 @@ export function Navbar() {
                   <span>Dashboard</span>
                 </Button>
               </Link>
+              {userRole?.isModerator && (
+                <Link href="/moderation">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <MessageSquareWarning className="h-4 w-4" />
+                    <span>Moderation Dashboard</span>
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
         </div>

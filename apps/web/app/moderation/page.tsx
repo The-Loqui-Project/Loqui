@@ -120,7 +120,7 @@ export default function ModerationPage() {
   // Show loading state or redirect if not authorized
   if (isLoading || !userRole) {
     return (
-      <main className="container py-8">
+      <main className="flex-1 container py-8 flex flex-col space-y-10">
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -134,7 +134,7 @@ export default function ModerationPage() {
   }
 
   return (
-    <main className="container py-8">
+    <main className="flex-1 container py-8 flex flex-col space-y-10">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
