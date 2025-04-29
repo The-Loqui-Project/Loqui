@@ -1182,3 +1182,65 @@ export async function getAllReports(
     },
   };
 }
+
+/**
+ * Get a user's reports (combines proposal, string, and project reports).
+ * @param token Modrinth authentication token
+ * @param status Filter by status
+ */
+export async function getAllUserReports(
+  userId: string,
+  token: string,
+  status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  limit: number = 50,
+  offset: number = 0,
+): Promise<{
+  reports: Array<{
+    id: number;
+    type: "proposal" | "string" | "project";
+    priority: "low" | "medium" | "high" | "critical";
+    status: "open" | "investigating" | "resolved" | "invalid";
+    reason: string;
+    createdAt: string;
+    resolvedAt?: string;
+    content: {
+      id: number | string;
+      value?: string;
+      key?: string;
+      title?: string;
+      status?: string;
+    };
+    reporter: {
+      id: string;
+      role: string;
+    };
+    resolvedBy?: {
+      id: string;
+      role: string;
+    };
+  }>;
+  total: {
+    proposal: number;
+    string: number;
+    project: number;
+    all: number;
+  };
+}> {
+  const response = await fetch(
+    `${API_BASE_URL}v1/user/${userId}/reports?status=${status}&limit=${limit}&offset=${offset}`,
+    {
+      headers: {
+        Authorization: token,
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(
+      error.message || `Failed to fetch user's reports: ${response.status}`,
+    );
+  }
+
+  return await response.json();
+}

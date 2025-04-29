@@ -19,7 +19,7 @@ import { getCookie } from "cookies-next";
 import { getAllReports, getCurrentUser } from "@/lib/api-client-wrapper";
 import { ReportTable } from "@/components/moderation/report-table";
 
-export default function ModerationPage() {
+export default function UserReportsPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const [reportsData, setReportsData] = useState<any | null>(null);
@@ -128,22 +128,13 @@ export default function ModerationPage() {
     );
   }
 
-  // If not a moderator, the router will redirect
-  if (!userRole.isModerator) {
-    return null;
-  }
-
   return (
     <main className="flex-1 container py-8 flex flex-col space-y-10">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Moderation Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage reports and moderate content
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+            <p className="text-muted-foreground mt-1">Manage your reports</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchReports}>

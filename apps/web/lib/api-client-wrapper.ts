@@ -49,6 +49,7 @@ export const createTranslation = withErrorToast(APIClient.createTranslation);
 export const getProjectDetails = withErrorToast(APIClient.getProjectDetails);
 export const reportProject = withErrorToast(APIClient.reportProject);
 export const getCurrentUser = withErrorToast(APIClient.getCurrentUser);
+export const getAllUserReports = withErrorToast(APIClient.getAllUserReports);
 
 // Add moderation dashboard API wrappers
 export const getAllReports = withErrorToast(APIClient.getAllReports);
