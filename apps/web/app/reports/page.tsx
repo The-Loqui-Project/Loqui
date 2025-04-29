@@ -16,8 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2, Filter, Search } from "lucide-react";
 import { getCookie } from "cookies-next";
-import { getAllUserReports, getCurrentUser } from "@/lib/api-client-wrapper";
+import { getCurrentUser } from "@/lib/api-client-wrapper";
 import { ReportTable } from "@/components/moderation/report-table";
+import { getAllReports } from "@/lib/api-client";
 
 export default function UserReportsPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -67,10 +68,8 @@ export default function UserReportsPage() {
 
   // Fetch reports when status changes or component mounts
   useEffect(() => {
-    if (userRole?.isModerator) {
-      fetchReports();
-    }
-  }, [userRole, selectedStatus]);
+    fetchReports();
+  }, [selectedStatus]);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -84,10 +83,10 @@ export default function UserReportsPage() {
         return;
       }
 
-      const data = await getAllUserReports(
-        user?.modrinthUserData?.id,
+      const data = await getAllReports(
         token.toString(),
         selectedStatus,
+        user?.modrinthUserData?.id,
       );
       setReportsData(data);
     } catch (err) {

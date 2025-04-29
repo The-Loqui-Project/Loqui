@@ -43,7 +43,6 @@ import V1_StringReportsList from "./v1/strings/reports/list";
 import V1_StringReportsResolve from "./v1/strings/reports/resolve";
 import V1_ProjectReportsList from "./v1/projects/reports/list";
 import V1_ProjectReportsResolve from "./v1/projects/reports/resolve";
-import V1_UserReportsList from "./v1/users/[id]/reports/list";
 
 // Tasks
 import V1_TasksList from "./v1/tasks/list";
@@ -97,7 +96,6 @@ const routes: RouteStorage = {
     string_reports_resolve: V1_StringReportsResolve,
     project_reports_list: V1_ProjectReportsList,
     project_reports_resolve: V1_ProjectReportsResolve,
-    user_reports_list: V1_UserReportsList,
 
     // Tasks
     tasks_list: V1_TasksList,

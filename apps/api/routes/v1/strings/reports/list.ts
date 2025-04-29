@@ -19,6 +19,10 @@ export default {
           enum: ["open", "investigating", "resolved", "invalid", "all"],
           description: "Filter reports by status (default: open)",
         },
+        reporterId: {
+          type: "string",
+          description: "Filter reports by reporter (default: none)",
+        },
       },
     },
     response: {
@@ -94,8 +98,11 @@ export default {
     // If auth failed, the function would have already sent a response
     if (!authUser) return;
 
-    // Check if user has appropriate permissions (moderator+ role required)
-    if (!(await AuthUtils.checkPermission(authUser, response, "moderator"))) {
+    // Check if user has appropriate permissions (moderator+ role required for non-self reports)
+    if (
+      authUser.modrinthUser?.id != (request.params as any).reporterId &&
+      !(await AuthUtils.checkPermission(authUser, response, "moderator"))
+    ) {
       return;
     }
 
