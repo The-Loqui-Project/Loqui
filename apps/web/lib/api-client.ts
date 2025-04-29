@@ -709,6 +709,7 @@ export async function reportProject(
 export async function getProposalReports(
   token: string,
   status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  reporterId?: string,
   limit: number = 50,
   offset: number = 0,
 ): Promise<{
@@ -735,8 +736,11 @@ export async function getProposalReports(
   }>;
   total: number;
 }> {
+  const reporterIdParameterString = reporterId
+    ? `&reporterId=${reporterId}`
+    : "";
   const response = await fetch(
-    `${API_BASE_URL}v1/proposals/reports?status=${status}&limit=${limit}&offset=${offset}`,
+    `${API_BASE_URL}v1/proposals/reports?status=${status}${reporterIdParameterString}&limit=${limit}&offset=${offset}`,
     {
       headers: {
         Authorization: token,
@@ -809,6 +813,7 @@ export async function resolveProposalReport(
 export async function getStringReports(
   token: string,
   status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  reporterId?: string,
 ): Promise<{
   reports: Array<{
     id: number;
@@ -833,8 +838,11 @@ export async function getStringReports(
   }>;
   total: number;
 }> {
+  const reporterIdParameterString = reporterId
+    ? `&reporterId=${reporterId}`
+    : "";
   const response = await fetch(
-    `${API_BASE_URL}v1/strings/reports?status=${status}`,
+    `${API_BASE_URL}v1/strings/reports?status=${status}${reporterIdParameterString}`,
     {
       headers: {
         Authorization: token,
@@ -907,6 +915,7 @@ export async function resolveStringReport(
 export async function getProjectReports(
   token: string,
   status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  reporterId?: string,
 ): Promise<{
   reports: Array<{
     id: number;
@@ -930,8 +939,11 @@ export async function getProjectReports(
   }>;
   total: number;
 }> {
+  const reporterIdParameterString = reporterId
+    ? `&reporterId=${reporterId}`
+    : "";
   const response = await fetch(
-    `${API_BASE_URL}v1/projects/reports?status=${status}`,
+    `${API_BASE_URL}v1/projects/reports?status=${status}${reporterIdParameterString}`,
     {
       headers: {
         Authorization: token,
@@ -1064,6 +1076,7 @@ export async function resetProposalVotes(
 export async function getAllReports(
   token: string,
   status: "open" | "investigating" | "resolved" | "invalid" | "all" = "open",
+  reporterId?: string,
 ): Promise<{
   reports: Array<{
     id: number;
@@ -1098,9 +1111,18 @@ export async function getAllReports(
 }> {
   // Fetch all types of reports
   const [proposalReports, stringReports, projectReports] = await Promise.all([
-    getProposalReports(token, status).catch(() => ({ reports: [], total: 0 })),
-    getStringReports(token, status).catch(() => ({ reports: [], total: 0 })),
-    getProjectReports(token, status).catch(() => ({ reports: [], total: 0 })),
+    getProposalReports(token, status, reporterId).catch(() => ({
+      reports: [],
+      total: 0,
+    })),
+    getStringReports(token, status, reporterId).catch(() => ({
+      reports: [],
+      total: 0,
+    })),
+    getProjectReports(token, status, reporterId).catch(() => ({
+      reports: [],
+      total: 0,
+    })),
   ]);
 
   // Format proposal reports
