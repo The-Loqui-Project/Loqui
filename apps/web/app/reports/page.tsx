@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2, Filter, Search } from "lucide-react";
 import { getCookie } from "cookies-next";
-import { getAllReports, getCurrentUser } from "@/lib/api-client-wrapper";
+import { getAllUserReports, getCurrentUser } from "@/lib/api-client-wrapper";
 import { ReportTable } from "@/components/moderation/report-table";
 
 export default function UserReportsPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
+  const { id } = useParams();
   const [reportsData, setReportsData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +51,8 @@ export default function UserReportsPage() {
             isAdmin: userData.isAdmin,
           });
 
-          // If not a moderator, redirect to home
-          if (!userData.isModerator) {
+          // If trying to access another user's reports, but not a moderator, redirect to home
+          if (user?.modrinthUserData?.id != id && !userData.isModerator) {
             router.push("/");
           }
         })
@@ -83,7 +84,11 @@ export default function UserReportsPage() {
         return;
       }
 
-      const data = await getAllReports(token.toString(), selectedStatus);
+      const data = await getAllUserReports(
+        user?.modrinthUserData?.id,
+        token.toString(),
+        selectedStatus,
+      );
       setReportsData(data);
     } catch (err) {
       console.error("Error fetching reports:", err);
