@@ -94,7 +94,7 @@ jobs:
                       type=raw,value=latest,enable={{is_default_branch}}
 
             - name: Set up cache for pnpm
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               id: pnpm-cache
               with:
                   path: |
