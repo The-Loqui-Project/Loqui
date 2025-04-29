@@ -287,8 +287,8 @@ importers:
   packages/eslint-config:
     devDependencies:
       '@next/eslint-plugin-next':
-        specifier: ^15.1.0
-        version: 15.1.0
+        specifier: ^15.3.1
+        version: 15.3.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.31.1
         version: 8.31.1(@typescript-eslint/parser@8.15.0(eslint@9.25.1(jiti@2.4.2))(typescript@5.5.4))(eslint@9.25.1(jiti@2.4.2))(typescript@5.5.4)
@@ -326,8 +326,8 @@ importers:
   packages/meta:
     devDependencies:
       '@next/eslint-plugin-next':
-        specifier: ^15.1.0
-        version: 15.1.0
+        specifier: ^15.3.1
+        version: 15.3.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.31.1
         version: 8.31.1(@typescript-eslint/parser@8.15.0(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.2))(eslint@9.25.1(jiti@2.4.2))(typescript@5.7.2)
@@ -1006,8 +1006,8 @@ packages:
   '@next/env@15.3.1':
     resolution: {integrity: sha512-cwK27QdzrMblHSn9DZRV+DQscHXRuJv6MydlJRpFSqJWZrTYMLzKDeyueJNN9MGd8NNiUKzDQADAf+dMLXX7YQ==}
 
-  '@next/eslint-plugin-next@15.1.0':
-    resolution: {integrity: sha512-+jPT0h+nelBT6HC9ZCHGc7DgGVy04cv4shYdAe6tKlEbjQUtwU3LzQhzbDHQyY2m6g39m6B0kOFVuLGBrxxbGg==}
+  '@next/eslint-plugin-next@15.3.1':
+    resolution: {integrity: sha512-oEs4dsfM6iyER3jTzMm4kDSbrQJq8wZw5fmT6fg2V3SMo+kgG+cShzLfEV20senZzv8VF+puNLheiGPlBGsv2A==}
 
   '@next/swc-darwin-arm64@15.3.1':
     resolution: {integrity: sha512-hjDw4f4/nla+6wysBL07z52Gs55Gttp5Bsk5/8AncQLJoisvTBP0pRIBK/B16/KqQyH+uN4Ww8KkcAqJODYH3w==}
@@ -2603,10 +2603,6 @@ packages:
 
   fast-glob@3.3.1:
     resolution: {integrity: sha512-kNFPyjhh5cKjrUltxs+wFx+ZkbRaxxmZ+X0ZU31SOsxCEtP9VPgtq2teZw1DebupL5GmDaNQ6yKMMVcM41iqDg==}
-    engines: {node: '>=8.6.0'}
-
-  fast-glob@3.3.2:
-    resolution: {integrity: sha512-oX2ruAFQwf/Orj8m737Y5adxDQO0LAB7/S5MnxCdTNDd4p6BsyIVsv9JQsATbTSq8KHRpLwIHbVlUNatxd+1Ow==}
     engines: {node: '>=8.6.0'}
 
   fast-glob@3.3.3:
@@ -4722,7 +4718,7 @@ snapshots:
 
   '@next/env@15.3.1': {}
 
-  '@next/eslint-plugin-next@15.1.0':
+  '@next/eslint-plugin-next@15.3.1':
     dependencies:
       fast-glob: 3.3.1
 
@@ -5677,7 +5673,7 @@ snapshots:
       '@typescript-eslint/types': 8.15.0
       '@typescript-eslint/visitor-keys': 8.15.0
       debug: 4.4.0
-      fast-glob: 3.3.2
+      fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.1
@@ -5692,7 +5688,7 @@ snapshots:
       '@typescript-eslint/types': 8.15.0
       '@typescript-eslint/visitor-keys': 8.15.0
       debug: 4.4.0
-      fast-glob: 3.3.2
+      fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.1
@@ -6585,14 +6581,6 @@ snapshots:
   fast-equals@5.2.2: {}
 
   fast-glob@3.3.1:
-    dependencies:
-      '@nodelib/fs.stat': 2.0.5
-      '@nodelib/fs.walk': 1.2.8
-      glob-parent: 5.1.2
-      merge2: 1.4.1
-      micromatch: 4.0.8
-
-  fast-glob@3.3.2:
     dependencies:
       '@nodelib/fs.stat': 2.0.5
       '@nodelib/fs.walk': 1.2.8
