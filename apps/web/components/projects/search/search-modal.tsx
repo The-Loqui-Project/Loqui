@@ -14,7 +14,7 @@ interface SearchModalProps {
   onClose: () => void;
   items: StringItem[];
   onSelect: (item: StringItem) => void;
-  triggerRef: RefObject<HTMLButtonElement>;
+  triggerRef: RefObject<HTMLButtonElement | null>;
 }
 
 export function SearchModal({
