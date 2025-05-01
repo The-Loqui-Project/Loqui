@@ -44,6 +44,9 @@ importers:
       '@fastify/websocket':
         specifier: ^11.0.2
         version: 11.0.2
+      '@repo/meta':
+        specifier: workspace:*
+        version: link:../../packages/meta
       '@types/ws':
         specifier: ^8.18.1
         version: 8.18.1

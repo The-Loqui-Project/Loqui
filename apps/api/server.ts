@@ -9,6 +9,7 @@ import axios from "axios";
 import { setupWebSocketServer } from "./util/websocket-server";
 import { runMigrations } from "./db/migrate/migrate";
 import { updateLanguages } from "./util/jobs/language";
+import { meta } from "@repo/meta/meta";
 
 if (process.env.RUN_MIGRATIONS === "true") {
   runMigrations();
@@ -40,6 +41,18 @@ process.on("unhandledRejection", (reason, promise) => {
 
 // Setup cron jobs.
 await setupJobs();
+
+server.get("/", async (request, reply) => {
+  return {
+    about: "Welcome to the Loqui API.",
+    name: "The-Loqui-Project/Loqui/apps/api",
+    major_version: "v1",
+    build: {
+      commit: meta.commit || "local",
+      branch: meta.branch || "local",
+    },
+  };
+});
 
 if (process.env.DEV_MODE) {
   server.register(swagger, {

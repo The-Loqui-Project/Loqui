@@ -23,6 +23,7 @@
     "@fastify/swagger-ui": "^5.2.2",
     "@fastify/websocket": "^11.0.2",
     "@types/ws": "^8.18.1",
+    "@repo/meta": "workspace:*",
     "adm-zip": "^0.5.16",
     "axios": "^1.8.4",
     "cron": "^3.5.0",
