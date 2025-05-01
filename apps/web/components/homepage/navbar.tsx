@@ -11,6 +11,9 @@ import {
   Laptop,
   Menu,
   MessageSquareWarning,
+  ChevronDown,
+  User,
+  CircleUserRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import LoquiIcon from "@/components/ui/icons/loqui-icon";
@@ -19,6 +22,12 @@ import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getCurrentUser } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -124,16 +133,29 @@ export function Navbar() {
 
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <span className="text-sm">Hello, {user?.username}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="flex flex-row gap-x-1"
+                    aria-label="Profile"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                    <CircleUserRound className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={10}>
+                  <Link href={`/user/${user?.modrinthUserData?.id}`}>
+                    <DropdownMenuItem>
+                      <User className="h-4 w-4" />
+                      Profile
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 text-red-500" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <Link href="/auth">
