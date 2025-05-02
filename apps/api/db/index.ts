@@ -5,7 +5,8 @@ import { drizzle as drizzlePgLite } from "drizzle-orm/pglite";
 import { schema } from "./schema/schema";
 
 const db =
-  process.env.DEV_MODE && process.env.USE_PGLITE_DATABASE_CONNECTION
+  process.env.DEV_MODE === "true" &&
+  process.env.USE_PGLITE_DATABASE_CONNECTION === "true"
     ? (drizzlePgLite("./dist/pglite_database", {
         schema: schema,
       }) as unknown as NodePgDatabase<typeof schema>)

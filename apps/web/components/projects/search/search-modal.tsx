@@ -14,7 +14,7 @@ interface SearchModalProps {
   onClose: () => void;
   items: StringItem[];
   onSelect: (item: StringItem) => void;
-  triggerRef: RefObject<HTMLButtonElement>;
+  triggerRef: RefObject<HTMLButtonElement | null>;
 }
 
 export function SearchModal({
@@ -87,17 +87,10 @@ export function SearchModal({
             placeholder="Search..."
             className="h-12 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center ml-auto mr-8">
             <kbd className="hidden sm:flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
               ESC
             </kbd>
-            <button
-              onClick={onClose}
-              className="h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-muted"
-            >
-              <span className="sr-only">Close</span>
-              <X className="h-4 w-4" />
-            </button>
           </div>
         </div>
 

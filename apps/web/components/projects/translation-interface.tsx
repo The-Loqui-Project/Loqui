@@ -321,6 +321,11 @@ export default function TranslationInterface({
       });
     } finally {
       setSaving((prev) => ({ ...prev, [stringId]: false }));
+      if (currentIndex < filteredStrings.length - 1) {
+        setCurrentIndex(currentIndex + 1);
+      }
+
+      fetchProjectProgress();
     }
   };
 
@@ -396,6 +401,7 @@ export default function TranslationInterface({
       });
     } finally {
       setDeleting((prev) => ({ ...prev, [proposalId]: false }));
+      fetchProjectProgress();
     }
   };
 
@@ -494,6 +500,15 @@ export default function TranslationInterface({
     }
   };
 
+  const handleJumpToIndex = (index: number) => {
+    if (index >= 0 && index < filteredStrings.length) {
+      // Save the draft for the current string before navigating
+      saveDraft(currentString.id);
+      setCurrentIndex(index);
+      fetchProjectProgress();
+    }
+  };
+
   const handlePrevious = () => {
     if (currentIndex > 0) {
       // Save the draft for the current string before navigating
@@ -588,6 +603,7 @@ export default function TranslationInterface({
         onNext={handleNext}
         items={strings}
         onSelectString={handleSelectString}
+        onJumpToIndex={handleJumpToIndex}
       />
 
       <ProgressPanel completionPercentage={getCompletionPercentage()} />

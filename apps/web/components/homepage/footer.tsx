@@ -14,6 +14,7 @@ import { meta } from "@repo/meta/meta";
 import DiscordIcon from "@/components/ui/icons/discord-icon";
 import ModrinthIcon from "@/components/ui/icons/modrinth-icon";
 import GitHubIcon from "@/components/ui/icons/github-icon";
+import { ServiceLink } from "@/components/ui/service-link";
 
 export function Footer() {
   return (
@@ -57,19 +58,19 @@ export function Footer() {
                 <span className="absolute bottom-0 left-0 h-1 w-8 bg-primary/30 rounded-full"></span>
               </h3>
               <div className="flex flex-col gap-3">
-                <FooterLink
+                <ServiceLink
                   href="https://github.com/The-Loqui-Project"
                   icon={<GitHubIcon className="h-4 w-4" />}
                   label="GitHub"
                   external
                 />
-                <FooterLink
+                <ServiceLink
                   href="https://modrinth.com/organization/loqui"
                   icon={<ModrinthIcon className="h-4 w-4" />}
                   label="Modrinth"
                   external
                 />
-                <FooterLink
+                <ServiceLink
                   href="https://discord.imb11.dev"
                   icon={<DiscordIcon className="h-4 w-4" />}
                   label="Discord"
@@ -85,17 +86,17 @@ export function Footer() {
                 <span className="absolute bottom-0 left-0 h-1 w-8 bg-primary/30 rounded-full"></span>
               </h3>
               <div className="flex flex-col gap-3">
-                <FooterLink
+                <ServiceLink
                   href="/legal/privacy-policy"
                   icon={<FileLock2 className="h-4 w-4" />}
                   label="Privacy Policy"
                 />
-                <FooterLink
+                <ServiceLink
                   href="/legal/terms-of-service"
                   icon={<Shield className="h-4 w-4" />}
                   label="Terms of Service"
                 />
-                <FooterLink
+                <ServiceLink
                   href="https://github.com/The-Loqui-Project/Loqui#License-1-ov-file"
                   icon={<Copyright className="h-4 w-4" />}
                   label="License (GPL v3)"
@@ -111,18 +112,18 @@ export function Footer() {
                 <span className="absolute bottom-0 left-0 h-1 w-8 bg-primary/30 rounded-full"></span>
               </h3>
               <div className="flex flex-col gap-3">
-                <FooterLink
+                <ServiceLink
                   href="/docs"
                   icon={<BookText className="h-4 w-4" />}
                   label="Documentation"
                 />
-                <FooterLink
+                <ServiceLink
                   href="https://github.com/The-Loqui-Project/loqui/issues"
                   icon={<CircleDot className="h-4 w-4" />}
                   label="Issue Tracker"
                   external
                 />
-                <FooterLink
+                <ServiceLink
                   href="https://github.com/The-Loqui-Project/loqui/contributors"
                   icon={<Users className="h-4 w-4" />}
                   label="Contributors"
@@ -143,31 +144,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
-}
-
-function FooterLink({
-  href,
-  icon,
-  label,
-  external = false,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  external?: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      aria-label={label}
-      target={external ? "_blank" : undefined}
-      rel={external ? "noopener noreferrer" : undefined}
-    >
-      <div className="flex items-center justify-center h-6 w-6">{icon}</div>
-      <span>{label}</span>
-      <ArrowUpRight className="h-4 w-4 -translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-    </Link>
   );
 }

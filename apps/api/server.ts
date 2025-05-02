@@ -4,18 +4,18 @@ import routes from "./routes";
 import "dotenv/config";
 import swagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
-import { seed } from "./db/seed/seed";
 import { gracefulShutdown, setupJobs } from "./util/jobs";
 import axios from "axios";
 import { setupWebSocketServer } from "./util/websocket-server";
+import { runMigrations } from "./db/migrate/migrate";
+import { updateLanguages } from "./util/jobs/language";
+import { meta } from "@repo/meta/meta";
 
-console.log("Database URL:", process.env.DATABASE_URL!);
-console.log("Database seeding:", process.env.DATABASE_SEEDING!);
-
-if (process.env.DATABASE_SEEDING === "true") {
-  console.log("Seeding database...");
-  await seed();
-  process.exit(0);
+if (process.env.RUN_MIGRATIONS === "true") {
+  runMigrations();
+  updateLanguages(
+    "https://raw.githubusercontent.com/rotgruengelb/mc-lang/refs/heads/main/languages.json",
+  );
 }
 
 const server: FastifyInstance = fastify({
@@ -41,6 +41,18 @@ process.on("unhandledRejection", (reason, promise) => {
 
 // Setup cron jobs.
 await setupJobs();
+
+server.get("/", async (request, reply) => {
+  return {
+    about: "Welcome to the Loqui API.",
+    name: "The-Loqui-Project/Loqui/apps/api",
+    major_version: "v1",
+    build: {
+      commit: meta.commit || "local",
+      branch: meta.branch || "local",
+    },
+  };
+});
 
 if (process.env.DEV_MODE) {
   server.register(swagger, {

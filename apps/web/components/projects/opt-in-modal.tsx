@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Loader2,
-  AlertCircle,
-  CheckCircle,
-  Search,
-  Check,
-  ExternalLink,
-} from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Search, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,11 +19,12 @@ import {
   optInProjects,
 } from "@/lib/api-client-wrapper";
 import { getCookie } from "cookies-next/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useTask } from "@/hooks/use-task";
 import { useToast } from "@/hooks/use-toast";
+import { capitalizeFirstLetter } from "@/lib/utils";
+import { ProjectIcon } from "@/components/info/project/project-icon";
 
 interface ModrinthProject {
   id: string;
@@ -328,16 +322,12 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                                     toggleProjectSelection(project.id)
                                   }
                                 >
-                                  <div className="flex-shrink-0">
-                                    <Avatar className="h-10 w-10">
-                                      <AvatarImage
-                                        src={project.icon_url || ""}
-                                        alt={project.title}
-                                      />
-                                      <AvatarFallback>
-                                        {project.title.substring(0, 2)}
-                                      </AvatarFallback>
-                                    </Avatar>
+                                  <div className="mr-2">
+                                    <ProjectIcon
+                                      imageUrl={project?.icon_url}
+                                      title={project.title}
+                                      size="lg"
+                                    />
                                   </div>
                                   <div className="ml-3 flex-1">
                                     <div className="flex items-center justify-between">
@@ -374,16 +364,12 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                                   key={project.id}
                                   className="flex items-start p-2 rounded-md bg-secondary/30"
                                 >
-                                  <div className="flex-shrink-0">
-                                    <Avatar className="h-10 w-10">
-                                      <AvatarImage
-                                        src={project.icon_url || ""}
-                                        alt={project.title}
-                                      />
-                                      <AvatarFallback>
-                                        {project.title.substring(0, 2)}
-                                      </AvatarFallback>
-                                    </Avatar>
+                                  <div className="mr-2">
+                                    <ProjectIcon
+                                      imageUrl={project?.icon_url}
+                                      title={project.title}
+                                      size="lg"
+                                    />
                                   </div>
                                   <div className="ml-3 flex-1">
                                     <div className="flex items-center justify-between">
@@ -468,15 +454,13 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                         <div key={taskId} className="space-y-2">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <Avatar className="h-6 w-6 mr-2">
-                                <AvatarImage
-                                  src={projectData?.icon_url || ""}
-                                  alt={projectName}
+                              <div className="mr-2">
+                                <ProjectIcon
+                                  imageUrl={projectData!.icon_url!}
+                                  title={projectName}
+                                  size="md"
                                 />
-                                <AvatarFallback className="text-xs">
-                                  {projectName?.substring(0, 1)}
-                                </AvatarFallback>
-                              </Avatar>
+                              </div>
                               <span className="text-sm font-medium">
                                 {projectName}
                               </span>
@@ -494,7 +478,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                                     Failed
                                   </span>
                                 ) : (
-                                  `${task.status} ${task.progress ? `(${Math.round(task.progress)}%)` : ""}`
+                                  `${capitalizeFirstLetter(task.status)} ${task.progress ? `(${Math.round(task.progress)}%)` : ""}`
                                 )
                               ) : (
                                 "Waiting..."

@@ -65,17 +65,17 @@ interface Report {
   };
 }
 
-interface ModeratorReportTableProps {
+interface ReportTableProps {
   reports: Report[];
   onReportsChange: () => void;
   filter: "all" | "project" | "proposal" | "string";
 }
 
-export function ModeratorReportTable({
+export function ReportTable({
   reports,
   onReportsChange,
   filter,
-}: ModeratorReportTableProps) {
+}: ReportTableProps) {
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
@@ -318,10 +318,14 @@ export function ModeratorReportTable({
                         {formatDate(report.createdAt)}
                       </TooltipTrigger>
                       <TooltipContent>
-                        {report.resolvedAt && (
+                        {report.resolvedAt ? (
                           <p>
                             <strong>Resolved:</strong>{" "}
                             {formatDate(report.resolvedAt)}
+                          </p>
+                        ) : (
+                          <p>
+                            <strong>Unresolved</strong>
                           </p>
                         )}
                       </TooltipContent>

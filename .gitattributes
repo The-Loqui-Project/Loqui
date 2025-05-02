@@ -1,1 +1,24 @@
-* text=auto
+# Handle line endings automatically for files detected as text
+# and leave all files detected as binary untouched.
+* text=auto 	eol=lf
+
+*.bat 			eol=crlf
+
+# The above will handle all files NOT found below
+# These files are text and should be normalized (Convert crlf => lf)
+*.css           text eol=lf
+*.html          text eol=lf
+*.java          text eol=lf
+*.js            text eol=lf
+*.json          text eol=lf
+*.properties    text eol=lf
+*.txt           text eol=lf
+*.xml           text eol=lf
+
+# These files are binary and should be left untouched
+# (binary is macro for -text -diff)
+*.class         binary
+*.jar           binary
+*.gif           binary
+*.jpg           binary
+*.png           binary

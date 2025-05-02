@@ -1,12 +1,19 @@
 import { CronJob } from "cron";
 import { checkProjectsForNewVersions, checkProjectsValid } from "./projects";
 import { processTranslationPacks } from "./translation-packs";
+import { updateLanguages } from "./language";
 
 export async function setupJobs() {
   const jobs: CronJob[] = [
     // Every day at 3am eastern time (7am UTC)
     new CronJob("0 7 * * *", () => {
       checkProjectsValid();
+    }),
+    // Every day at 9pm eastern time (1am UTC)
+    new CronJob("0 1 * * *", () => {
+      updateLanguages(
+        "https://raw.githubusercontent.com/rotgruengelb/mc-lang/refs/heads/main/languages.json",
+      );
     }),
     // Every 2 days at 2am eastern time (6:00am UTC)
     new CronJob("0 6 */2 * *", () => {

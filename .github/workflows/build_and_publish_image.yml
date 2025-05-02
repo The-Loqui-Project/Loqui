@@ -11,7 +11,6 @@ jobs:
         name: Skip duplicate jobs
         continue-on-error: true
         runs-on: ubuntu-latest
-        # Map a step output to a job output
         outputs:
             should_skip: ${{ steps.skip_check.outputs.should_skip }}
         steps:
@@ -29,8 +28,7 @@ jobs:
         if: needs.skip_duplicate_jobs.outputs.should_skip != 'true'
 
         steps:
-            - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3
+            # Removed QEMU setup as it's not needed for single-arch build
             
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
@@ -44,39 +42,8 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Generate Docker metadata
-              id: meta
-              uses: docker/metadata-action@v5
-              with:
-                  images: |
-                      ghcr.io/${{ github.repository }}
-                  labels: |
-                      org.opencontainers.image.title=Loqui
-                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui).
-                      org.opencontainers.image.vendor=The Loqui Project
-                  tags: |
-                      type=schedule
-                      type=ref,event=branch
-                      type=ref,event=pr
-                      type=semver,pattern={{version}}
-                      type=semver,pattern={{major}}.{{minor}}
-                      type=semver,pattern={{major}}
-                      type=sha
-                      type=raw,value=latest,enable={{is_default_branch}}
-
             - name: Checkout
               uses: actions/checkout@v4
-
-            - name: Set up cache for pnpm
-              uses: actions/cache@v3
-              id: pnpm-cache
-              with:
-                  path: |
-                    /pnpm
-                    ~/.pnpm-store
-                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-                  restore-keys: |
-                    ${{ runner.os }}-pnpm-
 
             - name: Update meta.ts with branch and commit
               run: |
@@ -106,6 +73,37 @@ jobs:
                   echo "Using staging URLs for branch: $BRANCH"
                 fi
 
+            - name: Generate Docker metadata
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: |
+                      ghcr.io/${{ github.repository }}
+                  labels: |
+                      org.opencontainers.image.title=Loqui
+                      org.opencontainers.image.description=See the [repository](https://github.com/The-Loqui-Project/Loqui).
+                      org.opencontainers.image.vendor=The Loqui Project
+                  tags: |
+                      type=schedule
+                      type=ref,event=branch
+                      type=ref,event=pr
+                      type=semver,pattern={{version}}
+                      type=semver,pattern={{major}}.{{minor}}
+                      type=semver,pattern={{major}}
+                      type=sha
+                      type=raw,value=latest,enable={{is_default_branch}}
+
+            - name: Set up cache for pnpm
+              uses: actions/cache@v4
+              id: pnpm-cache
+              with:
+                  path: |
+                    /pnpm
+                    ~/.pnpm-store
+                  key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  restore-keys: |
+                    ${{ runner.os }}-pnpm-
+
             - name: Build and push Docker image
               uses: docker/build-push-action@v6
               with:
@@ -116,7 +114,7 @@ jobs:
                   labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/amd64
                   build-args: |
                     BUILDKIT_INLINE_CACHE=1
                     CURRENT_URL=${{ steps.set-urls.outputs.CURRENT_URL }}

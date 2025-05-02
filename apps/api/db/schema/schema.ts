@@ -73,9 +73,13 @@ export const approvedUserLanguages = pgTable('approved_user_languages', {
 
 // A language that translations can be in
 export const language = pgTable("language", {
-    code: varchar("code", {length: 10}).notNull().unique(),                 // Language code (e.g. "de_de")
+    code: varchar("code", {length: 10}).notNull().unique(),                  // Language code (e.g. "de_de")
+    isoCode: varchar("iso_code", {length: 15}),                             // ISO code of the language (e.g. "deu_DE")
     name: text("name").notNull(),                                           // Name of the language (e.g. "German")
+    region: text("region"),                                                 // Region of the language (e.g. "Germany")
     nativeName: text("native_name").notNull(),                              // Native name of the language (e.g. "Deutsch")
+    nativeRegion: text("native_region"),                                    // Native name of the region of the language (e.g. "Deutschland")
+    note: text("note"),                                                     // Note about the language (e.g. if the language is a joke language)
     suggestionMeta: jsonb("suggestion_meta").notNull().default({}),         // Metadata for automatic suggestions
 });
 
@@ -106,13 +110,14 @@ export const proposal = pgTable("proposal", {
 
 // A vote on a proposal 
 export const proposalVote = pgTable('proposal_vote', {
-    proposalId: integer("proposal_id").notNull()                           // -> Proposal id
+    proposalId: integer("proposal_id").notNull()                            // -> Proposal id
         .references(() => proposal.id, { onDelete: 'cascade' }),
-    userId: varchar("user_id", { length: 255 }).notNull()                  // -> User id
+    userId: varchar("user_id", { length: 255 }).notNull()                   // -> User id
         .references(() => user.id, { onDelete: 'cascade' }),
-    isUpvote: integer("is_upvote").notNull(),                              // 1 for upvote, -1 for downvote
+    isUpvote: integer("is_upvote").notNull(),                               // 1 for upvote, -1 for downvote
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (t) => [primaryKey({columns: [t.proposalId, t.userId]})]);              // One vote per user per proposal
+}, (t) =>
+    [primaryKey({columns: [t.proposalId, t.userId]})]);                     // One vote per user per proposal
 
 // Report for a proposal
 export const proposalReport = pgTable('proposal_report', {

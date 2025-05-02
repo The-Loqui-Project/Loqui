@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +16,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2, Filter, Search } from "lucide-react";
 import { getCookie } from "cookies-next";
-import { getAllReports, getCurrentUser } from "@/lib/api-client-wrapper";
+import { getCurrentUser } from "@/lib/api-client-wrapper";
 import { ReportTable } from "@/components/moderation/report-table";
+import { getAllReports } from "@/lib/api-client";
 
-export default function ModerationPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+export default function UserReportsPage() {
+  const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
+  const { id } = useParams();
   const [reportsData, setReportsData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +52,8 @@ export default function ModerationPage() {
             isAdmin: userData.isAdmin,
           });
 
-          // If not a moderator, redirect to home
-          if (!userData.isModerator) {
+          // If trying to access another user's reports, but not a moderator, redirect to home
+          if (user?.modrinthUserData?.id != id && !userData.isModerator) {
             router.push("/");
           }
         })
@@ -66,10 +68,8 @@ export default function ModerationPage() {
 
   // Fetch reports when status changes or component mounts
   useEffect(() => {
-    if (userRole?.isModerator) {
-      fetchReports();
-    }
-  }, [userRole, selectedStatus]);
+    fetchReports();
+  }, [selectedStatus]);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -83,7 +83,11 @@ export default function ModerationPage() {
         return;
       }
 
-      const data = await getAllReports(token.toString(), selectedStatus);
+      const data = await getAllReports(
+        token.toString(),
+        selectedStatus,
+        user?.modrinthUserData?.id,
+      );
       setReportsData(data);
     } catch (err) {
       console.error("Error fetching reports:", err);
@@ -128,22 +132,13 @@ export default function ModerationPage() {
     );
   }
 
-  // If not a moderator, the router will redirect
-  if (!userRole.isModerator) {
-    return null;
-  }
-
   return (
     <main className="flex-1 container py-8 flex flex-col space-y-10">
       <div className="flex flex-col gap-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Moderation Dashboard
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Manage reports and moderate content
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
+            <p className="text-muted-foreground mt-1">Manage your reports</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={fetchReports}>
