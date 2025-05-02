@@ -6,7 +6,8 @@ export default {
   type: "GET",
   route: "/moderation/translation-packs/process",
   schema: {
-    description: "Manually trigger translation pack generation for all projects with pending translations",
+    description:
+      "Manually trigger translation pack generation for all projects with pending translations",
     security: [{ modrinthToken: [] }],
     tags: ["moderation"],
     response: {
@@ -20,13 +21,19 @@ export default {
       401: {
         type: "object",
         properties: {
-          message: { type: "string", description: "Authentication error message" },
+          message: {
+            type: "string",
+            description: "Authentication error message",
+          },
         },
       },
       403: {
         type: "object",
         properties: {
-          message: { type: "string", description: "Authorization error message" },
+          message: {
+            type: "string",
+            description: "Authorization error message",
+          },
         },
       },
     },
@@ -59,7 +66,8 @@ export default {
     } catch (error) {
       console.error("Error starting translation pack generation:", error);
       response.status(500).send({
-        message: "An error occurred while starting the translation pack generation",
+        message:
+          "An error occurred while starting the translation pack generation",
       });
     }
   },

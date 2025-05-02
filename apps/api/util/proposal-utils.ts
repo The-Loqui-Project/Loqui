@@ -1,5 +1,10 @@
 import db from "../db";
-import { proposal, translation, versionToItem, versionTranslationPackStatus } from "../db/schema/schema";
+import {
+  proposal,
+  translation,
+  versionToItem,
+  versionTranslationPackStatus,
+} from "../db/schema/schema";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 
 /**
@@ -62,7 +67,7 @@ export async function updateProposalStatuses(
         .update(proposal)
         .set({ status: newStatus })
         .where(eq(proposal.id, topProposal.id));
-      
+
       // If status changed to accurate, track it
       if (newStatus === "accurate" && topProposal.status !== "accurate") {
         newAccurateProposalIds.push(topProposal.id);
@@ -85,7 +90,7 @@ export async function updateProposalStatuses(
         .update(proposal)
         .set({ status: newStatus })
         .where(eq(proposal.id, p.id));
-      
+
       // If status changed to accurate, track it
       if (newStatus === "accurate" && p.status !== "accurate") {
         newAccurateProposalIds.push(p.id);
@@ -109,7 +114,7 @@ export async function updateProposalStatuses(
  */
 async function markVersionsAsDirty(
   translationId: number,
-  proposalIds: number[]
+  proposalIds: number[],
 ): Promise<void> {
   try {
     // 1. Get the translation to find item and language
@@ -148,12 +153,12 @@ async function markVersionsAsDirty(
         })
         .onConflictDoUpdate({
           target: [
-            versionTranslationPackStatus.versionId, 
-            versionTranslationPackStatus.languageCode
+            versionTranslationPackStatus.versionId,
+            versionTranslationPackStatus.languageCode,
           ],
-          set: { 
-            needsRelease: true, 
-            lastUpdated: new Date() 
+          set: {
+            needsRelease: true,
+            lastUpdated: new Date(),
           },
         });
     }

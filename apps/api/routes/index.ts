@@ -101,7 +101,7 @@ const routes: RouteStorage = {
     // Tasks
     tasks_list: V1_TasksList,
     tasks_get: V1_TasksGet,
-    test_upload: translationPacks
+    test_upload: translationPacks,
   },
 };
 
