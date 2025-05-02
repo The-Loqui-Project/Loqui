@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.3",
     "@types/pg": "^8.11.14",
     "drizzle-kit": "^0.31.0",
     "tsx": "^4.19.4"
