@@ -39,21 +39,21 @@ export default {
     },
   },
   func: async (request, response) => {
-    // const authUser = await AuthUtils.authenticateUser(request, response);
+    const authUser = await AuthUtils.authenticateUser(request, response);
 
-    // if (!authUser) {
-    //   response.status(401).send({
-    //     message: "You must be logged in to access this endpoint",
-    //   });
-    //   return;
-    // }
+    if (!authUser) {
+      response.status(401).send({
+        message: "You must be logged in to access this endpoint",
+      });
+      return;
+    }
 
-    // if (authUser.role !== "admin") {
-    //   response.status(403).send({
-    //     message: "You do not have permission to access this endpoint",
-    //   });
-    //   return;
-    // }
+    if (authUser.role !== "admin") {
+      response.status(403).send({
+        message: "You do not have permission to access this endpoint",
+      });
+      return;
+    }
 
     try {
       // Run the translation pack generation process in the background

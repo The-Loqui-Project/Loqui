@@ -17,7 +17,7 @@ import JSZip from "jszip";
 import crypto from "crypto";
 
 // Directory to store generated resource packs
-const RESOURCE_PACK_DIR = "/workspaces/Loqui/temp";
+const RESOURCE_PACK_DIR = process.env.PACK_GENERATION_FOLDER_OUTPUT!;
 
 /**
  * Checks all versions with dirty translation status and generates
@@ -38,6 +38,10 @@ export async function processTranslationPacks() {
       console.log("processing progress: " + progress);
     };
 
+    // 0. Initialize translation pack statuses for versions without any
+    await initializeMissingTranslationPackStatuses();
+    updateProgress(5);
+
     // 1. Get all versions that need translation pack updates
     const dirtyStatuses = await db.query.versionTranslationPackStatus.findMany({
       where: eq(versionTranslationPackStatus.needsRelease, true),
@@ -55,7 +59,7 @@ export async function processTranslationPacks() {
       return { processed: 0, message: "No translation packs to update" };
     }
 
-    updateProgress(5);
+    updateProgress(10);
 
     // Group by project for more efficient processing
     const versionsByProject: Record<
@@ -102,6 +106,7 @@ export async function processTranslationPacks() {
           projectData.projectId,
           projectData.versions,
         );
+
         results.push(result);
       } catch (error) {
         console.error(
@@ -130,6 +135,91 @@ export async function processTranslationPacks() {
   });
 
   return taskId;
+}
+
+/**
+ * Find versions without any translation pack status records and create initial statuses for them
+ * @returns Number of status records created
+ */
+async function initializeMissingTranslationPackStatuses(): Promise<number> {
+  // 1. Get all versions
+  const allVersions = await db.query.version.findMany({
+    with: {
+      project: true,
+    },
+  });
+
+  if (allVersions.length === 0) {
+    console.log("No versions found in the database");
+    return 0;
+  }
+
+  let statusesCreated = 0;
+
+  // 2. Check each version
+  for (const version of allVersions) {
+    // Get available languages with translations for this version
+    const versionItems = await db.query.versionToItem.findMany({
+      where: eq(versionToItem.versionId, version.id),
+      columns: { itemId: true },
+    });
+
+    const itemIds = versionItems.map((v) => v.itemId);
+
+    if (itemIds.length === 0) {
+      continue; // Skip versions with no items
+    }
+
+    // Find languages with accurate proposals for these items
+    const availableLanguages = await db
+      .selectDistinct({ languageCode: translation.languageCode })
+      .from(translation)
+      .where(
+        and(
+          inArray(translation.itemId, itemIds),
+          sql`exists (
+            select 1 from ${proposal}
+            where ${proposal.translationId} = ${translation.id}
+            and ${proposal.status} = 'accurate'
+          )`,
+        ),
+      );
+
+    if (availableLanguages.length === 0) {
+      continue; // No languages with translations available
+    }
+
+    // Get existing status records for this version
+    const existingStatuses =
+      await db.query.versionTranslationPackStatus.findMany({
+        where: eq(versionTranslationPackStatus.versionId, version.id),
+      });
+
+    const existingLanguageCodes = existingStatuses.map((s) => s.languageCode);
+
+    // Create status records for languages that don't have them yet
+    for (const { languageCode } of availableLanguages) {
+      if (!existingLanguageCodes.includes(languageCode)) {
+        try {
+          await db.insert(versionTranslationPackStatus).values({
+            versionId: version.id,
+            languageCode,
+            needsRelease: true,
+            lastUpdated: new Date(),
+          });
+          statusesCreated++;
+        } catch (error) {
+          console.error(
+            `Error creating translation pack status for version ${version.id}, language ${languageCode}:`,
+            error,
+          );
+        }
+      }
+    }
+  }
+
+  console.log(`Created ${statusesCreated} new translation pack status records`);
+  return statusesCreated;
 }
 
 /**
@@ -195,7 +285,7 @@ async function processProjectTranslationPacks(
         results.push({
           versionId,
           languageCode,
-          meetsThreshold: false,
+          meetsThreshold: true,
           translatedCount: 0,
           totalCount: 0,
           translatedPercentage: 0,
@@ -225,8 +315,11 @@ async function processProjectTranslationPacks(
 
       const translatedCount = Number(translatedCountQuery[0]?.count || 0);
       const translatedPercentage = (translatedCount / totalStrings) * 100;
-      const meetsThreshold =
+      /**
+       *       const meetsThreshold =
         translatedCount >= 45 || translatedPercentage >= 10;
+       */
+      const meetsThreshold = true;
 
       results.push({
         versionId,
@@ -236,6 +329,8 @@ async function processProjectTranslationPacks(
         totalCount: totalStrings,
         translatedPercentage,
       });
+
+      console.log(results);
 
       // If threshold is not met, skip this version
       if (!meetsThreshold) {
@@ -399,9 +494,9 @@ export async function generateResourcePack(
     // Get project info
     let projectInfo;
     try {
-      projectInfo = await db.query.project.findFirst({
-        where: eq(project.id, projectId),
-      });
+      projectInfo = await (
+        await fetch("https://api.modrinth.com/v2/project/" + projectId)
+      ).json();
     } catch (error) {
       // For testing purposes, create a mock project info if database query fails
       console.log("Using mock project info for testing purposes");
