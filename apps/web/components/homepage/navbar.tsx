@@ -251,7 +251,7 @@ export function Navbar() {
                         onClick={handleLogout}
                         className="w-full justify-start gap-2"
                       >
-                        <LogOut className="h-4 w-4" />
+                        <LogOut className="h-4 w-4 text-red-500" />
                         <span>Logout</span>
                       </Button>
                     </>
