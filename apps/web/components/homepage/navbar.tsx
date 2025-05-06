@@ -28,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Separator } from "../ui/separator";
 
 interface NavbarProps {
   isAuthenticated?: boolean;
@@ -202,11 +203,6 @@ export function Navbar() {
                     <LoquiIcon className="h-6 w-6 text-primary-500" />
                     <span className="text-xl font-bold">Loqui</span>
                   </div>
-                  {isAuthenticated && (
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Hello, {user?.username}
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex flex-col space-y-2 px-4">
@@ -220,6 +216,33 @@ export function Navbar() {
                         >
                           <LayoutDashboard className="h-4 w-4" />
                           <span>Dashboard</span>
+                        </Button>
+                      </Link>
+                      <Separator className="h-8" />
+                      <div className="flex flex-row gap-x-2">
+                        <CircleUserRound className="h-4 w-4" />
+                        <span className="text-sm text-muted-foreground mb-2">
+                          {user?.username}
+                        </span>
+                      </div>
+                      <Link href={`/user/${user?.modrinthUserData?.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                        >
+                          <User className="h-4 w-4" />
+                          Profile
+                        </Button>
+                      </Link>
+                      <Link href="/reports" className="w-full">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start gap-2"
+                        >
+                          <MessageSquareWarning className="h-4 w-4" />
+                          <span>Reports</span>
                         </Button>
                       </Link>
                       <Button
