@@ -158,8 +158,15 @@ export function Navbar() {
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="h-4 w-4 text-red-500" />
-                    <span>Logout</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="w-full justify-start gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Logout</span>
+                    </Button>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -246,12 +253,12 @@ export function Navbar() {
                         </Button>
                       </Link>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="sm"
                         onClick={handleLogout}
                         className="w-full justify-start gap-2"
                       >
-                        <LogOut className="h-4 w-4 text-red-500" />
+                        <LogOut className="h-4 w-4" />
                         <span>Logout</span>
                       </Button>
                     </>
