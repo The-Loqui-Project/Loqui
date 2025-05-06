@@ -4,6 +4,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    labels:
+      - "type/typescript"
+      - "type/deps"
+      - "status/investigating"
     groups:
       non-major-updates:
         applies-to: version-updates
@@ -15,8 +19,18 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "type/docker"
+      - "type/deps"
+      - "status/investigating"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    labels:
+      - "type/actions"
+      - "type/ci"
+      - "type/deps"
+      - "status/investigating"
+
