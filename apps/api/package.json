@@ -33,13 +33,13 @@
     "pg": "^8.15.6",
     "typerinth": "^1.1.1",
     "typescript": "^5.8.3",
-    "ws": "^8.18.1"
+    "ws": "^8.18.2"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
     "@types/node": "^22.14.1",
-    "@types/pg": "^8.11.14",
-    "drizzle-kit": "^0.31.0",
+    "@types/pg": "^8.15.0",
+    "drizzle-kit": "^0.31.1",
     "tsx": "^4.19.4"
   }
 }
