@@ -150,6 +150,12 @@ export function Navbar() {
                       Profile
                     </DropdownMenuItem>
                   </Link>
+                  <Link href="/reports">
+                    <DropdownMenuItem>
+                      <MessageSquareWarning className="h-4 w-4" />
+                      Open Reports
+                    </DropdownMenuItem>
+                  </Link>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="h-4 w-4 text-red-500" />
                     <span>Logout</span>
