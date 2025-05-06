@@ -153,7 +153,7 @@ export function Navbar() {
                   <Link href="/reports">
                     <DropdownMenuItem>
                       <MessageSquareWarning className="h-4 w-4" />
-                      Open Reports
+                      Reports
                     </DropdownMenuItem>
                   </Link>
                   <DropdownMenuItem onClick={handleLogout}>
