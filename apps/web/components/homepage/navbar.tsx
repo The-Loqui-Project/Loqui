@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "../ui/separator";
 
 export function Navbar() {
   const [mounted, setMounted] = useState(false);
@@ -42,7 +43,7 @@ export function Navbar() {
   const { setTheme, theme } = useTheme();
   const router = useRouter();
 
-  // navigation items
+  // Navigation items
   const navItems: {
     icon: React.JSX.Element;
     href: string;
@@ -65,7 +66,7 @@ export function Navbar() {
     },
   ];
 
-  // user items
+  // User items
   const userItems = [
     {
       href: `/user/${user?.modrinthUserData?.id}`,
@@ -74,9 +75,9 @@ export function Navbar() {
       showWhen: () => !!user?.username,
     },
     {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      href: `/reports`,
+      label: "Reports",
+      icon: <MessageSquareWarning className="h-4 w-4" />,
       showAlways: true,
     },
     {
@@ -84,13 +85,6 @@ export function Navbar() {
       label: "Projects",
       icon: <LayoutDashboard className="h-4 w-4" />,
       showAlways: true,
-    },
-    {
-      href: "/moderation",
-      label: "Moderation Dashboard",
-      icon: <MessageSquareWarning className="h-4 w-4" />,
-      showWhen: () => userRole?.isModerator,
-      desktopOnly: true,
     },
   ];
 
@@ -111,7 +105,7 @@ export function Navbar() {
             <Link href={item.href}>
               <Button
                 variant="ghost"
-                className={`gap-2 ${isMobile ? "w-full justify-start transition-all duration-200 hover:bg-primary-500/10 hover:text-primary-500 hover:pl-4" : "h-10 px-4 relative overflow-hidden transition-all duration-300 hover:bg-primary-500/10 hover:text-primary-500 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-primary-500 after:transition-all after:duration-300 hover:after:w-full"}`}
+                className={`gap-2 ${isMobile ? "w-full justify-start transition-all duration-100" : "h-10 px-4 relative overflow-hidden transition-all duration-100"}`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -146,7 +140,7 @@ export function Navbar() {
               <Link href={item.href} key={`profile-${index}`}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2 transition-all duration-200 hover:bg-primary-500/10 hover:text-primary-500 hover:pl-4"
+                  className="w-full justify-start gap-2 transition-all duration-200"
                 >
                   {item.icon}
                   {item.label}
@@ -156,7 +150,7 @@ export function Navbar() {
           } else {
             return (
               <Link href={item.href} key={`profile-${index}`}>
-                <DropdownMenuItem className="gap-2 cursor-pointer py-2 transition-all duration-200 hover:bg-primary-500/10 hover:text-primary-500">
+                <DropdownMenuItem className="gap-2 cursor-pointer py-2 transition-all duration-100">
                   {item.icon}
                   {item.label}
                 </DropdownMenuItem>
