@@ -1,6 +1,11 @@
 import db from "../db";
-import { proposal } from "../db/schema/schema";
-import { and, eq, not, sql } from "drizzle-orm";
+import {
+  proposal,
+  translation,
+  versionToItem,
+  versionTranslationPackStatus,
+} from "../db/schema/schema";
+import { and, eq, inArray, not, sql } from "drizzle-orm";
 
 /**
  * Updates proposal statuses based on their votes and relative ranking within a translation
@@ -43,6 +48,7 @@ export async function updateProposalStatuses(
       score: p.score,
       approvals: p.approvals,
       rank: p.score + p.approvals * 4,
+      status: p.status, // Keep track of original status
     }));
 
     // Sort by rank (highest first)
@@ -50,6 +56,7 @@ export async function updateProposalStatuses(
 
     // Find the highest ranked proposal
     const topProposal = rankedProposals[0];
+    let newAccurateProposalIds: number[] = [];
 
     // Special case: if there's only one proposal
     if (rankedProposals.length === 1) {
@@ -61,6 +68,14 @@ export async function updateProposalStatuses(
         .set({ status: newStatus })
         .where(eq(proposal.id, topProposal.id));
 
+      // If status changed to accurate, track it
+      if (newStatus === "accurate" && topProposal.status !== "accurate") {
+        newAccurateProposalIds.push(topProposal.id);
+      }
+
+      if (newAccurateProposalIds.length > 0) {
+        await markVersionsAsDirty(translationId, newAccurateProposalIds);
+      }
       return;
     }
 
@@ -75,9 +90,79 @@ export async function updateProposalStatuses(
         .update(proposal)
         .set({ status: newStatus })
         .where(eq(proposal.id, p.id));
+
+      // If status changed to accurate, track it
+      if (newStatus === "accurate" && p.status !== "accurate") {
+        newAccurateProposalIds.push(p.id);
+      }
+    }
+
+    // If any proposals became accurate, mark relevant versions as dirty
+    if (newAccurateProposalIds.length > 0) {
+      await markVersionsAsDirty(translationId, newAccurateProposalIds);
     }
   } catch (error) {
     console.error("Error updating proposal statuses:", error);
     throw error;
+  }
+}
+
+/**
+ * Marks all versions that contain an item as needing translation pack updates
+ * @param translationId The translation ID that was updated
+ * @param proposalIds The proposal IDs that became accurate
+ */
+async function markVersionsAsDirty(
+  translationId: number,
+  proposalIds: number[],
+): Promise<void> {
+  try {
+    // 1. Get the translation to find item and language
+    const translationData = await db.query.translation.findFirst({
+      where: (t) => eq(t.id, translationId),
+      columns: {
+        itemId: true,
+        languageCode: true,
+      },
+    });
+
+    if (!translationData) {
+      console.error(`Translation not found for ID: ${translationId}`);
+      return;
+    }
+
+    // 2. Find all versions that contain this item
+    const versionLinks = await db.query.versionToItem.findMany({
+      where: (vti) => eq(vti.itemId, translationData.itemId),
+      columns: {
+        versionId: true,
+      },
+    });
+
+    const versionIds = versionLinks.map((v) => v.versionId);
+
+    // 3. For each version, mark it as needing a release for this language
+    for (const versionId of versionIds) {
+      await db
+        .insert(versionTranslationPackStatus)
+        .values({
+          versionId,
+          languageCode: translationData.languageCode,
+          needsRelease: true,
+          lastUpdated: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: [
+            versionTranslationPackStatus.versionId,
+            versionTranslationPackStatus.languageCode,
+          ],
+          set: {
+            needsRelease: true,
+            lastUpdated: new Date(),
+          },
+        });
+    }
+  } catch (error) {
+    console.error("Error marking versions as dirty:", error);
   }
 }

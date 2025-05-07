@@ -1,4 +1,4 @@
-import {integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar, index} from "drizzle-orm/pg-core";
+import {integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, varchar, index, boolean} from "drizzle-orm/pg-core";
 import {relations} from "drizzle-orm";
 
 
@@ -26,6 +26,15 @@ export const project = pgTable("project", {
     optIn: timestamp("opt-in", {withTimezone: true}),                       // When the project opted in
 });
 
+// Translation pack for a project
+export const translationPack = pgTable("translation_pack", {
+    id: serial("id").notNull().primaryKey(),                                // Generic serial id
+    projectId: varchar("project_id", {length: 255}).notNull()              // -> Project id
+        .references(() => project.id, {onDelete: 'cascade'}),  
+    modrinthPackId: varchar("modrinth_pack_id", {length: 255}),           // Modrinth resource pack project id
+    lastUpdated: timestamp("last_updated", {withTimezone: true}).notNull().defaultNow(),
+});
+
 // A version of a project
 export const version = pgTable("version", {
     id: varchar("id", {length: 255}).notNull().primaryKey(),                // Modrinth version id
@@ -38,6 +47,16 @@ export const versionToItem = pgTable('version_to_item', {
     versionId: varchar("version_id", {length: 255}).notNull(),              // -> Modrinth version id
     itemId: integer("item_id").notNull(),                                   // -> Items id
 }, (t) => [primaryKey({columns: [t.versionId, t.itemId]})]);
+
+// Track versions that need translation pack updates
+export const versionTranslationPackStatus = pgTable("version_translation_pack_status", {
+    versionId: varchar("version_id", {length: 255}).notNull()              // -> Version id
+        .references(() => version.id, {onDelete: 'cascade'}),
+    languageCode: varchar("language_code", {length: 10}).notNull()         // -> Language code 
+        .references(() => language.code, {onDelete: 'cascade'}),
+    needsRelease: boolean("needs_release").notNull().default(true),        // If true, this version needs a translation pack release
+    lastUpdated: timestamp("last_updated", {withTimezone: true}).notNull().defaultNow(),
+}, (t) => [primaryKey({columns: [t.versionId, t.languageCode]})]);
 
 // The base of the translations. Storing the translation key and the default value from en_us.
 export const item = pgTable("item", {
@@ -334,10 +353,25 @@ export const projectReportsRelations = relations(projectReports, ({ one }) => ({
   }),
 }));
 
-/*
-Examples from:
-- https://github.com/DaFuqs/Spectrum/blob/1.20.1-aria-for-painters/src/main/resources/assets/spectrum/lang
- */
+// TranslationPack relations
+export const translationPackRelations = relations(translationPack, ({ one }) => ({
+  project: one(project, {
+    fields: [translationPack.projectId],
+    references: [project.id],
+  }),
+}));
+
+// VersionTranslationPackStatus relations
+export const versionTranslationPackStatusRelations = relations(versionTranslationPackStatus, ({ one }) => ({
+  version: one(version, {
+    fields: [versionTranslationPackStatus.versionId],
+    references: [version.id],
+  }),
+  language: one(language, {
+    fields: [versionTranslationPackStatus.languageCode],
+    references: [language.code],
+  }),
+}));
 
 export const schema = {
     user,
@@ -353,6 +387,8 @@ export const schema = {
     proposalReport,
     stringReports,
     projectReports,
+    translationPack,
+    versionTranslationPackStatus,
     userRelations,
     projectRelations,
     versionRelations,
@@ -366,4 +402,6 @@ export const schema = {
     approvedUserLanguagesRelations,
     stringReportsRelations,
     projectReportsRelations,
+    translationPackRelations,
+    versionTranslationPackStatusRelations,
 }

@@ -11,7 +11,7 @@ const ROLE_HIERARCHY = ["translator", "approved", "moderator", "admin"];
 
 export interface AuthUser {
   id: string;
-  role: string;
+  role: "translator" | "approved" | "moderator" | "admin";
   isBanned: boolean;
   reputation: number;
   modrinthUser?: User;

@@ -47,6 +47,7 @@ import V1_ProjectReportsResolve from "./v1/projects/reports/resolve";
 // Tasks
 import V1_TasksList from "./v1/tasks/list";
 import V1_TasksGet from "./v1/tasks/get";
+import translationPacks from "./v1/moderation/translation-packs";
 
 interface RouteStorage {
   [apiVersion: string]: {
@@ -100,6 +101,7 @@ const routes: RouteStorage = {
     // Tasks
     tasks_list: V1_TasksList,
     tasks_get: V1_TasksGet,
+    test_upload: translationPacks,
   },
 };
 
