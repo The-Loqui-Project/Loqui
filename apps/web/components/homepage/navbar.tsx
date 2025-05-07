@@ -133,7 +133,7 @@ export function Navbar() {
         // Check if the item should be shown
         if (
           (item.showAlways || (item.showWhen && item.showWhen())) &&
-          (!item.desktopOnly || !isMobile)
+          !isMobile
         ) {
           if (isMobile) {
             return (
