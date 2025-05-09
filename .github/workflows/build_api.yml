@@ -1,4 +1,4 @@
-name: Build API Application
+name: Loqui build API 
 
 on:
     push:
