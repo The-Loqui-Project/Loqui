@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Loader2, Filter, Search } from "lucide-react";
+import { Filter, Loader2, Search } from "lucide-react";
 import { getCookie } from "cookies-next";
 import { getCurrentUser } from "@/lib/api-client-wrapper";
 import { ReportTable } from "@/components/moderation/report-table";

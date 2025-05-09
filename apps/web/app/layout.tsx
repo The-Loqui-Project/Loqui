@@ -9,6 +9,7 @@ import { Navbar } from "@/components/homepage/navbar";
 import { Footer } from "@/components/homepage/footer";
 import { CountryFlagPolyfill } from "@/components/country-flag-polyfill";
 import { Toaster } from "@/components/ui/toaster";
+import { CookieConsent } from "@/components/cookie/cookie-consent";
 
 // Load Inter font but don't apply it directly to body
 // This allows us to include it in our font stack while preserving the Twemoji Country Flags font
@@ -48,6 +49,7 @@ export default function RootLayout({
                 <Footer />
               </div>
               <Toaster />
+              <CookieConsent />
             </TaskProvider>
           </AuthProvider>
         </ThemeProvider>

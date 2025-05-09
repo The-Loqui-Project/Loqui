@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, AlertCircle, CheckCircle, Search, Check } from "lucide-react";
+import { AlertCircle, Check, CheckCircle, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -313,11 +313,7 @@ export function OptInModal({ open, onOpenChange, onSuccess }: OptInModalProps) {
                               {notOptedInProjects.map((project) => (
                                 <div
                                   key={project.id}
-                                  className={`flex items-start p-2 rounded-md hover:bg-muted cursor-pointer ${
-                                    selectedProjects.includes(project.id)
-                                      ? "bg-muted"
-                                      : ""
-                                  }`}
+                                  className={`flex items-start p-2 rounded-md hover:bg-muted cursor-pointer ${selectedProjects.includes(project.id) ? "bg-muted" : ""}`}
                                   onClick={() =>
                                     toggleProjectSelection(project.id)
                                   }
