@@ -1,4 +1,12 @@
-# Contributing
+<img src="./docs/assets/loqui.svg" width="100px" align="left">
+
+### `Zen Browser`
+
+[![Loqui dev build workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build.yml)
+
+Loqui is a free and open-source platform that makes translating Minecraft mods easy through crowdsourcing.
+
+## Contributing
 
 In root folder:
 
