@@ -1,4 +1,4 @@
-name: Loqui build and publish
+name: Build and Publish Loqui
 on:
     push:
         branches:
