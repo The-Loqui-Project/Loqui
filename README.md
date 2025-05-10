@@ -1,13 +1,4 @@
-<img src="./docs/media/icon_light.svg#gh-light-mode-only" width="100px" align="left">
-<img src="./docs/media/icon_dark.svg#gh-dark-mode-only" width="100px" align="left">
-
-<div id="toc">
-  <ul style="list-style: none">
-    <summary>
-      <h1> The Loqui Project</h1>
-    </summary>
-  </ul>
-</div>
+# ![Loqui Monorepo Cover](/docs/media/banner.webp)
 
 [!['Build and Publish Loqui' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml)
 [!['Build Loqui API' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml)
