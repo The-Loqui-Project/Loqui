@@ -1,4 +1,4 @@
-<img src="./docs/media/icon.svg" width="100px" align="left" style="filter: invert(1);">
+<img src="./docs/media/icon.svg" width="100px" align="left">
 
 <div id="toc">
   <ul style="list-style: none">
