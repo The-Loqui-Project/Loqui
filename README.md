@@ -1,6 +1,12 @@
-<img src="./docs/media/icon.svg" width="100px" align="left">
+<img src="./docs/media/icon.svg" width="100px" align="left" style="filter: invert(1);">
 
-# `Loqui`
+<div id="toc">
+  <ul style="list-style: none">
+    <summary>
+      <h1> The Loqui Project</h1>
+    </summary>
+  </ul>
+</div>
 
 [!['Build and Publish Loqui' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml)
 [!['Build Loqui API' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml)
