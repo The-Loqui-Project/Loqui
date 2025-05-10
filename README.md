@@ -1,4 +1,4 @@
-<img src="./docs/assets/icon.svg" width="100px" align="left">
+<img src="./docs/media/icon.svg" width="100px" align="left">
 
 ### `Loqui`
 
