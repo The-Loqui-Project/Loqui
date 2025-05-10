@@ -1,6 +1,6 @@
 <img src="./docs/media/icon.svg" width="100px" align="left">
 
-### `Loqui`
+# `Loqui`
 
 [!['Build and Publish Loqui' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_and_publish_image.yml)
 [!['Build Loqui API' workflow](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml/badge.svg?branch=dev)](https://github.com/The-Loqui-Project/Loqui/actions/workflows/build_api.yml)
