@@ -1,4 +1,4 @@
-name: Build and push Docker image to container registry
+name: Build and Publish Loqui
 on:
     push:
         branches:
