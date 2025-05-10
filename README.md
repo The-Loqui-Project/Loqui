@@ -10,8 +10,7 @@ Developers can easily manage translations with automatic updates and Modrinth OA
 
 ## Loqui Monorepo
 
-Welcom to the repository containing all of the code and resources to make Loqui work. The two most important brnaches you will find here are `dev` and `prod`. The `dev` branch contains code that is currently worked on and isnt live in an production environment, thoug you can still check out current progress on a staging deployment. The `prod` brnach contains stable code that is deployed in production, code from the `dev` eventually ends up here. 
-
+Welcome to the repository containing all the code and resources to make Loqui work. The two most important branches you will find here are `dev` and `prod`. The `dev` branch contains code that is currently worked on and isnt live in an production environment, though you can still check out current progress on a staging deployment. The `prod` branch contains stable code that is deployed in production, code from the `dev` eventually ends up here. 
 ## Development
 
 ### Prerequisites
