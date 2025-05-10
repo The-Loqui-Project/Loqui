@@ -1,5 +1,5 @@
 <img src="./docs/media/icon_light.svg#gh-light-mode-only" width="100px" align="left">
-<img src="./docs/media/icon.svg#gh-dark-mode-only" width="100px" align="left">
+<img src="./docs/media/icon_dark.svg#gh-dark-mode-only" width="100px" align="left">
 
 <div id="toc">
   <ul style="list-style: none">
