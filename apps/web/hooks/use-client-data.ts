@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  getCookie,
-  setCookie,
   deleteCookie,
+  getCookie,
   hasCookie,
   OptionsType,
+  setCookie,
 } from "cookies-next/client";
 
-// Cookie consent key in localStorage
+// Cookie consent key in localStorage and cookie
 export const COOKIE_CONSENT_KEY = "cookie-consent-preferences";
 
 // Cookie types
@@ -40,18 +40,78 @@ class ClientDataManager {
   }
 
   /**
-   * Load user consent preferences from localStorage
+   * Load user consent preferences from localStorage or cookie
+   * Returns the preferences if found, null otherwise
    */
-  private loadConsentPreferences(): void {
-    if (typeof window === "undefined") return;
+  public loadConsentPreferences(): Record<string, boolean> | null {
+    if (typeof window === "undefined") return null;
 
     try {
-      const preferences = localStorage.getItem(COOKIE_CONSENT_KEY);
-      this.consentPreferences = preferences ? JSON.parse(preferences) : null;
+      // First try localStorage
+      const localPreferences = localStorage.getItem(COOKIE_CONSENT_KEY);
+      if (localPreferences) {
+        const parsedPreferences = JSON.parse(localPreferences);
+        this.consentPreferences = parsedPreferences;
+        return parsedPreferences;
+      }
+
+      // Then try cookie
+      const cookiePreferences = getCookie(COOKIE_CONSENT_KEY);
+      if (cookiePreferences) {
+        const parsedPreferences = JSON.parse(cookiePreferences as string);
+        this.consentPreferences = parsedPreferences;
+        return parsedPreferences;
+      }
+
+      return null;
     } catch (error) {
       console.error("Failed to load consent preferences:", error);
       this.consentPreferences = null;
+      return null;
     }
+  }
+
+  /**
+   * Store preferences in localStorage
+   */
+  public storePreferencesInLocalStorage(
+    preferences: Record<string, boolean>,
+  ): void {
+    const previousPreferences = this.consentPreferences || {};
+    this.consentPreferences = preferences;
+
+    // Remove from cookie if it exists
+    if (hasCookie(COOKIE_CONSENT_KEY)) {
+      deleteCookie(COOKIE_CONSENT_KEY);
+    }
+
+    // Save to localStorage
+    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(preferences));
+
+    // Clean up data for revoked consent
+    this.cleanupRevokedConsent(previousPreferences, preferences);
+  }
+
+  /**
+   * Store preferences in cookie
+   */
+  public storePreferencesInCookie(preferences: Record<string, boolean>): void {
+    const previousPreferences = this.consentPreferences || {};
+    this.consentPreferences = preferences;
+
+    // Remove from localStorage if it exists
+    if (localStorage.getItem(COOKIE_CONSENT_KEY)) {
+      localStorage.removeItem(COOKIE_CONSENT_KEY);
+    }
+
+    // Save to cookie with 365 days expiry
+    const options: Parameters<typeof setCookie>[2] = {
+      expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+    };
+    setCookie(COOKIE_CONSENT_KEY, JSON.stringify(preferences), options);
+
+    // Clean up data for revoked consent
+    this.cleanupRevokedConsent(previousPreferences, preferences);
   }
 
   /**
@@ -65,40 +125,6 @@ class ClientDataManager {
     if (!this.consentPreferences) return false;
 
     return !!this.consentPreferences[type];
-  }
-
-  /**
-   * Validate a data item
-   */
-  private validateItem(item: DataItem): boolean {
-    // Check required fields
-    if (!item.key || typeof item.key !== "string") {
-      console.error("Data item must have a valid key");
-      return false;
-    }
-
-    // Check type
-    if (!Object.values(CookieType).includes(item.type)) {
-      console.error(`Invalid cookie type: ${item.type}`);
-      return false;
-    }
-
-    // Check storage
-    if (item.storage !== "cookie" && item.storage !== "localStorage") {
-      console.error(`Invalid storage type: ${item.storage}`);
-      return false;
-    }
-
-    // Check expiry if provided
-    if (
-      item.expiry !== undefined &&
-      (typeof item.expiry !== "number" || item.expiry <= 0)
-    ) {
-      console.error("Expiry must be a positive number");
-      return false;
-    }
-
-    return true;
   }
 
   /**
@@ -267,18 +293,21 @@ class ClientDataManager {
   }
 
   /**
-   * Update consent preferences and handle data cleanup
+   * Get all registered items
    */
-  public updateConsentPreferences(preferences: Record<string, boolean>): void {
-    const previousPreferences = this.consentPreferences || {};
-    this.consentPreferences = preferences;
+  public getRegisteredItems(): DataItem[] {
+    return Array.from(this.registeredItems.values());
+  }
 
-    // Save the new preferences
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(preferences));
-
-    // Clean up data for revoked consent
+  /**
+   * Clean up data for revoked consent
+   */
+  private cleanupRevokedConsent(
+    previousPreferences: Record<string, boolean>,
+    newPreferences: Record<string, boolean>,
+  ): void {
     Object.entries(previousPreferences).forEach(([type, wasAllowed]) => {
-      const isNowAllowed = preferences[type];
+      const isNowAllowed = newPreferences[type];
 
       // If consent was revoked, clear all data of this type
       if (wasAllowed && !isNowAllowed) {
@@ -288,10 +317,37 @@ class ClientDataManager {
   }
 
   /**
-   * Get all registered items
+   * Validate a data item
    */
-  public getRegisteredItems(): DataItem[] {
-    return Array.from(this.registeredItems.values());
+  private validateItem(item: DataItem): boolean {
+    // Check required fields
+    if (!item.key || typeof item.key !== "string") {
+      console.error("Data item must have a valid key");
+      return false;
+    }
+
+    // Check type
+    if (!Object.values(CookieType).includes(item.type)) {
+      console.error(`Invalid cookie type: ${item.type}`);
+      return false;
+    }
+
+    // Check storage
+    if (item.storage !== "cookie" && item.storage !== "localStorage") {
+      console.error(`Invalid storage type: ${item.storage}`);
+      return false;
+    }
+
+    // Check expiry if provided
+    if (
+      item.expiry !== undefined &&
+      (typeof item.expiry !== "number" || item.expiry <= 0)
+    ) {
+      console.error("Expiry must be a positive number");
+      return false;
+    }
+
+    return true;
   }
 }
 
