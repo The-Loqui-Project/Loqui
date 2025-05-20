@@ -1,8 +1,8 @@
 name: Build and Publish Loqui
 on:
     push:
-        branches:
-            - '**'
+        branches-ignore:
+            - 'dependabot/**'
         tags:
             - 'v*.*.*'
 
