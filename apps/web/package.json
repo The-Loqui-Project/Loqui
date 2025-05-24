@@ -47,7 +47,7 @@
     "country-flag-emoji-polyfill": "^0.1.8",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "framer-motion": "^12.12.1",
+    "framer-motion": "^12.12.2",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.511.0",
     "next": "^15.3.2",
@@ -63,7 +63,7 @@
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
-    "zod": "^3.25.21"
+    "zod": "^3.25.27"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
