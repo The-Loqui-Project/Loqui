@@ -21,7 +21,7 @@
     "@fastify/cors": "^11.0.1",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.2",
-    "@fastify/websocket": "^11.0.2",
+    "@fastify/websocket": "^11.1.0",
     "@types/ws": "^8.18.1",
     "@repo/meta": "workspace:*",
     "adm-zip": "^0.5.16",
@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.7",
-    "@types/node": "^22.15.21",
+    "@types/node": "^22.15.23",
     "@types/pg": "^8.15.2",
     "drizzle-kit": "^0.31.1",
     "tsx": "^4.19.4"
