@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Loqui",
+  "description": "Minecraft crowd-sourcing translation platform",
+  "version": "1.0",
+  "permissions": [],
+  "action": {
+    "default_icon": "icon.png"
+  },
+  "host_permissions": [
+    "http://*.curseforge.com/*",
+    "http://*.modrinth.com/*",
+    "http://*.planetminecraft.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.curseforge.com/minecraft/*"],
+      "js": ["curseforge.js"]
+    },
+    {
+      "matches": [
+        "*://*.modrinth.com/mod/*",
+        "*://*.modrinth.com/resourcepack/*",
+        "*://*.modrinth.com/datapack/*",
+        "*://*.modrinth.com/shader/*",
+        "*://*.modrinth.com/modpack/*",
+        "*://*.modrinth.com/plugin/*"
+      ],
+      "js": ["modrinth.js"]
+    },
+    {
+      "matches": [
+        "*://*.planetminecraft.com/mod/*",
+        "*://*.planetminecraft.com/texture-pack/*"
+      ],
+      "js": ["pmc.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon.png"],
+      "matches": ["https://*/*"]
+    }
+  ]
+}
